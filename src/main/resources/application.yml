@@ -1,0 +1,61 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    default: local
+
+---
+spring:
+  profiles:
+    active: local
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql=true: true
+        show-sql=true: true
+
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://cinesquare.cfcweacm21n8.ap-southeast-2.rds.amazonaws.com:3306/cinesquare
+    username: root
+    password: root1234
+
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql=DEBUG: DEBUG
+        SQL=DEBUG: DEBUG
+---
+spring:
+  profiles:
+    active: dev
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql=true: true
+        show-sql=true: true
+
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://cinesquare.cfcweacm21n8.ap-southeast-2.rds.amazonaws.com:3306/cinesquare
+    username: root
+    password: root2024
+
+logging:
+  level:
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql=DEBUG: DEBUG
+        SQL=DEBUG: DEBUG
