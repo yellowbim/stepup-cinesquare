@@ -30,6 +30,8 @@ dependencies {
 	runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations'
+	implementation 'io.hypersistence:hypersistence-utils-hibernate-60:3.3.1' // jpa에서 json 타입을 받기 위한 의존성
 }
 
 tasks.named('test') {
