@@ -27,7 +27,7 @@ public class User {
     private String account;
 
     @Column(length = 20, nullable = false)
-    private String passsword;
+    private String password;
 
     @Column(length = 20, nullable = false)
     private String name;
@@ -36,10 +36,9 @@ public class User {
     private String nickname;
 
     @CreatedDate
-    @Column(updatable = false, nullable = false)
+    @Column(updatable = false)
     private LocalDateTime created;
 
     @LastModifiedDate
-    @Column(nullable = false)
     private LocalDateTime updated;
 }
