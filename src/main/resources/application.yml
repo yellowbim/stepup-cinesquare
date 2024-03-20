@@ -20,7 +20,7 @@ spring:
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://cinesquare.cfcweacm21n8.ap-southeast-2.rds.amazonaws.com:3306/cinesquare
+    url: jdbc:mariadb://localhost:3306/cinesquare
     username: root
     password: root1234
 

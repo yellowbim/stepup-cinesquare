@@ -1,83 +1,92 @@
 package org.stepup.cinesquareapis.user.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
-import org.stepup.cinesquareapis.user.entity.User;
+import org.stepup.cinesquareapis.user.model.CreateUserRequest;
+import org.stepup.cinesquareapis.user.model.UpdateUserRequest;
+import org.stepup.cinesquareapis.user.model.UserResponse;
 import org.stepup.cinesquareapis.user.service.UserService;
 
 import java.text.ParseException;
-import java.util.List;
 
 @RequiredArgsConstructor
-@RequestMapping("api/user")
+@Tag(name = "users", description = "회원 정보 관련 API")
+@RequestMapping("api/users")
 @RestController
 public class UserController {
 
     private final UserService UserService;
 
     /**
-     * User 생성
+     * 계정 중복 확인
      *
      * @return
      * @throws ParseException
      */
+    @Operation(
+        summary = "계정 중복 체크",
+        description = "존재하는 계정이면 true, 존재하지 않는 계정이면 false 반환 (JSON 아님)"
+    )
+    @GetMapping("check-account/{account}")
+    public ResponseEntity<Boolean> checkAccount(@PathVariable("account") String account) throws ParseException {
+        Boolean result = UserService.checkAccount(account);
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    /**
+     * 회원가입
+     *
+     * @return
+     * @throws ParseException
+     */
+    @Operation(
+            summary = "회원가입",
+            description = "요청 필수 값: account, password, name, nickname"
+    )
     @PostMapping("")
-    public ResponseEntity<User> createUser(@RequestBody User user) throws ParseException {
-        User savedUser = UserService.createUser(user);
+    public ResponseEntity<UserResponse> createUser(@RequestBody CreateUserRequest request) throws ParseException {
+        UserResponse savedUser = UserService.createUser(request);
+
         return new ResponseEntity<>(savedUser, HttpStatus.OK);
     }
 
     /**
-     * User 수정
+     * 회원 졍보 수정
      *
+     * @param userId
      * @return
      * @throws ParseException
      */
-    @PutMapping("")
-    public ResponseEntity<User> updateUser(@RequestBody User user) throws ParseException {
-        User updatedUser = UserService.updateUser(user);
-        if (!ObjectUtils.isEmpty(updatedUser)) {
-            return new ResponseEntity<>(updatedUser, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(user, HttpStatus.NOT_FOUND);
-        }
+    @Operation(
+            summary = "회원 졍보 수정",
+            description = "요청 필수 값: password, name, nickname 중 1개 이상"
+    )
+    @PatchMapping("{user_id}")
+    public ResponseEntity<UserResponse> updateUser(@PathVariable("user_id") int userId, @RequestBody UpdateUserRequest request) throws ParseException {
+        UserResponse updatedUser = UserService.updateUser(userId, request);
+
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 
     /**
-     * User List 조회
-     *
-     * @return
-     */
-    @GetMapping("list")
-    public ResponseEntity<List<User>> getUsers() {
-        List<User> Users = UserService.getUsers();
-        return new ResponseEntity<>(Users, HttpStatus.OK);
-    }
-
-    /**
-     * user_id에 해당하는 User 조회
+     * user_id로 회원 정보 조회
      *
      * @param userId
      * @return
      */
+    @Operation(
+            summary = "회원 정보 조회",
+            description = "해당 유저가 존재한다는 보장이 있을 때만 사용"
+    )
     @GetMapping("{user_id}")
-    public ResponseEntity<User> getUser(@PathVariable("user_id") int userId) {
-        User User = UserService.getUser(userId);
-        return new ResponseEntity<>(User, HttpStatus.OK);
-    }
+    public ResponseEntity<UserResponse> getUser(@PathVariable("user_id") int userId) {
+        UserResponse user = UserService.getUser(userId);
 
-    /**
-     * user_id에 해당하는 User 삭제
-     *
-     * @param userId
-     * @return
-     */
-    @DeleteMapping("{user_id}")
-    public ResponseEntity<Long> deleteUser(@PathVariable("user_id") int userId) {
-        UserService.deleteUser(userId);
-        return new ResponseEntity<>((long)userId, HttpStatus.OK);
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 }
