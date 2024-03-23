@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.stepup.cinesquareapis.user.entity.User;
 import org.stepup.cinesquareapis.user.model.CreateUserRequest;
+import org.stepup.cinesquareapis.user.model.LoginUserRequest;
 import org.stepup.cinesquareapis.user.model.UpdateUserRequest;
 import org.stepup.cinesquareapis.user.model.UserResponse;
 import org.stepup.cinesquareapis.user.repository.UserRepository;
@@ -23,7 +24,7 @@ public class UserService {
      * @param account
      * @return result
      */
-    public Boolean checkAccount(String account) {
+    public boolean checkAccount(String account) {
         Boolean result = userRepository.existsByAccount(account);
 
         return result;
@@ -36,12 +37,28 @@ public class UserService {
      * @return new UserResponse(savedUser)
      */
     public UserResponse createUser(CreateUserRequest request) {
-        User xx =  request.toEntity();
-        User savedUser = userRepository.save(xx);  // JpaRepository에서 제공하는 save() 함수
+        User savedUser = userRepository.save(request.toEntity());
 
         return new UserResponse(savedUser);
     }
 
+    /**
+     * User 확인 (계정&비밀번호 확인)
+     *
+     * @param request
+     * @return new UserResponse(savedUser)
+     */
+    public boolean checkUser(LoginUserRequest request) {
+        // account로 사용자 조회
+        User user = userRepository.findByAccount(request.getAccount());
+
+        if (user != null && user.getPassword().equals(request.getPassword())) {
+            return true;
+        }
+
+        return false;
+    }
+    
     /**
      * User 수정
      *
