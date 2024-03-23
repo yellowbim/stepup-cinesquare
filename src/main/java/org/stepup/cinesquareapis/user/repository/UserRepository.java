@@ -7,7 +7,7 @@ import org.stepup.cinesquareapis.user.entity.User;
 @Repository
 // JpaRepository를 상속하여 사용. <객체, ID>
 public interface UserRepository extends JpaRepository<User, Integer> {
-    boolean existsById(int userId);
-
     boolean existsByAccount(String account);
+
+    User findByAccount(String account);
 }

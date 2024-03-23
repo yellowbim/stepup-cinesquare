@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.user.model.CreateUserRequest;
+import org.stepup.cinesquareapis.user.model.LoginUserRequest;
 import org.stepup.cinesquareapis.user.model.UpdateUserRequest;
 import org.stepup.cinesquareapis.user.model.UserResponse;
 import org.stepup.cinesquareapis.user.service.UserService;
@@ -53,6 +54,23 @@ public class UserController {
         UserResponse savedUser = UserService.createUser(request);
 
         return new ResponseEntity<>(savedUser, HttpStatus.OK);
+    }
+
+    /**
+     * 로그인 TODO: 수정
+     *
+     * @return
+     * @throws ParseException
+     */
+    @Operation(
+            summary = "로그인 (단순 account, password 확인용)",
+            description = "요청 필수 값: account, password, name, nickname"
+    )
+    @PostMapping("login")
+    public ResponseEntity<Boolean> createUser(@RequestBody LoginUserRequest request) throws ParseException {
+        boolean result = UserService.checkUser(request);
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     /**
