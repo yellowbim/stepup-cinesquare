@@ -34,7 +34,7 @@ public class UserController {
     )
     @GetMapping("check-account/{account}")
     public ResponseEntity<Boolean> checkAccount(@PathVariable("account") String account) throws ParseException {
-        Boolean result = UserService.checkAccount(account);
+        boolean result = UserService.checkAccount(account);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -81,11 +81,11 @@ public class UserController {
      * @throws ParseException
      */
     @Operation(
-            summary = "회원 졍보 수정",
+            summary = "회원 졍보 수정 ",
             description = "요청 필수 값: password, name, nickname 중 1개 이상"
     )
-    @PatchMapping("{user_id}")
-    public ResponseEntity<UserResponse> updateUser(@PathVariable("user_id") int userId, @RequestBody UpdateUserRequest request) throws ParseException {
+    @PatchMapping("")
+    public ResponseEntity<UserResponse> updateUser(@RequestParam("user_id") int userId, @RequestBody UpdateUserRequest request) throws ParseException {
         UserResponse updatedUser = UserService.updateUser(userId, request);
 
         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
@@ -98,7 +98,7 @@ public class UserController {
      * @return
      */
     @Operation(
-            summary = "회원 정보 조회",
+            summary = "회원 정보 조회 (추후 내정보 조회와 타인 정보 조회로 분리될 예정)",
             description = "해당 유저가 존재한다는 보장이 있을 때만 사용"
     )
     @GetMapping("{user_id}")

@@ -37,8 +37,7 @@ public class UserService {
      * @return new UserResponse(savedUser)
      */
     public UserResponse createUser(CreateUserRequest request) {
-        User xx =  request.toEntity();
-        User savedUser = userRepository.save(xx);  // JpaRepository에서 제공하는 save() 함수
+        User savedUser = userRepository.save(request.toEntity());
 
         return new UserResponse(savedUser);
     }
