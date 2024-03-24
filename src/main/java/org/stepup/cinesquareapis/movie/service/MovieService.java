@@ -11,9 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.stepup.cinesquareapis.movie.entity.Movie;
+import org.stepup.cinesquareapis.movie.entity.MovieBoxoffice;
 import org.stepup.cinesquareapis.movie.entity.MovieDetail;
 import org.stepup.cinesquareapis.movie.model.MovieAllResponse;
 import org.stepup.cinesquareapis.movie.model.MovieResponse;
+import org.stepup.cinesquareapis.movie.repository.MovieBoxofficeRepository;
 import org.stepup.cinesquareapis.movie.repository.MovieDetailRepository;
 import org.stepup.cinesquareapis.movie.repository.MovieRepository;
 
@@ -22,7 +24,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -39,6 +43,7 @@ public class MovieService {
 
     private final MovieRepository movieRepository;
     private final MovieDetailRepository movieDetailRepository;
+    private final MovieBoxofficeRepository movieBoxofficeRepository;
 
     /**
      * Movie 조회
@@ -66,7 +71,58 @@ public class MovieService {
         return new MovieAllResponse(movie, movieDetail);
     }
 
+    /**
+     * boxoffice movie_id 조회
+     *
+     * @return
+     */
+    public MovieBoxoffice[] getBoxoffice(String today) {
+        LocalDate todayLocalDate;
 
+        try {
+            // 현재 날짜, 시간, 요일
+            todayLocalDate = LocalDate.parse(today, DateTimeFormatter.ofPattern("yyyyMMdd"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.", e);
+        }
+
+        LocalTime currentTime = LocalTime.now();
+        DayOfWeek dayOfWeek = todayLocalDate.getDayOfWeek();
+
+        // 전 주 일요일 날짜 계산
+        LocalDate previousDate;
+        switch (dayOfWeek) {
+            case TUESDAY:
+                previousDate = todayLocalDate.minusDays(2);
+                break;
+            case WEDNESDAY:
+                previousDate = todayLocalDate.minusDays(3);
+                break;
+            case THURSDAY:
+                previousDate = todayLocalDate.minusDays(4);
+                break;
+            case FRIDAY:
+                previousDate = todayLocalDate.minusDays(5);
+                break;
+            case SATURDAY:
+                previousDate = todayLocalDate.minusDays(6);
+                break;
+            case SUNDAY:
+                previousDate = todayLocalDate.minusDays(7);
+                break;
+            default:
+                // 현재 시간이 오전 9시 1분보다 빠른 경우
+                if (currentTime.isBefore(LocalTime.of(9, 1))) {
+                    previousDate = todayLocalDate.minusDays(8); // 박스오피스가 업데이트가 안돼서 2주전 데이터 사용
+                } else {
+                    previousDate = todayLocalDate.minusDays(1);
+                }
+                break;
+        }
+
+        return movieBoxofficeRepository.findByEndDate(previousDate);
+    }
 
     /**
      * 한국영화진흥원 API 영화 생성 (최초 DB)
