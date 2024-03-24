@@ -32,8 +32,8 @@ public class MovieController {
         summary = "한국영화진흥원 API 영화 생성 (최초 DB)"
     )
     @GetMapping("kofic")
-    public ResponseEntity<ArrayList<Integer>> createKoficMovie(@RequestParam("current_page") int currentPage, @RequestParam("item_per_page") int itemPerPage) throws ParseException {
-        ArrayList<Integer> result = movieService.saveKoficMovie(currentPage, itemPerPage);
+    public ResponseEntity<ArrayList<Integer>> createKoficMovie(@RequestParam("current_page") int currentPage, @RequestParam("item_per_page") int itemPerPage, @RequestParam("start_production_year") int startProductionYear) {
+        ArrayList<Integer> result = movieService.saveKoficMovie(currentPage, itemPerPage, startProductionYear);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
