@@ -1,4 +1,4 @@
-package org.stepup.cinesquareapis.controller;
+package org.stepup.cinesquareapis.movie.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.stepup.cinesquareapis.service.MovieService;
+import org.stepup.cinesquareapis.movie.service.MovieService;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class MovieController {
     private final MovieService movieService;
 
     /**
-     * 한국영화진흥원 API 영화 생성 (최초 DB)
+     * 한국영화진흥원 API 영화 생성 (최초 DB), 100개씩만 호출하기
      *
      * @return
      * @throws ParseException
@@ -33,7 +33,7 @@ public class MovieController {
     )
     @GetMapping("kofic")
     public ResponseEntity<ArrayList<Integer>> createKoficMovie(@RequestParam("current_page") int currentPage, @RequestParam("item_per_page") int itemPerPage) throws ParseException {
-        ArrayList<Integer> result = movieService.createKoficMovie(currentPage, itemPerPage);
+        ArrayList<Integer> result = movieService.saveKoficMovie(currentPage, itemPerPage);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }

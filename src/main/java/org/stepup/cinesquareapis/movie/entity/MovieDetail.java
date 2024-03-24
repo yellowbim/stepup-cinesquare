@@ -1,4 +1,4 @@
-package org.stepup.cinesquareapis.entity;
+package org.stepup.cinesquareapis.movie.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
@@ -7,9 +7,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity // JPA 엔티티 클래스임을 나타냄 (객체와 테이블 매핑)
 @Getter
@@ -20,39 +22,53 @@ public class MovieDetail {
     @Id
     private Integer movieId;
 
-    @Column
+    @Column(length = 1)
     private Integer source;
 
     @Column
     private Integer koficMovieCode;
 
-    @Column
+    @Column(length = 50)
     private String movieTitle;
 
-    @Column
+    @Column(length = 100)
     private String movieTitleEn;
 
-    @Column
+    @Column(length = 3)
+    private Integer runningTime;
+
+    @Column(length = 20)
     private String genre;
 
-    @Column
-    private String genreList;
+    @Column(length = 50)
+    private String genres;
 
-    @Column
+    @Column(length = 4)
     private Integer productionYear;
 
     @Column
-    private Date openDate;
+    private LocalDate openDate;
 
-    @Column
+    @Column(length = 20)
     private String nation;
 
-    @Column
-    private String directorList;
+    @Column(length = 50)
+    private String nations;
 
-    @Column
+    @Column(length = 20)
+    private String director;
+
+    @Column(length = 100)
+    private String directors;
+
+    @Column(length = 100)
+    private String actors;
+
+    @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime created;
 
+    @UpdateTimestamp
     @Column
     private LocalDateTime updated;
 }
