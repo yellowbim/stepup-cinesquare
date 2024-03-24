@@ -9,7 +9,8 @@ spring:
 spring:
   profiles:
     active: local
-
+  jackson:
+    property-naming-strategy: SNAKE_CASE
   jpa:
     hibernate:
       ddl-auto: update
@@ -36,7 +37,8 @@ logging:
 spring:
   profiles:
     active: dev
-
+  jackson:
+    property-naming-strategy: SNAKE_CASE
   jpa:
     hibernate:
       ddl-auto: update
