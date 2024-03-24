@@ -61,7 +61,7 @@ public class MovieDetail {
     @Column(length = 100)
     private String directors;
 
-    @Column(length = 100)
+    @Column(length = 300)
     private String actors;
 
     @CreationTimestamp
