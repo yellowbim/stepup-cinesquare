@@ -14,6 +14,7 @@ import org.stepup.cinesquareapis.movie.entity.Movie;
 import org.stepup.cinesquareapis.movie.entity.MovieBoxoffice;
 import org.stepup.cinesquareapis.movie.entity.MovieDetail;
 import org.stepup.cinesquareapis.movie.model.MovieAllResponse;
+import org.stepup.cinesquareapis.movie.model.MovieRankResponse;
 import org.stepup.cinesquareapis.movie.model.MovieResponse;
 import org.stepup.cinesquareapis.movie.repository.MovieBoxofficeRepository;
 import org.stepup.cinesquareapis.movie.repository.MovieDetailRepository;
@@ -72,11 +73,11 @@ public class MovieService {
     }
 
     /**
-     * boxoffice movie_id 조회
+     * 주간 박스오피스 top10 조회
      *
      * @return
      */
-    public MovieBoxoffice[] getBoxoffice(String today) {
+    public MovieRankResponse[] getMovieBoxoffice(String today) {
         LocalDate todayLocalDate;
 
         try {
@@ -121,7 +122,39 @@ public class MovieService {
                 break;
         }
 
-        return movieBoxofficeRepository.findByEndDate(previousDate);
+        MovieBoxoffice[] movieBoxoffices = movieBoxofficeRepository.findByEndDate(previousDate);
+
+        if (movieBoxoffices.length != 10) {
+            if (previousDate.isAfter(todayLocalDate)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Today is in the future: " + todayLocalDate);
+            }
+
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No data found");
+        }
+
+        MovieRankResponse[] top10Movies = new MovieRankResponse[10];
+        for (int i = 0; i < top10Movies.length; i++) {
+            MovieBoxoffice movieBoxoffice = movieBoxoffices[i];
+            top10Movies[i] = new MovieRankResponse(movieBoxoffice);
+        }
+
+        return top10Movies;
+    }
+
+
+    /**
+     * 평균 별점 높은 영화 top10 조회
+     *
+     * @return
+     */
+    public MovieRankResponse[] getCinesquareTop10() {
+        Movie[] getCinesquareTop10 = movieRepository.findTop10ByOrderByScoreDesc();
+        MovieRankResponse[] top10Movies = new MovieRankResponse[10];
+        for (int i=0; i<getCinesquareTop10.length; i++) {
+            top10Movies[i] = new MovieRankResponse(getCinesquareTop10[i].getMovieId(), i+1);
+        }
+
+        return top10Movies;
     }
 
     /**
