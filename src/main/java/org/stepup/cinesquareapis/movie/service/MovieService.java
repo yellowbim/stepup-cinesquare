@@ -244,7 +244,7 @@ public class MovieService {
 
     // 올바른 영화인지 확인 후 영화 저장
     private void saveMovie(JsonObject movieJsonObject, String movieDetailUrl, ArrayList<Integer> createdMovieIds) throws IOException {
-        // 유효성 체크1 (대표 장르 기준)
+        // 유효성 체크1 - 기준: 대표 장르
         String genre = movieJsonObject.get("repGenreNm").getAsString();
         if (genre == null || genre.isEmpty() || genre.equals("기타")) {
             return;
@@ -255,17 +255,25 @@ public class MovieService {
         JsonObject movieDetailJsonObject = fetchJsonFromUrl(movieDetailUrl + movieCd);
         JsonObject movieInfo = movieDetailJsonObject.getAsJsonObject("movieInfoResult").getAsJsonObject("movieInfo");
 
-        // 유효성 체크2 (시청시간 기준)
+        // 유효성 체크2 - 기준: 시청시간
         String runningTime = movieInfo.get("showTm").getAsString();
         if (runningTime == null || runningTime.isEmpty()) {
             return;
         }
-        // 유효성 체크3 (장르 목록 기준), 장르 목록 추출
+        // 유효성 체크3 - 기준: 장르 목록 기준, 국가+장르 목록+청소년관란불가
         List<String> temps = new ArrayList<>();
         for (JsonElement je : movieInfo.getAsJsonArray("genres")) {
             JsonObject jo = je.getAsJsonObject();
             if (jo.get("genreNm").getAsString().equals("성인물(에로)")) {
                 return;
+            }
+            if (jo.get("genreNm").getAsString().equals("멜로/로맨스")) {
+                for (JsonElement je2 : movieInfo.getAsJsonArray("audits")) {
+                    JsonObject jo2 = je.getAsJsonObject();
+                    if (jo2.get("watchGradeNm").getAsString().equals("청소년관람불가")) {
+                        return;
+                    }
+                }
             }
             temps.add(jo.get("genreNm").getAsString());
         }

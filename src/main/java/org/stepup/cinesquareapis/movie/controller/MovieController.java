@@ -79,7 +79,7 @@ public class MovieController {
      * @return
      */
     @Operation(hidden = true)
-    @GetMapping("kofic")
+    @PostMapping("kofic")
     public ResponseEntity<ArrayList<Integer>> createKoficMovie(@RequestParam("current_page") int currentPage, @RequestParam("item_per_page") int itemPerPage, @RequestParam("start_production_year") int startProductionYear) {
         ArrayList<Integer> result = movieService.saveKoficMovie(currentPage, itemPerPage, startProductionYear);
 
