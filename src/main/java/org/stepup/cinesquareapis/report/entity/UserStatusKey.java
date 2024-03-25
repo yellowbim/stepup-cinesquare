@@ -1,11 +1,11 @@
-package org.stepup.cinesquareapis.movie.entity;
+package org.stepup.cinesquareapis.report.entity;
 
 import lombok.Data;
 
 import java.io.Serializable;
 
 @Data
-public class MovieReportKey implements Serializable {
+public class UserStatusKey implements Serializable {
     private Integer userId;
     private Integer movieId;
 }
