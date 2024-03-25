@@ -5,8 +5,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.stepup.cinesquareapis.movie.entity.MovieBoxoffice;
 import org.stepup.cinesquareapis.movie.model.MovieAllResponse;
+import org.stepup.cinesquareapis.movie.model.MovieRankResponse;
 import org.stepup.cinesquareapis.movie.model.MovieResponse;
 import org.stepup.cinesquareapis.movie.service.MovieService;
 
@@ -25,7 +25,7 @@ public class MovieController {
      *
      * @return
      */
-    @Operation(summary = "movie_id로 영화  조회")
+    @Operation(summary = "movie_id로 영화 조회")
     @GetMapping("{movie_id}")
     public ResponseEntity<MovieResponse> getMovie(@PathVariable("movie_id") int movieId) {
         MovieResponse result = movieService.getMovie(movieId);
@@ -34,7 +34,7 @@ public class MovieController {
     }
     
     /**
-     * movie_id로 영화 상세 조회
+     * movie_id로 영화 상세 조회 (추후 캐싱)
      *
      * @return
      */
@@ -47,24 +47,38 @@ public class MovieController {
     }
 
     /**
-     * 영화 주간 박스오피스 조회
+     * 주간 박스오피스 top10 조회 (추후 캐싱)
      *
      * @return
      */
-    @Operation(summary = "영화 주간 박스오피스 조회 (오늘 날짜를 yyyyMMdd 형식으로 요청)")
+    @Operation(summary = "주간 박스오피스 top10 조회 (오늘 날짜를 yyyyMMdd 형식으로 요청)")
     @GetMapping("boxoffice")
-    public ResponseEntity<MovieBoxoffice[]> getBoxoffice(@RequestParam("end_date") String endDate) {
-        MovieBoxoffice[] result = movieService.getBoxoffice(endDate);
+    public ResponseEntity<MovieRankResponse[]> getMovieBoxoffice(@RequestParam("end_date") String endDate) {
+        MovieRankResponse[] result = movieService.getMovieBoxoffice(endDate);
 
         return ResponseEntity.ok(result);
     }
-    
+
+    /**
+     * 평균 별점 높은 영화 top10 조회 (추후 캐싱)
+     *
+     * @return
+     */
+    @Operation(summary = "평균 별점 높은 영화 top10 조회")
+    @GetMapping("cinesquare-rank")
+    public ResponseEntity<MovieRankResponse[]> getCinesquareTop10() {
+        MovieRankResponse[] result = movieService.getCinesquareTop10();
+
+        return ResponseEntity.ok(result);
+    }
+
+
     /**
      * 한국영화진흥원 API 영화 생성 (최초 DB), 100개씩만 호출하기
      *
      * @return
      */
-    @Operation(summary = "사용 X, 한국영화진흥원 API 영화 생성 (최초 DB)")
+    @Operation(hidden = true)
     @GetMapping("kofic")
     public ResponseEntity<ArrayList<Integer>> createKoficMovie(@RequestParam("current_page") int currentPage, @RequestParam("item_per_page") int itemPerPage, @RequestParam("start_production_year") int startProductionYear) {
         ArrayList<Integer> result = movieService.saveKoficMovie(currentPage, itemPerPage, startProductionYear);
