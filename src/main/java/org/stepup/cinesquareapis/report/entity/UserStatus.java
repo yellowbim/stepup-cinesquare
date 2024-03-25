@@ -1,23 +1,22 @@
-package org.stepup.cinesquareapis.movie.entity;
+package org.stepup.cinesquareapis.report.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
-import org.springframework.stereotype.Service;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
-import java.io.Serializable;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Setter
 @Builder
-@Service
-@IdClass(MovieReportKey.class)
+@IdClass(UserStatusKey.class)
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="tb_user_movie_report")
-public class MovieReport {
+@Table(name="tb_user_movie_status")
+public class UserStatus {
     @Id
     @Column(nullable = false)
     private Integer userId;
@@ -26,22 +25,16 @@ public class MovieReport {
     @Column(nullable = false)
     private Integer movieId;
 
-    @ColumnDefault("0")
+    @ColumnDefault("1")
     @Column(name = "status")
-    private int status;
+    private Integer status;
 
-    @ColumnDefault("0")
-    @Column(name = "score")
-    private int score;
-
-//    @ColumnDefault("")
-    @Column(name = "comment", columnDefinition = "TEXT")
-    private String comment;
-
-    @Column(name = "created")
+    @CreationTimestamp
+    @Column(name = "created", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime created;
 
+    @UpdateTimestamp
     @Column(name = "updated")
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime updated;
