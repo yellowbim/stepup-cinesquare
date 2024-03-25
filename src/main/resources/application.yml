@@ -3,12 +3,13 @@ server:
 
 spring:
   profiles:
-    default: local
+    active: local # 기본적으로 활성화할 profile을 local로 설정
 
 ---
 spring:
-  profiles:
-    active: local
+  config:
+    activate:
+      on-profile: local
   jackson:
     property-naming-strategy: SNAKE_CASE
   jpa:
@@ -35,8 +36,9 @@ logging:
         SQL=DEBUG: DEBUG
 ---
 spring:
-  profiles:
-    active: dev
+  config:
+    activate:
+      on-profile: dev
   jackson:
     property-naming-strategy: SNAKE_CASE
   jpa:
