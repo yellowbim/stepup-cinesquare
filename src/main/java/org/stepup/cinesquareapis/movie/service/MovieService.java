@@ -10,15 +10,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import org.stepup.cinesquareapis.movie.entity.Movie;
+import org.stepup.cinesquareapis.movie.entity.MovieSimple;
 import org.stepup.cinesquareapis.movie.entity.MovieBoxoffice;
-import org.stepup.cinesquareapis.movie.entity.MovieDetail;
-import org.stepup.cinesquareapis.movie.model.MovieAllResponse;
+import org.stepup.cinesquareapis.movie.entity.Movie;
+import org.stepup.cinesquareapis.movie.model.MovieDetailResponse;
 import org.stepup.cinesquareapis.movie.model.MovieRankResponse;
-import org.stepup.cinesquareapis.movie.model.MovieResponse;
+import org.stepup.cinesquareapis.movie.model.MovieSimpleResponse;
 import org.stepup.cinesquareapis.movie.repository.MovieBoxofficeRepository;
-import org.stepup.cinesquareapis.movie.repository.MovieDetailRepository;
 import org.stepup.cinesquareapis.movie.repository.MovieRepository;
+import org.stepup.cinesquareapis.movie.repository.MovieSimpleRepository;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -42,34 +42,36 @@ import java.util.concurrent.Future;
 @RequiredArgsConstructor
 public class MovieService {
 
+    private final MovieSimpleRepository movieSimpleRepository;
     private final MovieRepository movieRepository;
-    private final MovieDetailRepository movieDetailRepository;
     private final MovieBoxofficeRepository movieBoxofficeRepository;
 
     /**
-     * Movie 조회
+     * MovieSimple 조회
      *
      * @return new MovieResponse(movie)
+     * @throws new ResponseStatusException(HttpStatus.NOT_FOUND)
      */
-    public MovieResponse getMovie(int movieId) {
-        Movie movie = movieRepository.findById(movieId)
+    public MovieSimpleResponse getMovieSimple(int movieId) {
+        MovieSimple movieSimple = movieSimpleRepository.findById(movieId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found with id: " + movieId));
-        return new MovieResponse(movie);
+        return new MovieSimpleResponse(movieSimple);
     }
 
     /**
-     * Movie + MovieDetail 조회
+     * Movie + MovieSimple 조회
      *
-     * @return new MovieAllInfoResponse(movie, movieDetail)
+     * @return new MovieDetailResponse(movie, movieSimple)
+     * @throws new ResponseStatusException(HttpStatus.NOT_FOUND)
      */
-    public MovieAllResponse getMovieAllInfo(int movieId) {
+    public MovieDetailResponse getMovieDetail(int movieId) {
         Movie movie = movieRepository.findById(movieId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found with id: " + movieId));
 
-        MovieDetail movieDetail = movieDetailRepository.findById(movieId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "MovieDetail not found with id: " + movieId));
+        MovieSimple movieSimple = movieSimpleRepository.findById(movieId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "MovieSimple not found with id: " + movieId));
 
-        return new MovieAllResponse(movie, movieDetail);
+        return new MovieDetailResponse(movie, movieSimple);
     }
 
     /**
@@ -148,7 +150,7 @@ public class MovieService {
      * @return
      */
     public MovieRankResponse[] getCinesquareTop10() {
-        Movie[] getCinesquareTop10 = movieRepository.findTop10ByOrderByScoreDesc();
+        MovieSimple[] getCinesquareTop10 = movieSimpleRepository.findTop10ByOrderByScoreDesc();
         MovieRankResponse[] top10Movies = new MovieRankResponse[10];
         for (int i=0; i<getCinesquareTop10.length; i++) {
             top10Movies[i] = new MovieRankResponse(getCinesquareTop10[i].getMovieId(), i+1);
@@ -269,30 +271,30 @@ public class MovieService {
         }
 
         // 저장할 데이터 movie, movieDetail 객체로 생성
+        MovieSimple movieSimple = new MovieSimple();
         Movie movie = new Movie();
-        MovieDetail movieDetail = new MovieDetail();
 
         // 필수 값: genre, movie_title, running_time, production_year, source, kofic_movie_code
+        movieSimple.setMovieTitle(movieInfo.get("movieNm").getAsString());
+        movieSimple.setRunningTime(Integer.parseInt(runningTime));
+        movieSimple.setProductionYear(movieInfo.get("prdtYear").getAsInt());
+
         movie.setMovieTitle(movieInfo.get("movieNm").getAsString());
         movie.setRunningTime(Integer.parseInt(runningTime));
         movie.setProductionYear(movieInfo.get("prdtYear").getAsInt());
-
-        movieDetail.setMovieTitle(movieInfo.get("movieNm").getAsString());
-        movieDetail.setRunningTime(Integer.parseInt(runningTime));
-        movieDetail.setProductionYear(movieInfo.get("prdtYear").getAsInt());
-        movieDetail.setGenre(genre);
-        movieDetail.setSource(1);
-        movieDetail.setKoficMovieCode(movieCd);
+        movie.setGenre(genre);
+        movie.setSource(1);
+        movie.setKoficMovieCode(movieCd);
 
         // genres
         if (temps.size() > 0) {
-            movieDetail.setGenres(String.join(",", temps));
+            movie.setGenres(String.join(",", temps));
         }
 
         // movie_title_en
         String movieTitleEn = movieInfo.get("movieNmEn").getAsString();
         if (movieTitleEn != null && !movieTitleEn.isEmpty()) {
-            movieDetail.setMovieTitleEn(movieTitleEn);
+            movie.setMovieTitleEn(movieTitleEn);
         }
 
         // open_date
@@ -300,7 +302,7 @@ public class MovieService {
         if (openDate != null && !openDate.isEmpty()) {
             try {
                 LocalDate parsedDate = LocalDate.parse(openDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
-                movieDetail.setOpenDate(parsedDate);
+                movie.setOpenDate(parsedDate);
             } catch (DateTimeParseException e) {
                 e.printStackTrace();
             }
@@ -313,9 +315,9 @@ public class MovieService {
             temps.add(jo.get("nationNm").getAsString());
         }
         if (temps.size() > 0) {
+            movieSimple.setNation(temps.get(0));
             movie.setNation(temps.get(0));
-            movieDetail.setNation(temps.get(0));
-            movieDetail.setNations(String.join(",", temps));
+            movie.setNations(String.join(",", temps));
         }
 
         // director, directors
@@ -325,8 +327,8 @@ public class MovieService {
             temps.add(jo.get("peopleNm").getAsString());
         }
         if (temps.size() > 0) {
-            movieDetail.setDirector(temps.get(0));
-            movieDetail.setDirectors(String.join(",", temps));
+            movie.setDirector(temps.get(0));
+            movie.setDirectors(String.join(",", temps));
         }
 
         // actors
@@ -336,16 +338,16 @@ public class MovieService {
             temps.add(jo.get("peopleNm").getAsString());
         }
         if (temps.size() > 0) {
-            movieDetail.setActors(String.join(",", temps));
+            movie.setActors(String.join(",", temps));
         }
 
         // tb_movie 저장
         Movie createdMovie = movieRepository.save(movie);
 
-        // tb_movie_detail 저장
-        movieDetail.setMovieId(createdMovie.getMovieId());
-        movieDetailRepository.save(movieDetail);
+        // tb_movie_simple 저장
+        movieSimple.setMovieId(createdMovie.getMovieId());
+        movieSimpleRepository.save(movieSimple);
 
-        createdMovieIds.add(createdMovie.getMovieId());
+        createdMovieIds.add(movieSimple.getMovieId());
     }
 }

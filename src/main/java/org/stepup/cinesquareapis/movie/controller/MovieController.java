@@ -5,9 +5,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.stepup.cinesquareapis.movie.model.MovieAllResponse;
+import org.stepup.cinesquareapis.movie.model.MovieDetailResponse;
 import org.stepup.cinesquareapis.movie.model.MovieRankResponse;
-import org.stepup.cinesquareapis.movie.model.MovieResponse;
+import org.stepup.cinesquareapis.movie.model.MovieSimpleResponse;
 import org.stepup.cinesquareapis.movie.service.MovieService;
 
 import java.util.ArrayList;
@@ -25,10 +25,10 @@ public class MovieController {
      *
      * @return
      */
-    @Operation(summary = "movie_id로 영화 조회")
+    @Operation(summary = "movie_id로 영화 단순 조회")
     @GetMapping("{movie_id}")
-    public ResponseEntity<MovieResponse> getMovie(@PathVariable("movie_id") int movieId) {
-        MovieResponse result = movieService.getMovie(movieId);
+    public ResponseEntity<MovieSimpleResponse> getMovieSimple(@PathVariable("movie_id") int movieId) {
+        MovieSimpleResponse result = movieService.getMovieSimple(movieId);
 
         return ResponseEntity.ok(result);
     }
@@ -39,9 +39,9 @@ public class MovieController {
      * @return
      */
     @Operation(summary = "movie_id로 영화 모든 상세 정보 조회")
-    @GetMapping("{movie_id}/all")
-    public ResponseEntity<MovieAllResponse> getMovieDetail(@PathVariable("movie_id") int movieId) {
-        MovieAllResponse result = movieService.getMovieAllInfo(movieId);
+    @GetMapping("{movie_id}/detail")
+    public ResponseEntity<MovieDetailResponse> getMovieDetail(@PathVariable("movie_id") int movieId) {
+        MovieDetailResponse result = movieService.getMovieDetail(movieId);
 
         return ResponseEntity.ok(result);
     }
