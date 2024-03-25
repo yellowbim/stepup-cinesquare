@@ -7,7 +7,6 @@ import org.stepup.cinesquareapis.movie.entity.MovieBoxoffice;
 import java.time.LocalDate;
 
 @Repository
-// JpaRepository를 상속하여 사용. <객체, ID>
 public interface MovieBoxofficeRepository extends JpaRepository<MovieBoxoffice, Integer> {
     MovieBoxoffice[] findByEndDate(LocalDate endDate);
 }
