@@ -10,9 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import org.stepup.cinesquareapis.movie.entity.MovieSimple;
-import org.stepup.cinesquareapis.movie.entity.MovieBoxoffice;
 import org.stepup.cinesquareapis.movie.entity.Movie;
+import org.stepup.cinesquareapis.movie.entity.MovieBoxoffice;
+import org.stepup.cinesquareapis.movie.entity.MovieSimple;
 import org.stepup.cinesquareapis.movie.model.MovieDetailResponse;
 import org.stepup.cinesquareapis.movie.model.MovieRankResponse;
 import org.stepup.cinesquareapis.movie.model.MovieSimpleResponse;
@@ -36,6 +36,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -152,11 +153,31 @@ public class MovieService {
     public MovieRankResponse[] getCinesquareTop10() {
         MovieSimple[] getCinesquareTop10 = movieSimpleRepository.findTop10ByOrderByScoreDesc();
         MovieRankResponse[] top10Movies = new MovieRankResponse[10];
-        for (int i=0; i<getCinesquareTop10.length; i++) {
-            top10Movies[i] = new MovieRankResponse(getCinesquareTop10[i].getMovieId(), i+1);
+        for (int i = 0; i < getCinesquareTop10.length; i++) {
+            top10Movies[i] = new MovieRankResponse(getCinesquareTop10[i].getMovieId(), i + 1);
         }
 
         return top10Movies;
+    }
+
+    /**
+     * 영화 제목으로 like 검색된 MovieSimple 목록 조회
+     *
+     * @return movies
+     */
+    public MovieSimpleResponse[] findMovie(String movieTitle) {
+        String pattern = "^(?:[가-힣]{1,}|[a-zA-Z]{2,}|\\d{2,})$";
+        if (!Pattern.matches(pattern, movieTitle)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "movieTitle can't be searched :" + movieTitle);
+        }
+
+        List<MovieSimple> findMovies = movieSimpleRepository.findByMovieTitleContaining(movieTitle);
+        MovieSimpleResponse[] movies = new MovieSimpleResponse[findMovies.size()];
+        for (int i = 0; i < findMovies.size(); i++) {
+            movies[i] = new MovieSimpleResponse(findMovies.get(i));
+        }
+
+        return movies;
     }
 
     /**
@@ -340,7 +361,7 @@ public class MovieService {
         }
 
         // actors
-        temps= new ArrayList<>();
+        temps = new ArrayList<>();
         for (JsonElement je : movieInfo.getAsJsonArray("actors")) {
             JsonObject jo = je.getAsJsonObject();
             temps.add(jo.get("peopleNm").getAsString());
