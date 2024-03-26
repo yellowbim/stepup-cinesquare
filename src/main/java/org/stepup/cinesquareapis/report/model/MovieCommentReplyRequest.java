@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class MovieCommentReplyRequest {
-    private int replyId;
+    private Integer replyId;
     private int commentId;
     private int userId;
     private String content;

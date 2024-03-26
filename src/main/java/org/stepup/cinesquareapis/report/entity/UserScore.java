@@ -29,7 +29,7 @@ public class UserScore {
 
     @ColumnDefault("0")
     @Column(name = "score")
-    private Integer score;
+    private Double score;
 
     @CreationTimestamp
     @Column(name = "created", updatable = false)

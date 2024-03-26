@@ -6,7 +6,12 @@ import org.springframework.stereotype.Repository;
 import org.stepup.cinesquareapis.report.entity.Comment;
 import org.stepup.cinesquareapis.report.entity.CommentReply;
 
+import java.util.List;
+
 @Repository
 @Transactional
 public interface MovieCommentReplyRepository extends JpaRepository<CommentReply, Integer> {
+    Boolean existsByReplyId(Integer replyId);
+
+    List<CommentReply> findAllByCommentId(Integer commendId);
 }

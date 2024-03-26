@@ -30,7 +30,7 @@ public class Comment {
     private Integer replyCount;
 
     @ColumnDefault("0")
-    @Column(name = "\"like\"") // 예약어라 제외를 시켜주는 방법
+    @Column(name = "like") // 예약어라 제외를 시켜주는 방법
     private Integer like;
 
     @Column(name = "user_id", nullable = false)
