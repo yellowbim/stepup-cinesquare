@@ -3,8 +3,6 @@ package org.stepup.cinesquareapis.user.model;
 import lombok.Data;
 import org.stepup.cinesquareapis.user.entity.User;
 
-import java.time.LocalDateTime;
-
 @Data
 public class UserResponse {
     private int userId;
@@ -17,10 +15,6 @@ public class UserResponse {
 
     private String nickname;
 
-    private LocalDateTime created;
-
-    private LocalDateTime updated;
-
     public UserResponse() {
     }
 
@@ -30,7 +24,5 @@ public class UserResponse {
         password = user.getPassword();
         name = user.getName();
         nickname = user.getNickname();
-        created = user.getCreated();
-        updated = user.getUpdated();
     }
 }
