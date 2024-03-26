@@ -1,11 +1,10 @@
 package org.stepup.cinesquareapis.movie.model;
 
 import lombok.Getter;
-import org.stepup.cinesquareapis.movie.entity.MovieSimple;
 import org.stepup.cinesquareapis.movie.entity.Movie;
+import org.stepup.cinesquareapis.movie.entity.MovieSimple;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 public class MovieDetailResponse {
@@ -37,10 +36,6 @@ public class MovieDetailResponse {
 
     private Float score;
 
-    private LocalDateTime created;
-
-    private LocalDateTime updated;
-
     public MovieDetailResponse() {
     }
 
@@ -59,7 +54,5 @@ public class MovieDetailResponse {
         actors = movie.getActors();
         openDate = movie.getOpenDate();
         score = movieSimple.getScore();
-        created = movieSimple.getCreated();
-        updated = movieSimple.getUpdated();
     }
 }

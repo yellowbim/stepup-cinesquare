@@ -3,16 +3,15 @@ package org.stepup.cinesquareapis.user.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.stepup.cinesquareapis.common.model.DataResponse;
+import org.stepup.cinesquareapis.common.model.ResultResponse;
 import org.stepup.cinesquareapis.user.model.CreateUserRequest;
 import org.stepup.cinesquareapis.user.model.LoginUserRequest;
 import org.stepup.cinesquareapis.user.model.UpdateUserRequest;
 import org.stepup.cinesquareapis.user.model.UserResponse;
 import org.stepup.cinesquareapis.user.service.UserService;
-
-import java.text.ParseException;
 
 @RequiredArgsConstructor
 @Tag(name = "users", description = "회원 정보 관련 API")
@@ -23,72 +22,76 @@ public class UserController {
     private final UserService UserService;
 
     /**
-     * 계정 중복 확인
+     * 계정 존재 여부 확인
      *
-     * @return
-     * @throws ParseException
+     * @return ResponseEntity.ok(response)
      */
     @Operation(
         summary = "계정 중복 체크",
-        description = "존재하는 계정이면 true, 존재하지 않는 계정이면 false 반환 (JSON 아님)"
+        description = "존재하는 계정이면 true, 존재하지 않는 계정이면 false 반환"
     )
     @GetMapping("check-account/{account}")
-    public ResponseEntity<Boolean> checkAccount(@PathVariable("account") String account) throws ParseException {
+    public ResponseEntity<ResultResponse<Boolean>> checkAccount(@PathVariable("account") String account) {
         boolean result = UserService.checkAccount(account);
+        ResultResponse<Boolean> response = new ResultResponse<>();
+        response.setResult(result);
 
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        return ResponseEntity.ok(response);
     }
 
     /**
      * 회원가입
      *
-     * @return
-     * @throws ParseException
+     * @return ResponseEntity.ok(response)
      */
     @Operation(
             summary = "회원가입",
             description = "요청 필수 값: account, password, name, nickname"
     )
     @PostMapping("")
-    public ResponseEntity<UserResponse> createUser(@RequestBody CreateUserRequest request) throws ParseException {
-        UserResponse savedUser = UserService.createUser(request);
+    public ResponseEntity<DataResponse<UserResponse>> createUser(@RequestBody CreateUserRequest request) {
+        UserResponse data = UserService.createUser(request);
+        DataResponse<UserResponse> response = new DataResponse<>();
+        response.setData(data);
 
-        return new ResponseEntity<>(savedUser, HttpStatus.OK);
+        return ResponseEntity.ok(response);
     }
 
     /**
      * 로그인 TODO: 수정
      *
-     * @return
-     * @throws ParseException
+     * @return ResponseEntity.ok(response)
      */
     @Operation(
             summary = "로그인 (단순 account, password 확인용)",
-            description = "요청 필수 값: account, password, name, nickname"
+            description = "성공하면 true, 실패하면 false 반환"
     )
     @PostMapping("login")
-    public ResponseEntity<Boolean> createUser(@RequestBody LoginUserRequest request) throws ParseException {
+    public ResponseEntity<ResultResponse<Boolean>> createUser(@RequestBody LoginUserRequest request) {
         boolean result = UserService.checkUser(request);
+        ResultResponse<Boolean> response = new ResultResponse<>();
+        response.setResult(result);
 
-        return new ResponseEntity<>(result, HttpStatus.OK);
+        return ResponseEntity.ok(response);
     }
 
     /**
      * 회원 졍보 수정
      *
      * @param userId
-     * @return
-     * @throws ParseException
+     * @return return ResponseEntity.ok(response);
      */
     @Operation(
-            summary = "회원 졍보 수정 ",
-            description = "요청 필수 값: password, name, nickname 중 1개 이상"
+        summary = "회원 졍보 수정 ",
+        description = "요청 필수 값: password, name, nickname 중 1개 이상"
     )
     @PatchMapping("")
-    public ResponseEntity<UserResponse> updateUser(@RequestParam("user_id") int userId, @RequestBody UpdateUserRequest request) throws ParseException {
-        UserResponse updatedUser = UserService.updateUser(userId, request);
+    public ResponseEntity<DataResponse<UserResponse>> updateUser(@RequestParam("user_id") int userId, @RequestBody UpdateUserRequest request) {
+        UserResponse data = UserService.updateUser(userId, request);
+        DataResponse<UserResponse> response = new DataResponse<>();
+        response.setData(data);
 
-        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -102,9 +105,11 @@ public class UserController {
             description = "해당 유저가 존재한다는 보장이 있을 때만 사용"
     )
     @GetMapping("{user_id}")
-    public ResponseEntity<UserResponse> getUser(@PathVariable("user_id") int userId) {
-        UserResponse user = UserService.getUser(userId);
+    public ResponseEntity<DataResponse<UserResponse>> getUser(@PathVariable("user_id") int userId) {
+        UserResponse data = UserService.getUser(userId);
+        DataResponse<UserResponse> response = new DataResponse<>();
+        response.setData(data);
 
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        return ResponseEntity.ok(response);
     }
 }
