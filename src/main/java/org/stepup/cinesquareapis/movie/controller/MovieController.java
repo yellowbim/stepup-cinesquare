@@ -23,7 +23,7 @@ public class MovieController {
     private final MovieService movieService;
 
     /**
-     * movie_id로 영화 조회
+     * movie_id로 영화 단순 조회 (추후 캐싱)
      *
      * @return ResponseEntity.ok(response)
      */
@@ -82,6 +82,20 @@ public class MovieController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * 영화 제목으로 영화 단순 조회
+     *
+     * @return ResponseEntity.ok(response)
+     */
+    @Operation(summary = "영화 제목으로 영화 단순 조회")
+    @GetMapping("")
+    public ResponseEntity<ListResponse<MovieSimpleResponse[]>> getMovieSimple(@RequestParam("movie_title") String movieTitle) {
+        MovieSimpleResponse[] list = movieService.findMovie(movieTitle);
+        ListResponse<MovieSimpleResponse[]> response = new ListResponse<>();
+        response.setList(list);
+
+        return ResponseEntity.ok(response);
+    }
 
     /**
      * 한국영화진흥원 API 영화 생성 (최초 DB), 100개씩만 호출하기
