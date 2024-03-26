@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 public class UserScoreRequest {
     private int userId;
     private int movieId;
-    private int score;
+    private Double score;
     private LocalDateTime created;
     private LocalDateTime updated;
 

@@ -9,7 +9,7 @@ public class MovieCommentSummaryResponse {
     private int movieId;
     private int userId;
     private String content;
-    private int score;
+    private Double score;
     private String nickname;
     private int like;
     private int replyCount;

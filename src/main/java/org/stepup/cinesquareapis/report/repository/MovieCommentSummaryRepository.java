@@ -11,5 +11,5 @@ import java.util.List;
 @Repository
 @Transactional
 public interface MovieCommentSummaryRepository extends JpaRepository<CommentSummary, Integer> {
-    List<CommentSummary> findAllByCommentIdAndMovieIdAndUserId(Integer commentId, Integer movieId, Integer userId);
+    List<CommentSummary> findAllByMovieId(Integer movieId);
 }

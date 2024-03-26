@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@IdClass(UserLikeCommentKey.class)
 @Table(name = "tb_user_like_comment")
 public class UserLikeComment {
 
@@ -21,6 +22,7 @@ public class UserLikeComment {
     @Column(nullable = false)
     private Integer userId;
 
+    @Id
     @Column(name = "comment_id")
     private Integer commentId;
 
