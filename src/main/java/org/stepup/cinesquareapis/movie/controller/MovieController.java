@@ -36,7 +36,7 @@ public class MovieController {
 
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * movie_id로 영화 상세 조회 (추후 캐싱)
      *

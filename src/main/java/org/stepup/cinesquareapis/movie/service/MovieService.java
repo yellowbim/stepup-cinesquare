@@ -6,10 +6,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
+import org.stepup.cinesquareapis.common.exception.enums.CommonErrorCode;
+import org.stepup.cinesquareapis.common.exception.enums.CustomErrorCode;
+import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
 import org.stepup.cinesquareapis.movie.entity.Movie;
 import org.stepup.cinesquareapis.movie.entity.MovieBoxoffice;
 import org.stepup.cinesquareapis.movie.entity.MovieSimple;
@@ -51,11 +52,11 @@ public class MovieService {
      * MovieSimple 조회
      *
      * @return new MovieResponse(movie)
-     * @throws new ResponseStatusException(HttpStatus.NOT_FOUND)
+     * @throws new RestApiException()
      */
     public MovieSimpleResponse getMovieSimple(int movieId) {
         MovieSimple movieSimple = movieSimpleRepository.findById(movieId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found with id: " + movieId));
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_MOVIE_SIMPLE));
         return new MovieSimpleResponse(movieSimple);
     }
 
@@ -63,14 +64,14 @@ public class MovieService {
      * Movie + MovieSimple 조회
      *
      * @return new MovieDetailResponse(movie, movieSimple)
-     * @throws new ResponseStatusException(HttpStatus.NOT_FOUND)
+     * @throws new RestApiException()
      */
     public MovieDetailResponse getMovieDetail(int movieId) {
         Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Movie not found with id: " + movieId));
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_MOVIE_SIMPLE));
 
         MovieSimple movieSimple = movieSimpleRepository.findById(movieId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "MovieSimple not found with id: " + movieId));
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_MOVIE));
 
         return new MovieDetailResponse(movie, movieSimple);
     }
@@ -88,7 +89,7 @@ public class MovieService {
             todayLocalDate = LocalDate.parse(today, DateTimeFormatter.ofPattern("yyyyMMdd"));
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 요청입니다.", e);
+            throw new RestApiException(CommonErrorCode.INVALID_PARAMETER);
         }
 
         LocalTime currentTime = LocalTime.now();
@@ -129,10 +130,10 @@ public class MovieService {
 
         if (movieBoxoffices.length != 10) {
             if (previousDate.isAfter(todayLocalDate)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Today is in the future: " + todayLocalDate);
+                throw new RestApiException(CommonErrorCode.INVALID_PARAMETER, "Today is in the future: " + todayLocalDate);
             }
 
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No data found");
+            throw new RestApiException(CustomErrorCode.NOT_FOUND_MOVIE_BOXOFFICE);
         }
 
         MovieRankResponse[] top10Movies = new MovieRankResponse[10];
@@ -168,7 +169,7 @@ public class MovieService {
     public MovieSimpleResponse[] findMovie(String movieTitle) {
         String pattern = "^(?:[가-힣]{1,}|[a-zA-Z]{2,}|\\d{2,})$";
         if (!Pattern.matches(pattern, movieTitle)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "movieTitle can't be searched :" + movieTitle);
+            throw new RestApiException(CommonErrorCode.INVALID_PARAMETER, "movieTitle can't be searched :" + movieTitle);
         }
 
         List<MovieSimple> findMovies = movieSimpleRepository.findByMovieTitleContaining(movieTitle);
