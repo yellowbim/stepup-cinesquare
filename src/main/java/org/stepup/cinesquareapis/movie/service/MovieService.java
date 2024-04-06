@@ -77,79 +77,61 @@ public class MovieService {
     }
 
     /**
-     * 주간 박스오피스 top10 조회
+     * 주간 박스오피스 조회 (10개)
      *
-     * @return
+     * @return movies
      */
-    public MovieRankResponse[] getMovieBoxoffice(String today) {
-        LocalDate todayLocalDate;
-
+    public MovieRankResponse[] getMovieBoxoffices(String requestDate) {
+        // 조회 요청 날짜를 LocalDate로 변환
+        LocalDate requestLocalDate = null;
         try {
-            // 현재 날짜, 시간, 요일
-            todayLocalDate = LocalDate.parse(today, DateTimeFormatter.ofPattern("yyyyMMdd"));
+            requestLocalDate = LocalDate.parse(requestDate, DateTimeFormatter.ofPattern("yyyyMMdd"));
         } catch (Exception e) {
             e.printStackTrace();
             throw new RestApiException(CommonErrorCode.INVALID_PARAMETER);
         }
 
-        LocalTime currentTime = LocalTime.now();
-        DayOfWeek dayOfWeek = todayLocalDate.getDayOfWeek();
-
-        // 전 주 일요일 날짜 계산
-        LocalDate previousDate;
-        switch (dayOfWeek) {
-            case TUESDAY:
-                previousDate = todayLocalDate.minusDays(2);
-                break;
-            case WEDNESDAY:
-                previousDate = todayLocalDate.minusDays(3);
-                break;
-            case THURSDAY:
-                previousDate = todayLocalDate.minusDays(4);
-                break;
-            case FRIDAY:
-                previousDate = todayLocalDate.minusDays(5);
-                break;
-            case SATURDAY:
-                previousDate = todayLocalDate.minusDays(6);
-                break;
-            case SUNDAY:
-                previousDate = todayLocalDate.minusDays(7);
-                break;
-            default:
-                // 현재 시간이 오전 9시 1분보다 빠른 경우
-                if (currentTime.isBefore(LocalTime.of(9, 1))) {
-                    previousDate = todayLocalDate.minusDays(8); // 박스오피스가 업데이트가 안돼서 2주전 데이터 사용
-                } else {
-                    previousDate = todayLocalDate.minusDays(1);
-                }
-                break;
+        // 1.  requestDate 가 미래 -> 오류
+        if (requestLocalDate.isAfter(LocalDate.now())) {
+            throw new RestApiException(CommonErrorCode.INVALID_PARAMETER);
         }
 
-        MovieBoxoffice[] movieBoxoffices = movieBoxofficeRepository.findByEndDate(previousDate);
+        // 2. 박스오피스의 마감일 계산
+        LocalDate boxofficeClosingDate = calculateBoxofficeClosingDate(requestLocalDate);
 
+        // 3. DB 조회
+        MovieBoxoffice[] movieBoxoffices = movieBoxofficeRepository.findByEndDate(boxofficeClosingDate);
+
+        // 조회된 데이터가 10개가 아님 -> DB 오류
         if (movieBoxoffices.length != 10) {
-            if (previousDate.isAfter(todayLocalDate)) {
-                throw new RestApiException(CommonErrorCode.INVALID_PARAMETER, "Today is in the future: " + todayLocalDate);
-            }
-
             throw new RestApiException(CustomErrorCode.NOT_FOUND_MOVIE_BOXOFFICE);
         }
 
-        MovieRankResponse[] top10Movies = new MovieRankResponse[10];
-        for (int i = 0; i < top10Movies.length; i++) {
+        // 4. 반환 데이터 생성
+        MovieRankResponse[] movies = new MovieRankResponse[10];
+        for (int i = 0; i < movies.length; i++) {
             MovieBoxoffice movieBoxoffice = movieBoxoffices[i];
-            top10Movies[i] = new MovieRankResponse(movieBoxoffice);
+            movies[i] = new MovieRankResponse(movieBoxoffice);
         }
 
-        return top10Movies;
+        return movies;
     }
 
+    private LocalDate calculateBoxofficeClosingDate(LocalDate requestLocalDate) {
+        boolean isMonday = requestLocalDate.getDayOfWeek() == DayOfWeek.MONDAY;
+
+        if (isMonday && requestLocalDate.equals(LocalDate.now()) && LocalTime.now().isBefore(LocalTime.of(9, 1))) {
+            return requestLocalDate.with(DayOfWeek.SUNDAY).minusWeeks(2);
+        } else {
+            System.out.println(requestLocalDate.with(DayOfWeek.SUNDAY).minusWeeks(1));
+            return requestLocalDate.with(DayOfWeek.SUNDAY).minusWeeks(1);
+        }
+    }
 
     /**
      * 평균 별점 높은 영화 top10 조회
      *
-     * @return
+     * @return top10Movies
      */
     public MovieRankResponse[] getCinesquareTop10() {
         MovieSimple[] getCinesquareTop10 = movieSimpleRepository.findTop10ByOrderByScoreDesc();
