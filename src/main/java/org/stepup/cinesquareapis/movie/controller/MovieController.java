@@ -1,6 +1,7 @@
 package org.stepup.cinesquareapis.movie.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -57,10 +58,15 @@ public class MovieController {
      *
      * @return ResponseEntity.ok(response)
      */
-    @Operation(summary = "주간 박스오피스 top10 조회 (오늘 날짜를 yyyyMMdd 형식으로 요청)")
-    @GetMapping("boxoffice")
-    public ResponseEntity<ListResponse<MovieRankResponse[]>> getMovieBoxoffice(@RequestParam("end_date") String endDate) {
-        MovieRankResponse[] list = movieService.getMovieBoxoffice(endDate);
+    @Operation(
+            summary = "주간 박스오피스 top10 조회",
+            description = "* 박스오피스 데이터는 전 주 월~일 요일 기준\n" +
+                    "* 요청 일자가 월요일인 경우, 오전 9시 1분(현재는 서버 시간)을 기준으로 박스오피스 변화"
+    )
+    @GetMapping("boxoffices")
+    public ResponseEntity<ListResponse<MovieRankResponse[]>> getMovieBoxoffices(
+            @Parameter(description = "yyyyMMdd 형식의 조회 요청 일자(오늘)") @RequestParam("request_date") String requestDate) {
+        MovieRankResponse[] list = movieService.getMovieBoxoffices(requestDate);
         ListResponse<MovieRankResponse[]> response = new ListResponse<>();
         response.setList(list);
 
