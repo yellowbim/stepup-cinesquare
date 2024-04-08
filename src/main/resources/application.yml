@@ -6,6 +6,11 @@ spring:
     active: local # 기본적으로 활성화할 profile을 local로 설정
 
 ---
+jasypt:
+  encryptor:
+    bean: jasyptEncryptorAES
+    password: cinesquare
+
 spring:
   config:
     activate:
@@ -17,14 +22,35 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
+        auto_quote_keyword: true
         format_sql: true
         show-sql: true
+  # file upload max size (파일 업로드 크기 설정)
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3306/cinesquare
-    username: root
-    password: root1234
+    username: ENC(9quXXHScEVuQHxY5o4sFfIa67tV8gtIb0EtHd9lmZEVbfyj7rf+dMpV1l0pgZEh/)
+    password: ENC(/YUs9sVzMKU9iQdrCfjyCjOFQZE2Td9KROPqa5kWrbfrToNiNh+OthVQSzueBgfd)
+
+cloud:
+  aws:
+    credentials:
+      accessKey: ENC(TiN1lALfeCAqDxNqeh/pKqtq3rA7dnX/fKk053FvsPZdVwxvaK+kEC1pgROtNj4NkrdLtnoTAmbSu35hMabRHg==)
+      secretKey: ENC(U1/5MC7O2Zow9D32cjgQwxLhd5PobeDnvyzMPOEQwQmyHYXNcdYui/N75EyaruIJHDi2kXK3Gw/HaFr3Okd7p2Yxb2D+C4QQjvlL7gFzEnE=)
+    s3:
+      bucket: cinesquare-s3
+      url: https://s3.ap-northeast-2.amazonaws.com/cinesquare-s3
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
 
 logging:
   level:
@@ -39,6 +65,10 @@ logging:
             bind: trace
 
 ---
+jasypt:
+  encryptor:
+    bean: jasyptEncryptorAES
+
 spring:
   config:
     activate:
@@ -56,9 +86,22 @@ spring:
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://cinesquare.cfcweacm21n8.ap-southeast-2.rds.amazonaws.com:3306/cinesquare
-    username: root
-    password: root2024
+    url: jdbc:mariadb://cinesquare.cpwaykqiuiux.ap-northeast-2.rds.amazonaws.com:3306/cinesquare
+    username: ENC(9quXXHScEVuQHxY5o4sFfIa67tV8gtIb0EtHd9lmZEVbfyj7rf+dMpV1l0pgZEh/)
+    password: ENC(YWMh7utaNfc4U3dK52/+XCWuo13vKZSN2nWNf7zXu9Z9aO58Dq9Zj/MWWyap0XZnlneS9ex446ncJUL4myv2hw==)
+
+cloud:
+  aws:
+    credentials:
+      accessKey: ENC(TiN1lALfeCAqDxNqeh/pKqtq3rA7dnX/fKk053FvsPZdVwxvaK+kEC1pgROtNj4NkrdLtnoTAmbSu35hMabRHg==)
+      secretKey: ENC(U1/5MC7O2Zow9D32cjgQwxLhd5PobeDnvyzMPOEQwQmyHYXNcdYui/N75EyaruIJHDi2kXK3Gw/HaFr3Okd7p2Yxb2D+C4QQjvlL7gFzEnE=)
+    s3:
+      bucket: cinesquare-s3
+      url: https://s3.ap-northeast-2.amazonaws.com/cinesquare-s3
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
 
 logging:
   level:

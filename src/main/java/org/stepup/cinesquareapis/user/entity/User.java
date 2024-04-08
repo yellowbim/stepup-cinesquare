@@ -35,6 +35,9 @@ public class User {
     @Column(length = 20, nullable = false)
     private String nickname;
 
+    @Column
+    private Integer profile;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime created;
