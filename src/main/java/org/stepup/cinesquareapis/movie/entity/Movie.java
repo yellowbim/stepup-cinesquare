@@ -62,6 +62,9 @@ public class Movie {
     @Column(length = 300)
     private String actors;
 
+    @Column
+    private String posterIds;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime created;

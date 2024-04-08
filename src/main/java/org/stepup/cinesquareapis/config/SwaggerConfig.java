@@ -1,4 +1,4 @@
-package org.stepup.cinesquareapis;
+package org.stepup.cinesquareapis.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
