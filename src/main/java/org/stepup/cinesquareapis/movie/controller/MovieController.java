@@ -24,30 +24,30 @@ public class MovieController {
     private final MovieService movieService;
 
     /**
-     * movie_id로 영화 단순 조회 (추후 캐싱)
+     * movie_id로 영화 상세 조회 (추후 캐싱)
      *
      * @return ResponseEntity.ok(response)
      */
-    @Operation(summary = "movie_id로 영화 단순 조회")
+    @Operation(summary = "movie_id로 영화 상세 조회")
     @GetMapping("{movie_id}")
-    public ResponseEntity<DataResponse<MovieSimpleResponse>> getMovieSimple(@PathVariable("movie_id") int movieId) {
-        MovieSimpleResponse data = movieService.getMovieSimple(movieId);
-        DataResponse<MovieSimpleResponse> response = new DataResponse<>();
+    public ResponseEntity<DataResponse<MovieDetailResponse>> getMovieDetail(@PathVariable("movie_id") int movieId) {
+        MovieDetailResponse data = movieService.getMovieDetail(movieId);
+        DataResponse<MovieDetailResponse> response = new DataResponse<>();
         response.setData(data);
 
         return ResponseEntity.ok(response);
     }
 
     /**
-     * movie_id로 영화 상세 조회 (추후 캐싱)
+     * movie_id로 영화 단순 조회 (추후 캐싱)
      *
      * @return ResponseEntity.ok(response)
      */
-    @Operation(summary = "movie_id로 영화 모든 상세 정보 조회")
-    @GetMapping("{movie_id}/detail")
-    public ResponseEntity<DataResponse<MovieDetailResponse>> getMovieDetail(@PathVariable("movie_id") int movieId) {
-        MovieDetailResponse data = movieService.getMovieDetail(movieId);
-        DataResponse<MovieDetailResponse> response = new DataResponse<>();
+    @Operation(summary = "movie_id로 영화 단순 조회")
+    @GetMapping("{movie_id}/simple")
+    public ResponseEntity<DataResponse<MovieSimpleResponse>> getMovieSimple(@PathVariable("movie_id") int movieId) {
+        MovieSimpleResponse data = movieService.getMovieSimple(movieId);
+        DataResponse<MovieSimpleResponse> response = new DataResponse<>();
         response.setData(data);
 
         return ResponseEntity.ok(response);
@@ -63,7 +63,7 @@ public class MovieController {
             description = "* 박스오피스 데이터는 전 주 월~일 요일 기준\n" +
                     "* 요청 일자가 월요일인 경우, 오전 9시 1분(현재는 서버 시간)을 기준으로 박스오피스 변화"
     )
-    @GetMapping("boxoffices")
+    @GetMapping("boxoffice")
     public ResponseEntity<ListResponse<MovieRankResponse[]>> getMovieBoxoffices(
             @Parameter(description = "yyyyMMdd 형식의 조회 요청 일자(오늘)") @RequestParam("request_date") String requestDate) {
         MovieRankResponse[] list = movieService.getMovieBoxoffices(requestDate);
@@ -79,7 +79,7 @@ public class MovieController {
      * @return ResponseEntity.ok(response)
      */
     @Operation(summary = "평균 별점 높은 영화 top10 조회")
-    @GetMapping("cinesquare-rank")
+    @GetMapping("cinesquare-ranking")
     public ResponseEntity<ListResponse<MovieRankResponse[]>> getCinesquareTop10() {
         MovieRankResponse[] list = movieService.getCinesquareTop10();
         ListResponse<MovieRankResponse[]> response = new ListResponse<>();
@@ -95,7 +95,7 @@ public class MovieController {
      */
     @Operation(summary = "영화 제목으로 영화 단순 조회")
     @GetMapping("")
-    public ResponseEntity<ListResponse<MovieSimpleResponse[]>> getMovieSimple(@RequestParam("movie_title") String movieTitle) {
+    public ResponseEntity<ListResponse<MovieSimpleResponse[]>> getMovieSimple(@RequestParam(name = "title", required = true) String movieTitle) {
         MovieSimpleResponse[] list = movieService.findMovie(movieTitle);
         ListResponse<MovieSimpleResponse[]> response = new ListResponse<>();
         response.setList(list);
