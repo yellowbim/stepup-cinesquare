@@ -10,12 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.common.model.DataResponse;
 import org.stepup.cinesquareapis.common.model.ListResponse;
 import org.stepup.cinesquareapis.common.model.ResultResponse;
-import org.stepup.cinesquareapis.report.model.MovieCommentReplyRequest;
-import org.stepup.cinesquareapis.report.model.MovieCommentRequest;
-import org.stepup.cinesquareapis.report.model.MovieCommentSummaryResponse;
-import org.stepup.cinesquareapis.report.model.MovieReplyResponse;
+import org.stepup.cinesquareapis.report.entity.Comment;
+import org.stepup.cinesquareapis.report.entity.CommentReply;
+import org.stepup.cinesquareapis.report.model.*;
 import org.stepup.cinesquareapis.report.service.MovieReportService;
-import org.stepup.cinesquareapis.user.model.UserResponse;
 
 import java.util.List;
 
@@ -32,32 +30,86 @@ public class MovieReportController {
      * <p>
      * table : tb_movie_comment
      *
-     * - comment_id가 이상한 값으로 들어오는 경우, 자동으로 생성을 하게됨 => false
      * @return true, false
      */
-    @Operation(summary = "영화 코멘트 작성/수정")
-    @PostMapping("comment")
-    public ResponseEntity<ResultResponse<Boolean>> saveComment(@RequestBody MovieCommentRequest request) {
-        Boolean data = movieReportService.saveComment(request);
-        ResultResponse<Boolean> response = new ResultResponse<>();
-        response.setResult(data);
+    @Operation(summary = "영화 코멘트 작성")
+    @PostMapping("{movie_id}/comments")
+    public ResponseEntity<DataResponse<Comment>> saveComment(@RequestBody MovieCommentSaveRequest request, @PathVariable("movie_id") Integer movieId) {
+        Comment data = movieReportService.saveComment(request, movieId);
+        DataResponse<Comment> response = new DataResponse<>();
+        response.setData(data);
 
-        return new ResponseEntity<ResultResponse<Boolean>>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     /**
-     * 영화 코멘트 답굴 작성/수정
+     * 영화 코멘트 수정
+     * <p>
+     * table : tb_movie_comment
+     *
+     * @return true, false
+     */
+    @Operation(summary = "영화 코멘트 수정",
+            description = "정상 처리 시 데이터 전부 return, \n 없는 경우 null 전달")
+    @PatchMapping("{movie_id}/comments/{comment_id}")
+    public ResponseEntity<DataResponse<Comment>> updateComment(@RequestBody MovieCommentUpdateRequest request, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
+        Comment data = movieReportService.updateComment(request, movieId, commentId);
+        DataResponse<Comment> response = new DataResponse<>();
+        response.setData(data);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * 영화 코멘트 답글 작성
+     * <p>
+     * table : tb_movie_comment_reply
+     *
+     * @return true, false
+     */
+    @Operation(summary = "영화 코멘트 답글 작성")
+    @PostMapping("{movie_id}/comments/{comment_id}/replies")
+    public ResponseEntity<DataResponse<CommentReply>> saveCommentReply(@RequestBody MovieCommentReplySaveRequest request, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
+        CommentReply data = movieReportService.saveCommentReply(request, commentId, movieId);
+        DataResponse<CommentReply> response = new DataResponse<>();
+        response.setData(data);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * 영화 코멘트 답글 수정
      * <p>
      * table : tb_movie_comment_reply
      *
      * - reply_id가 이상한 값으로 들어오는 경우, 자동으로 생성을 하게됨 => false
      * @return true, false
      */
-    @Operation(summary = "영화 코멘트 답글 작성/수정")
-    @PostMapping("reply")
-    public ResponseEntity<ResultResponse<Boolean>> saveCommentReply(@RequestBody MovieCommentReplyRequest request) {
-        Boolean data = movieReportService.saveCommentReply(request);
-        ResultResponse<Boolean> response = new ResultResponse<>();
+    @Operation(summary = "영화 코멘트 답글 수정",
+                description = "정상 처리 시 데이터 전부 return, \n 없는 경우 null 전달")
+    @PatchMapping("{movie_id}/comments/{comment_id}/replies/{reply_id}")
+    public ResponseEntity<DataResponse<CommentReply>> updateCommentReply(@RequestBody MovieCommentReplyUpdateRequest request, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId, @PathVariable("reply_id") Integer replyId) {
+        CommentReply data = movieReportService.updateCommentReply(request, commentId, movieId, replyId);
+        DataResponse<CommentReply> response = new DataResponse<>();
+        response.setData(data);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * 영화 코멘트 답글 삭제
+     * <p>
+     * table : tb_movie_comment_reply
+     *
+     * - reply_id가 이상한 값으로 들어오는 경우, 자동으로 생성을 하게됨 => false
+     * @return true, false
+     */
+    @Operation(summary = "영화 코멘트 답글 수정",
+                description = "정상 처리 시 return 1, 데이터가 없는 경우 0")
+    @DeleteMapping("{movie_id}/comments/{comment_id}/replies/{reply_id}")
+    public ResponseEntity<ResultResponse<Integer>> deleteCommentReply(@PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId, @PathVariable("reply_id") Integer replyId) {
+        int data = movieReportService.deleteCommentReply(commentId, movieId, replyId);
+        ResultResponse<Integer> response = new ResultResponse<>();
         response.setResult(data);
 
         return new ResponseEntity<>(response, HttpStatus.OK);

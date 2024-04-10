@@ -6,22 +6,18 @@ import org.stepup.cinesquareapis.report.entity.CommentReply;
 import java.time.LocalDateTime;
 
 @Data
-public class MovieCommentReplyRequest {
-    private Integer replyId;
-    private int commentId;
+public class MovieCommentReplySaveRequest {
     private int userId;
     private String content;
     private int like;
-    private LocalDateTime created;
-    private LocalDateTime updated;
 
-    public CommentReply toEntity() {
+    public CommentReply toEntity(Integer commentId, Integer movieId) {
         return new CommentReply().builder()
-                .replyId(replyId)
                 .commentId(commentId)
                 .userId(userId)
                 .content(content)
                 .like(like)
+                .movieId(movieId)
                 .build();
     }
 }

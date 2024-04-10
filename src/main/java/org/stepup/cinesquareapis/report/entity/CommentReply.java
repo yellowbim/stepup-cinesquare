@@ -35,6 +35,9 @@ public class CommentReply {
     @Column(name = "like") // 예약어라 제외를 시켜주는 방법
     private Integer like;
 
+    @Column(name = "movie_id", nullable = false)
+    private Integer movieId;
+
     @CreationTimestamp
     @Column(name = "created", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
