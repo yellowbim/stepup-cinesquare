@@ -13,8 +13,6 @@ import org.stepup.cinesquareapis.movie.model.MovieRankResponse;
 import org.stepup.cinesquareapis.movie.model.MovieSimpleResponse;
 import org.stepup.cinesquareapis.movie.service.MovieService;
 
-import java.util.ArrayList;
-
 @RequiredArgsConstructor
 @Tag(name = "movies", description = "영화 관련 API")
 @RequestMapping("api/movies")
@@ -101,18 +99,5 @@ public class MovieController {
         response.setList(list);
 
         return ResponseEntity.ok(response);
-    }
-
-    /**
-     * 한국영화진흥원 API 영화 생성 (최초 DB), 100개씩만 호출하기
-     *
-     * @return
-     */
-    @Operation(hidden = true)
-    @PostMapping("kofic")
-    public ResponseEntity<ArrayList<Integer>> createKoficMovie(@RequestParam("current_page") int currentPage, @RequestParam("item_per_page") int itemPerPage, @RequestParam("start_production_year") int startProductionYear) {
-        ArrayList<Integer> result = movieService.saveKoficMovie(currentPage, itemPerPage, startProductionYear);
-
-        return ResponseEntity.ok(result);
     }
 }

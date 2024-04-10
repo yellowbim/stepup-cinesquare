@@ -21,11 +21,12 @@ public class MovieSimple {
     @Column(length = 50, nullable = false)
     private String movieTitle;
 
-    @Column(length = 3)
-    private Integer runningTime;
+    @Column(nullable = false)
+    private boolean thumbnail;
 
-    @Column(length = 4)
-    private Integer productionYear;
+    private short runningTime;
+
+    private short productionYear;
 
     @Column(length = 20)
     private String nation;
