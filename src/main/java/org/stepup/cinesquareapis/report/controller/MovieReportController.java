@@ -15,6 +15,7 @@ import org.stepup.cinesquareapis.report.entity.CommentReply;
 import org.stepup.cinesquareapis.report.model.*;
 import org.stepup.cinesquareapis.report.service.MovieReportService;
 
+import javax.xml.transform.Result;
 import java.util.List;
 
 @RestController
@@ -56,6 +57,24 @@ public class MovieReportController {
         Comment data = movieReportService.updateComment(request, movieId, commentId);
         DataResponse<Comment> response = new DataResponse<>();
         response.setData(data);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * 영화 코멘트 삭제
+     * <p>
+     * table : tb_movie_comment
+     *
+     * @return true, false
+     */
+    @Operation(summary = "영화 코멘트 삭제",
+            description = "정상 처리 시 return 1, 데이터가 없는 경우 0")
+    @DeleteMapping("{movie_id}/comments/{comment_id}")
+    public ResponseEntity<ResultResponse<Integer>> deleteComment(@PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
+        int data = movieReportService.deleteComment(commentId);
+        ResultResponse<Integer> response = new ResultResponse<>();
+        response.setResult(data);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

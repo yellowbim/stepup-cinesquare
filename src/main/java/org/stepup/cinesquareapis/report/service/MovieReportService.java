@@ -55,6 +55,13 @@ public class MovieReportService {
     }
 
     /**
+     * 영화 코멘트 삭제
+     */
+    public int deleteComment(Integer commentId) {
+        return movieCommentRepository.deleteByCommentId(commentId);
+    }
+
+    /**
      * 영화 코멘트 답글 작성
      */
     public CommentReply saveCommentReply(MovieCommentReplySaveRequest request, Integer commentId, Integer movieId) {
