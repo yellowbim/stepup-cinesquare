@@ -13,6 +13,9 @@ public interface MovieCommentRepository extends JpaRepository<Comment, Integer> 
     // commentId, movieId로 조회
     Comment findByCommentIdAndMovieId(Integer commentId, Integer movieId);
 
+    // commentId 로 삭제
+    int deleteByCommentId(Integer commentId);
+
 
     // key 값 있는지 조회
     Boolean existsByCommentId(Integer commentId);
