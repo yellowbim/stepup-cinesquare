@@ -21,7 +21,7 @@ Web | http://cinesquare-s3.s3-website.ap-northeast-2.amazonaws.com
 - MariaDB 10 (AWS RDS)
 - JPA
 - Gradle
-- Jenkins CI/CD + AWS EC2 배포
+- Jenkins CI/CD + AWS EC2 + AWS S3 배포
 - Swagger-ui | http://3.38.64.130:8080/swagger-ui/index.html
 
 ## Front-end & Design Skill
@@ -33,7 +33,6 @@ Web | http://cinesquare-s3.s3-website.ap-northeast-2.amazonaws.com
 
 
 ## Later
-- AWS S3
 - Spring Security + Jwt (+OAuth)
 - Redis
 - Elastic Search
