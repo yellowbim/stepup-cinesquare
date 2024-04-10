@@ -10,8 +10,12 @@ import org.stepup.cinesquareapis.report.entity.UserLikeComment;
 @Repository
 @Transactional
 public interface MovieCommentRepository extends JpaRepository<Comment, Integer> {
+    // commentId, movieId로 조회
+    Comment findByCommentIdAndMovieId(Integer commentId, Integer movieId);
+
+
     // key 값 있는지 조회
     Boolean existsByCommentId(Integer commentId);
 
-    void findByCommentId(Comment comment);
+//    void findByCommentId(Comment comment);
 }
