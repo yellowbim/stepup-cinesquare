@@ -29,7 +29,7 @@ Web | http://cinesquare-s3.s3-website.ap-northeast-2.amazonaws.com
 - React
 - Typescript
 - scss
-- Github | http://3.38.64.130:8080/swagger-ui/index.html
+- Github | https://github.com/jihyeon-Do/cine-square-renewal.git
 
 
 ## Later
