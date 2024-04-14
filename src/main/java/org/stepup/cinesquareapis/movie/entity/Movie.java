@@ -21,19 +21,21 @@ public class Movie {
     private Integer movieId;
 
     @Column(length = 1)
-    private Integer source;
+    private short source;
 
-    @Column
-    private Integer koficMovieCode;
+    @Column(length = 10)
+    private String koficMovieCode;
 
     @Column(length = 50)
-    private String movieTitle;
+    private String title;
 
     @Column(length = 100)
-    private String movieTitleEn;
+    private String titleEn;
 
-    @Column(length = 3)
-    private Integer runningTime;
+    @Column(nullable = false)
+    private boolean thumbnail;
+
+    private short runningTime;
 
     @Column(length = 20)
     private String genre;
@@ -41,8 +43,7 @@ public class Movie {
     @Column(length = 50)
     private String genres;
 
-    @Column(length = 4)
-    private Integer productionYear;
+    private short productionYear;
 
     @Column
     private LocalDate openDate;

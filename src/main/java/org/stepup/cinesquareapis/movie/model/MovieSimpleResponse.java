@@ -22,7 +22,7 @@ public class MovieSimpleResponse {
 
     public MovieSimpleResponse(MovieSimple movieSimple) {
         movieId = movieSimple.getMovieId();
-        movieTitle = movieSimple.getMovieTitle();
+        movieTitle = movieSimple.getTitle();
         runningTime = movieSimple.getRunningTime();
         productionYear = movieSimple.getProductionYear();
         nation = movieSimple.getNation();

@@ -10,5 +10,5 @@ import java.util.List;
 public interface MovieSimpleRepository extends JpaRepository<MovieSimple, Integer> {
     MovieSimple[] findTop10ByOrderByScoreDesc();
 
-    List<MovieSimple>findByMovieTitleContaining(String movieTitle);
+    List<MovieSimple>findByTitleContaining(String movieTitle);
 }
