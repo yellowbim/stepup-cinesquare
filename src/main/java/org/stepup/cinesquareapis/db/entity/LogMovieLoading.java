@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -15,12 +18,19 @@ public class LogMovieLoading {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer logId;
 
-    @Column(length = 1, nullable = false)
-    private Integer status;
+    // 0: 정상, 1: 유효성 검사에 의한 제외, 2: API 오류, 9: 알 수 없는 오류
+    @Column( nullable = false)
+    private short status;
 
     @Column(nullable = true)
-    private Integer koficMovieCode;
+    private String koficMovieCode;
 
     @Column(nullable = true)
     private Integer movieId;
+
+    private String message;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private LocalDateTime created;
 }

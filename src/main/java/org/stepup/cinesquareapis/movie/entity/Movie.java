@@ -27,10 +27,10 @@ public class Movie {
     private String koficMovieCode;
 
     @Column(length = 50)
-    private String movieTitle;
+    private String title;
 
     @Column(length = 100)
-    private String movieTitleEn;
+    private String titleEn;
 
     @Column(nullable = false)
     private boolean thumbnail;

@@ -132,13 +132,13 @@ public class MovieService {
      *
      * @return movies
      */
-    public MovieSimpleResponse[] findMovie(String movieTitle) {
+    public MovieSimpleResponse[] findMovie(String title) {
         String pattern = "^(?:[가-힣]{1,}|[a-zA-Z]{2,}|\\d{2,})$";
-        if (!Pattern.matches(pattern, movieTitle)) {
-            throw new RestApiException(CommonErrorCode.INVALID_PARAMETER, "movieTitle can't be searched :" + movieTitle);
+        if (!Pattern.matches(pattern, title)) {
+            throw new RestApiException(CommonErrorCode.INVALID_PARAMETER, "movieTitle can't be searched :" + title);
         }
 
-        List<MovieSimple> findMovies = movieSimpleRepository.findByMovieTitleContaining(movieTitle);
+        List<MovieSimple> findMovies = movieSimpleRepository.findByTitleContaining(title);
         MovieSimpleResponse[] movies = new MovieSimpleResponse[findMovies.size()];
         for (int i = 0; i < findMovies.size(); i++) {
             movies[i] = new MovieSimpleResponse(findMovies.get(i));

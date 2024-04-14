@@ -1,20 +1,32 @@
 package org.stepup.cinesquareapis.db.service;
 
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
+import org.stepup.cinesquareapis.db.entity.LogMovieLoading;
 import org.stepup.cinesquareapis.db.repository.DbRepository;
 import org.stepup.cinesquareapis.db.repository.DbSimpleRepository;
+import org.stepup.cinesquareapis.db.repository.LogMovieLoadingRepository;
 import org.stepup.cinesquareapis.movie.entity.Movie;
 import org.stepup.cinesquareapis.movie.entity.MovieSimple;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -31,21 +43,37 @@ import java.util.concurrent.*;
 @RequiredArgsConstructor
 public class DbService {
 
-    private final DbSimpleRepository dbSimpleRepository;
+    private final AmazonS3 s3client;
+
     private final DbRepository dbRepository;
+    private final DbSimpleRepository dbSimpleRepository;
+    private final LogMovieLoadingRepository logMovieLoadingRepository;
+
+    private static final String S3_BUCKET_NAME = "cinesquare-s3";
 
     private static final String GENRE_ETC = "기타";
     private static final String GENRE_EROTIC = "성인물(에로)";
     private static final String GENRE_ROMANCE = "멜로/로맨스";
     private static final String ADULTS_ONLY = "청소년관람불가";
 
+    private static final short SUCCESS = 0;
+    private static final short UPDATE_THUMBNAIL = 1;
+    private static final short FAIL_EXCLUSION_BY_VALIDATION = 5;
+    private static final short FAIL_KOFIC_API_ERROR = 6;
+    private static final short FAIL_FIND_MOVIE_IN_DB = 7;
+    private static final short FAIL_CRAWLLING_THUMBNAIL = 7;
+    private static final short FAIL_UNKNOWN_ERROR = 9;
+
     private static final String KOFIC_KEY = "a440544b11856d33b630de4bf58546bb";
     private static final String KOFIC_MOVIE_LIST_API_URL = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList.json";
     private static final String KOFIC_MOVIE_DETAIL_API_URL = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieInfo.json";
 
+    private static final String KOFIC_MOVIE_INFO_CRAWLLING_URL = "https://kobis.or.kr/kobis/business/mast/mvie/searchMovieDtl.do";
+
     /**
      * 한국영화진흥원 API 영화 생성 (최초 DB)
      * 기본정보 저장, 썸네일 저장
+     *
      * @return createdMovieIds
      */
 
@@ -76,13 +104,20 @@ public class DbService {
                     try {
                         JsonObject movieJsonObject = movieElement.getAsJsonObject();
 
-                        // 대표 장르 유효성 체크
-                        if (!isValidPrimaryGenre(movieJsonObject)) return;
-
                         String koficMovieCode = movieJsonObject.get("movieCd").getAsString();
 
+                        // 대표 장르 유효성 체크
+                        if (!isValidPrimaryGenre(movieJsonObject)) {
+                            reportLog(FAIL_EXCLUSION_BY_VALIDATION, koficMovieCode, null, null);
+
+                            return;
+                        }
+
+                        // 영화 정보 저장
                         saveMovie(koficMovieCode, createdMovieIds);
                     } catch (IOException e) {
+                        String message = "currentPage:" + currentPage + "|itemPerPage:" + itemPerPage + "|startProductionYear:" + startProductionYear;
+                        reportLog(FAIL_KOFIC_API_ERROR, null, null, message);
                         e.printStackTrace();
                     }
                 }));
@@ -93,6 +128,7 @@ public class DbService {
                 try {
                     future.get();
                 } catch (InterruptedException | ExecutionException e) {
+                    reportLog(FAIL_UNKNOWN_ERROR, null, null, null);
                     e.printStackTrace();
                 }
             }
@@ -112,6 +148,7 @@ public class DbService {
     /**
      * 한국영화진흥원 API 영화 생성 (단 건)
      * 기본정보 저장, 썸네일 저장
+     *
      * @return createdMovieIds
      */
     public int saveKoficMovie(String koficMovieCode) {
@@ -142,7 +179,7 @@ public class DbService {
         }
         return apiUrlBuilder.toString();
     }
-    
+
     // API를 요청하여 결과를 JSON으로 파싱
     private JsonObject fetchJsonFromUrl(String apiUrl) throws IOException {
         URL url = new URL(apiUrl);
@@ -167,26 +204,31 @@ public class DbService {
         JsonObject movieInfo = movieDetailJsonObject.getAsJsonObject("movieInfoResult").getAsJsonObject("movieInfo");
 
         // 유효성 체크1
-        if (!hasValidRunningTime(movieInfo)) return;
+        if (!hasValidRunningTime(movieInfo)) {
+            reportLog(FAIL_EXCLUSION_BY_VALIDATION, koficMovieCode, null, null);
+            return;
+        }
 
         // 유효성 체크2
-        if (!hasValidGenreAndRating(movieInfo)) return;
+        if (!hasValidGenreAndRating(movieInfo)) {
+            reportLog(FAIL_EXCLUSION_BY_VALIDATION, koficMovieCode, null, null);
+            return;
+        }
 
         // 저장할 데이터 movie, movieDetail 객체로 생성
         MovieSimple movieSimple = new MovieSimple();
         Movie movie = new Movie();
 
         // 필수 값: genre, movie_title, running_time, production_year, source, kofic_movie_code
-        movieSimple.setMovieTitle(movieInfo.get("movieNm").getAsString());
+        movieSimple.setTitle(movieInfo.get("movieNm").getAsString());
         movieSimple.setRunningTime(movieInfo.get("showTm").getAsShort());
         movieSimple.setProductionYear(movieInfo.get("prdtYear").getAsShort());
 
-        movie.setMovieTitle(movieInfo.get("movieNm").getAsString());
+        movie.setTitle(movieInfo.get("movieNm").getAsString());
         movie.setRunningTime(movieInfo.get("showTm").getAsShort());
         movie.setProductionYear(movieInfo.get("prdtYear").getAsShort());
-        movie.setSource((short) 1);
+        movie.setSource((short)1);
         movie.setKoficMovieCode(koficMovieCode);
-
 
         // genres
         List<String> genres = new ArrayList<>();
@@ -201,7 +243,7 @@ public class DbService {
         // movie_title_en
         String movieTitleEn = movieInfo.get("movieNmEn").getAsString();
         if (movieTitleEn != null && !movieTitleEn.isEmpty()) {
-            movie.setMovieTitleEn(movieTitleEn);
+            movie.setTitleEn(movieTitleEn);
         }
 
         // open_date
@@ -245,8 +287,10 @@ public class DbService {
             JsonObject jo = je.getAsJsonObject();
             actors.add(jo.get("peopleNm").getAsString());
         }
-        if (actors.size() > 0) {
-            movie.setActors(String.join(",", actors));
+
+        if (!actors.isEmpty()) {
+            List<String> relevantActors = (actors.size() > 15) ? actors.subList(0, 15) : actors;
+            movie.setActors(String.join(",", relevantActors));
         }
 
         // tb_movie 저장
@@ -255,6 +299,8 @@ public class DbService {
         // tb_movie_simple 저장
         movieSimple.setMovieId(createdMovie.getMovieId());
         dbSimpleRepository.save(movieSimple);
+
+        reportLog(SUCCESS, koficMovieCode, movieSimple.getMovieId(), null);
 
         createdMovieIds.add(movieSimple.getMovieId());
     }
@@ -306,4 +352,191 @@ public class DbService {
 
         return false;
     }
+
+    // 영화 저장 로그 남기기
+    private void reportLog(short status, String koficMovieCode, Integer movieId, String message) {
+        LogMovieLoading log = new LogMovieLoading();
+
+        log.setStatus(status);
+        if (koficMovieCode != null) {
+            log.setKoficMovieCode(koficMovieCode);
+        }
+        if (movieId != null) {
+            log.setMovieId(movieId);
+        }
+        if (message != null) {
+            log.setMessage(message);
+        }
+
+        logMovieLoadingRepository.save(log);
+    }
+
+
+    // CINE CODE
+    @Transactional
+    public void crawlAndDownloadImages(int[] movieCodes) {
+        for (int movieCode : movieCodes) {
+            Movie movie = dbRepository.findById(movieCode).orElse(null);
+
+            String koficMovieCode = movie.getKoficMovieCode();
+            if (movie != null) {
+                // HTML 파싱
+                Document doc = getMovieSubInfoHtml(koficMovieCode);
+
+                try {
+                    // Selector로 접근 후 href 요소 찾기
+                    Elements elements = doc.select("div > div.item_tab.basic > div.ovf.info.info1 > a");
+                    String koficImageUrl = elements.get(0).attr("href");
+
+                    String savePath = "movies/" + movieCode;
+                    String filename = "thumbnail";
+
+                    // S3에 이미지 저장
+                    downloadImage(koficImageUrl, savePath, filename);
+                } catch (Exception e) {
+                    // 로그 DB 저장
+                    LogMovieLoading log = new LogMovieLoading();
+                    log.setStatus(FAIL_CRAWLLING_THUMBNAIL);
+                    log.setMovieId(movieCode);
+                    log.setKoficMovieCode(koficMovieCode);
+
+                    continue;
+                }
+
+                // 영화 DB 업데이트
+                dbRepository.updateThumbnailToTrue(movieCode);
+                dbSimpleRepository.updateThumbnailToTrue(movieCode);
+
+                // 로그 DB 저장
+                LogMovieLoading log = new LogMovieLoading();
+                log.setStatus(UPDATE_THUMBNAIL);
+                log.setMovieId(movieCode);
+                log.setKoficMovieCode(koficMovieCode);
+            } else {
+                // 로그 DB 저장
+                LogMovieLoading log = new LogMovieLoading();
+                log.setStatus(FAIL_FIND_MOVIE_IN_DB);
+                log.setMovieId(movieCode);
+                log.setKoficMovieCode(koficMovieCode);
+            }
+
+        }
+    }
+
+    // KOFIC CODE
+    @Transactional
+    public void crawlAndDownloadImages(String[] koficMovieCodes) {
+        for (String koficMovieCode : koficMovieCodes) {
+
+            // HTML 파싱
+            Document doc = getMovieSubInfoHtml(koficMovieCode);
+
+            // Selector로 접근 후 href 요소 찾기
+            Elements elements = doc.select("div > div.item_tab.basic > div.ovf.info.info1 > a");
+            String koficImageUrl = elements.get(0).attr("href");
+
+            String savePath = "movies/" + koficMovieCode;
+            String filename = "thumbnail";
+
+            // S3에 이미지 저장
+            downloadImage(koficImageUrl, savePath, filename);
+        }
+    }
+
+
+    // 영화 코드를 아용해 이미지를 다운 받기 위해 HTML 파싱
+    private Document getMovieSubInfoHtml(String koficMovieCode) {
+        // HttpHeaders 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.setAccept(Collections.singletonList(MediaType.TEXT_HTML));
+
+        // form-data로 전송할 데이터
+        String requestBody = "titleYN=Y&&isOuterReq=false&CSRFToken=jynKyMeKA46R5TKEL27l0DVPpBXehuXMuV1i5K9XWc4&code=" + koficMovieCode;
+
+        // HttpEntity 생성
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        // RestTemplate 생성
+        RestTemplate restTemplate = new RestTemplate();
+
+        // POST 요청 보내기
+        ResponseEntity<String> responseEntity = restTemplate.exchange(KOFIC_MOVIE_INFO_CRAWLLING_URL, HttpMethod.POST, requestEntity, String.class);
+
+        // 응답의 HTML 파싱하기
+        String html = responseEntity.getBody();
+        Document doc = Jsoup.parse(html);
+
+        return doc;
+    }
+
+    // S3에 이미지 저장
+    private void downloadImage(String imageUrl, String savePath, String filename) {
+        try {
+            String urlPrefix = "https://kobis.or.kr";
+            URL url = new URL(urlPrefix + imageUrl);
+            InputStream inputStream = url.openStream();
+
+            String extension = "";
+            int i = imageUrl.lastIndexOf('.');
+            if (i > 0) {
+                extension = imageUrl.substring(i);
+            }
+
+            String key = savePath + "/" + filename + extension;
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType("image/jpeg"); // 적절한 MIME 타입 설정
+
+            // S3에 이미지 업로드
+            s3client.putObject(new PutObjectRequest(S3_BUCKET_NAME, key, inputStream, metadata));
+
+            System.out.println("이미지 업로드 완료: " + key);
+
+            inputStream.close(); // 스트림 닫기
+        } catch (AmazonServiceException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 이미지 로컬 다운로드
+    /*
+    private void downloadImage(String imageUrl, String savePath, int movieCode) {
+        try {
+            // URL 연결
+            String urlPrefix = "https://kobis.or.kr";
+            URL url = new URL(urlPrefix+imageUrl);
+            InputStream inputStream = url.openStream();
+
+            // 이미지 URL에서 확장자 추출
+            String extension = "";
+            int i = imageUrl.lastIndexOf('.');
+            if (i > 0) {
+                extension = imageUrl.substring(i);
+            }
+
+            // 이미지 다운로드 경로 설정 (확장자 포함)
+            Path downloadPath = Paths.get(savePath, Integer.toString(movieCode) + extension);
+
+            // 이미지 저장을 위한 FileOutputStream
+            FileOutputStream outputStream = new FileOutputStream(downloadPath.toString());
+
+            // 입력 스트림에서 바이트를 읽고 출력 스트림에 쓰기
+            byte[] buffer = new byte[2048];
+            int length;
+            while ((length = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, length);
+            }
+
+            // 스트림 닫기
+            inputStream.close();
+            outputStream.close();
+
+            System.out.println("이미지 다운로드 완료: " + downloadPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    */
 }

@@ -3,10 +3,7 @@ package org.stepup.cinesquareapis.db.controller;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.db.service.DbService;
 
 import java.util.ArrayList;
@@ -38,10 +35,33 @@ public class DbController {
      * @return
      */
     @PostMapping("kofic/{kofic_movie_code}")
-    public ResponseEntity<Integer> createKoficMovie(String koficMovieCode) {
+    public void createKoficMovie(@PathVariable("kofic_movie_code") String koficMovieCode) {
         // 영화 기본 정보 저장
-        int createdMovieIds = dbService.saveKoficMovie(koficMovieCode);
+        int createdMovieId = dbService.saveKoficMovie(koficMovieCode);
 
-        return ResponseEntity.ok(createdMovieIds);
+        int[] arr = {createdMovieId};
+        dbService.crawlAndDownloadImages(arr);
+    }
+
+    /**
+     * CINE 영화 코드로 썸네일 다운로드
+     *
+     * @return
+     */
+
+    public void createMoviePoster(int movieCode) {
+        int[] arr = {movieCode};
+        dbService.crawlAndDownloadImages(arr);
+    }
+
+    /**
+     * KOFIC 영화 코드로 썸네일 다운로드 테스트
+     *
+     * @return
+     */
+    @PostMapping("image-download")
+    public void createMoviePoster(@RequestParam("movie_code") String movieCode) {
+        String[] arr = {movieCode};
+        dbService.crawlAndDownloadImages(arr);
     }
 }

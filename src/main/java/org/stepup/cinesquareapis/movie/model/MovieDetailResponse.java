@@ -41,8 +41,8 @@ public class MovieDetailResponse {
 
     public MovieDetailResponse(Movie movie, MovieSimple movieSimple) {
         movieId = movieSimple.getMovieId();
-        movieTitle = movieSimple.getMovieTitle();
-        movieTitleEn = movie.getMovieTitleEn();
+        movieTitle = movieSimple.getTitle();
+        movieTitleEn = movie.getTitleEn();
         runningTime = movieSimple.getRunningTime();
         productionYear = movieSimple.getProductionYear();
         nation = movieSimple.getNation();

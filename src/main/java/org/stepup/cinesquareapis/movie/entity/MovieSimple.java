@@ -19,7 +19,7 @@ public class MovieSimple {
     private Integer movieId;
 
     @Column(length = 50, nullable = false)
-    private String movieTitle;
+    private String title;
 
     @Column(nullable = false)
     private boolean thumbnail;

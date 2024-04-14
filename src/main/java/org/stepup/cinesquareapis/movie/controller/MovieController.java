@@ -93,8 +93,8 @@ public class MovieController {
      */
     @Operation(summary = "영화 제목으로 영화 단순 조회")
     @GetMapping("")
-    public ResponseEntity<ListResponse<MovieSimpleResponse[]>> getMovieSimple(@RequestParam(name = "title", required = true) String movieTitle) {
-        MovieSimpleResponse[] list = movieService.findMovie(movieTitle);
+    public ResponseEntity<ListResponse<MovieSimpleResponse[]>> getMovieSimple(@RequestParam(name = "title", required = true) String title) {
+        MovieSimpleResponse[] list = movieService.findMovie(title);
         ListResponse<MovieSimpleResponse[]> response = new ListResponse<>();
         response.setList(list);
 
