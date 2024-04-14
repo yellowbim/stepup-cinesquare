@@ -27,8 +27,8 @@ public class MovieBoxoffice {
     @Column(nullable = false)
     private Integer movieId;
 
-    @Column(length = 2, nullable = false)
-    private Integer yearWeek;
+    @Column(nullable = false)
+    private int yearWeek;
 
     @Column(nullable = false)
     private LocalDate startDate;

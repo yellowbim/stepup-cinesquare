@@ -1,4 +1,4 @@
-package org.stepup.cinesquareapis.db.service;
+package org.stepup.cinesquareapis.movie.service;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
@@ -17,12 +17,14 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
-import org.stepup.cinesquareapis.db.entity.LogMovieLoading;
-import org.stepup.cinesquareapis.db.repository.DbRepository;
-import org.stepup.cinesquareapis.db.repository.DbSimpleRepository;
-import org.stepup.cinesquareapis.db.repository.LogMovieLoadingRepository;
+import org.stepup.cinesquareapis.movie.entity.LogMovieLoading;
 import org.stepup.cinesquareapis.movie.entity.Movie;
+import org.stepup.cinesquareapis.movie.entity.MovieBoxoffice;
 import org.stepup.cinesquareapis.movie.entity.MovieSimple;
+import org.stepup.cinesquareapis.movie.repository.LogMovieLoadingRepository;
+import org.stepup.cinesquareapis.movie.repository.MovieBoxofficeRepository;
+import org.stepup.cinesquareapis.movie.repository.MovieRepository;
+import org.stepup.cinesquareapis.movie.repository.MovieSimpleRepository;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -38,37 +40,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
 
+import static org.stepup.cinesquareapis.movie.contant.MovieDbLoadingConstant.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DbService {
+public class MovieDbLoadingService {
 
     private final AmazonS3 s3client;
 
-    private final DbRepository dbRepository;
-    private final DbSimpleRepository dbSimpleRepository;
+    private final MovieRepository movieRepository;
+    private final MovieSimpleRepository movieSimpleRepository;
+    private final MovieBoxofficeRepository movieBoxofficeRepository;
     private final LogMovieLoadingRepository logMovieLoadingRepository;
-
-    private static final String S3_BUCKET_NAME = "cinesquare-s3";
-
-    private static final String GENRE_ETC = "기타";
-    private static final String GENRE_EROTIC = "성인물(에로)";
-    private static final String GENRE_ROMANCE = "멜로/로맨스";
-    private static final String ADULTS_ONLY = "청소년관람불가";
-
-    private static final short SUCCESS = 0;
-    private static final short UPDATE_THUMBNAIL = 1;
-    private static final short FAIL_EXCLUSION_BY_VALIDATION = 5;
-    private static final short FAIL_KOFIC_API_ERROR = 6;
-    private static final short FAIL_FIND_MOVIE_IN_DB = 7;
-    private static final short FAIL_CRAWLLING_THUMBNAIL = 7;
-    private static final short FAIL_UNKNOWN_ERROR = 9;
-
-    private static final String KOFIC_KEY = "a440544b11856d33b630de4bf58546bb";
-    private static final String KOFIC_MOVIE_LIST_API_URL = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList.json";
-    private static final String KOFIC_MOVIE_DETAIL_API_URL = "http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieInfo.json";
-
-    private static final String KOFIC_MOVIE_INFO_CRAWLLING_URL = "https://kobis.or.kr/kobis/business/mast/mvie/searchMovieDtl.do";
 
     /**
      * 한국영화진흥원 API 영화 생성 (최초 DB)
@@ -77,7 +61,7 @@ public class DbService {
      * @return createdMovieIds
      */
 
-    public ArrayList<Integer> saveKoficMovies(int currentPage, int itemPerPage, int startProductionYear) {
+    public int[] saveKoficMovies(int currentPage, int itemPerPage, int startProductionYear) {
         // 영화 API 키 및 요청 URL 설정
         String movieListUrl = KOFIC_MOVIE_LIST_API_URL + "?key=" + KOFIC_KEY;
 
@@ -142,7 +126,9 @@ public class DbService {
             e.printStackTrace();
         }
 
-        return new ArrayList<>(createdMovieIds);
+        return createdMovieIds.stream()
+                .mapToInt(Integer::intValue)
+                .toArray();
     }
 
     /**
@@ -162,7 +148,76 @@ public class DbService {
             e.printStackTrace();
         }
 
-        return 0;
+        return -1;
+    }
+
+    /**
+     * 한국영화진흥원 API 전 주 박스오피스 생성
+     *
+     *
+     * @return createdMovieIds
+     */
+    @Transactional
+    public ArrayList<Integer> saveMovieBoxoffice(int rankingCount, LocalDate date) throws IOException {
+        ArrayList<Integer> createdMovieIds = new ArrayList<Integer>();
+
+        // 1. 영화 박스오피스 목록 조회 API 호출
+        String requestDate = date.minusDays(1).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String apiUrl = KOFIC_MOVIE_BOXOFFICE_API_URL + "?key=" + KOFIC_KEY + "&weekGb=" + 0 + "&itemPerPage=" +rankingCount + "&targetDt=" + requestDate;
+        JsonObject resultJsonObject = fetchJsonFromUrl(apiUrl);
+
+        // 2. json 파싱
+        try {
+            JsonObject boxofficeJsonObject = resultJsonObject.getAsJsonObject("boxOfficeResult");
+
+            String showRange = boxofficeJsonObject.get("showRange").getAsString();
+            String startDate = showRange.split("~")[0];
+            String endDate = showRange.split("~")[1];
+            int yearWeekTime = boxofficeJsonObject.get("yearWeekTime").getAsInt();
+
+            // 3. 각 영화 별로 DB 조회 및 필요시 적재
+            JsonArray movieJsonArray = boxofficeJsonObject.getAsJsonArray("weeklyBoxOfficeList");
+            int i=0;
+            for (JsonElement movieElement : movieJsonArray) {
+                i++;
+                try {
+                    JsonObject movieJsonObject = movieElement.getAsJsonObject();
+                    String koficMovieCode = movieJsonObject.get("movieCd").getAsString();
+                    int showCnt = movieJsonObject.get("showCnt").getAsInt();
+
+                    // 3-1. 저장된 영화인지 조회
+                    Movie movie = movieRepository.findByKoficMovieCode(koficMovieCode);
+                    if (movie == null) {
+                        // 3-2. 영화 DB 적재
+                        saveMovie(koficMovieCode, createdMovieIds);
+                        movie = movieRepository.findByKoficMovieCode(koficMovieCode);
+                    }
+
+                    // 4. 박스오피스 저장
+                    MovieBoxoffice movieBoxoffice = new MovieBoxoffice();
+                    movieBoxoffice.setMovieId(movie.getMovieId());
+                    movieBoxoffice.setRank(i);
+
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+                    movieBoxoffice.setStartDate(LocalDate.parse(startDate, formatter));
+                    movieBoxoffice.setEndDate(LocalDate.parse(endDate, formatter));
+                    movieBoxoffice.setShowCount(showCnt);
+                    movieBoxoffice.setYearWeek(yearWeekTime);
+
+                    movieBoxofficeRepository.save(movieBoxoffice);
+                } catch (IOException e) {
+                    String message = "rank:"+ i + "|date:" + date;
+                    reportLog(FAIL_LOADING_BOXOFFICE, null, null,  message);
+                    e.printStackTrace();
+                }
+            }
+        } catch (Exception e) {
+            String message = "fail parsing|date:" + date;
+            reportLog(FAIL_LOADING_BOXOFFICE, null, null,  message);
+            e.printStackTrace();
+        }
+
+        return createdMovieIds;
     }
 
     // 영화 목록 호출 API URL 생성
@@ -294,11 +349,11 @@ public class DbService {
         }
 
         // tb_movie 저장
-        Movie createdMovie = dbRepository.save(movie);
+        Movie createdMovie = movieRepository.save(movie);
 
         // tb_movie_simple 저장
         movieSimple.setMovieId(createdMovie.getMovieId());
-        dbSimpleRepository.save(movieSimple);
+        movieSimpleRepository.save(movieSimple);
 
         reportLog(SUCCESS, koficMovieCode, movieSimple.getMovieId(), null);
 
@@ -376,7 +431,7 @@ public class DbService {
     @Transactional
     public void crawlAndDownloadImages(int[] movieCodes) {
         for (int movieCode : movieCodes) {
-            Movie movie = dbRepository.findById(movieCode).orElse(null);
+            Movie movie = movieRepository.findById(movieCode).orElse(null);
 
             String koficMovieCode = movie.getKoficMovieCode();
             if (movie != null) {
@@ -404,8 +459,8 @@ public class DbService {
                 }
 
                 // 영화 DB 업데이트
-                dbRepository.updateThumbnailToTrue(movieCode);
-                dbSimpleRepository.updateThumbnailToTrue(movieCode);
+                movieRepository.updateThumbnailToTrue(movieCode);
+                movieSimpleRepository.updateThumbnailToTrue(movieCode);
 
                 // 로그 DB 저장
                 LogMovieLoading log = new LogMovieLoading();

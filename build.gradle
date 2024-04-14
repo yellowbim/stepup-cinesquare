@@ -36,6 +36,8 @@ dependencies {
 	implementation 'io.awspring.cloud:spring-cloud-starter-aws:2.3.1' // s3
 	implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5' // 설정 암호화
 	implementation 'org.jsoup:jsoup:1.14.3' // 크롤링
+	implementation 'org.springframework.boot:spring-boot-starter-batch' // 배치
+	implementation 'org.springframework.boot:spring-boot-starter-quartz' // 스케쥴러
 }
 
 tasks.named('test') {
