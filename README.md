@@ -3,7 +3,8 @@
 
 왓챠피디아의 클론 코딩을 기반으로 하는 영화 추천/평가 사이트입니다.
 
-Web | http://cinesquare-s3.s3-website.ap-northeast-2.amazonaws.com
+CINESQUEARE Web | http://cinesquare-s3.s3-website.ap-northeast-2.amazonaws.com
+Project Managing | https://petalite-bearberry-a1a.notion.site/CINESQUARE-25b196f281be446ab1ee3d0aa67f1927
 
 ---
 
@@ -21,7 +22,9 @@ Web | http://cinesquare-s3.s3-website.ap-northeast-2.amazonaws.com
 - MariaDB 10 (AWS RDS)
 - JPA
 - Gradle
-- Jenkins CI/CD + AWS EC2 + AWS S3 배포
+- Jenkins CI/CD + AWS EC2 배포
+- AWS S3
+- Spring Batch & Quartz
 - Swagger-ui | http://3.38.64.130:8080/swagger-ui/index.html
 
 ## Front-end & Design Skill
