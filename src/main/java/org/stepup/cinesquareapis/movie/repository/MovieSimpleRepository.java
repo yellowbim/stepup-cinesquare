@@ -1,7 +1,10 @@
 package org.stepup.cinesquareapis.movie.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import org.stepup.cinesquareapis.movie.entity.MovieSimple;
 
 import java.util.List;
@@ -11,4 +14,9 @@ public interface MovieSimpleRepository extends JpaRepository<MovieSimple, Intege
     MovieSimple[] findTop10ByOrderByScoreDesc();
 
     List<MovieSimple>findByTitleContaining(String movieTitle);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE MovieSimple m SET m.thumbnail = true WHERE m.movieId = :movieId")
+    void updateThumbnailToTrue(Integer movieId);
 }

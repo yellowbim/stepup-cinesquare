@@ -11,6 +11,13 @@ import org.stepup.cinesquareapis.movie.entity.Movie;
 // JpaRepository를 상속하여 사용. <객체, ID>
 public interface MovieRepository extends JpaRepository<Movie, Integer> {
 
+    @Transactional
+    @Modifying
+    @Query("UPDATE Movie m SET m.thumbnail = true WHERE m.movieId = :movieId")
+    void updateThumbnailToTrue(Integer movieId);
+
+    Movie findByKoficMovieCode(String koficMovieCode);
+
     @Query("SELECT m.posterIds FROM Movie m WHERE m.movieId = :movieId")
     String findPosterUrlByMovieId(Integer movieId);
 
