@@ -1,4 +1,4 @@
-package org.stepup.cinesquareapis.db.entity;
+package org.stepup.cinesquareapis.movie.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
