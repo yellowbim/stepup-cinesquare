@@ -1,9 +1,10 @@
 # 영화 평가/추천 사이트 'CINESQUARE'
 '24.02.27 - Ing'
 
-왓챠피디아의 클론 코딩을 기반으로 하는 영화 추천/평가 사이트입니다.
+<b>왓챠피디아의 클론 코딩을 기반으로 하는 영화 추천/평가 사이트입니다.</b>
 
-CINESQUEARE Web | http://cinesquare-s3.s3-website.ap-northeast-2.amazonaws.com
+CINESQUARE Web | http://cinesquare-s3.s3-website.ap-northeast-2.amazonaws.com
+
 Project Managing | https://petalite-bearberry-a1a.notion.site/CINESQUARE-25b196f281be446ab1ee3d0aa67f1927
 
 ---
