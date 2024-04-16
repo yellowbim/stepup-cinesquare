@@ -201,29 +201,4 @@ public class MovieReportController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

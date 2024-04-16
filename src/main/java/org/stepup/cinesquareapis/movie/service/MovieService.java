@@ -12,6 +12,7 @@ import org.stepup.cinesquareapis.movie.entity.MovieSimple;
 import org.stepup.cinesquareapis.movie.model.MovieDetailResponse;
 import org.stepup.cinesquareapis.movie.model.MovieRankResponse;
 import org.stepup.cinesquareapis.movie.model.MovieSimpleResponse;
+import org.stepup.cinesquareapis.movie.model.RandomMovieResponse;
 import org.stepup.cinesquareapis.movie.repository.MovieBoxofficeRepository;
 import org.stepup.cinesquareapis.movie.repository.MovieRepository;
 import org.stepup.cinesquareapis.movie.repository.MovieSimpleRepository;
@@ -20,8 +21,10 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -144,6 +147,23 @@ public class MovieService {
             movies[i] = new MovieSimpleResponse(findMovies.get(i));
         }
 
+        return movies;
+    }
+
+    /**
+     * 랜덤 영화 조회 (추후에 카테고리 조건이 추가되야함)
+     * - 내가 평가한 영화 항목들은 제외되야함.
+     *
+     * @return movies
+     */
+    public List<RandomMovieResponse> getRandomMovies(String category) {
+        List<RandomMovieResponse> movies = new ArrayList<>();
+
+        if (category == null || "".equals(category)) {
+            movies =  movieSimpleRepository.findRandomMovie().stream().map(RandomMovieResponse::new).collect(Collectors.toList());
+        } else {
+            movies =  movieSimpleRepository.findRandomMovieWithCategory(category).stream().map(RandomMovieResponse::new).collect(Collectors.toList());
+        }
         return movies;
     }
 }

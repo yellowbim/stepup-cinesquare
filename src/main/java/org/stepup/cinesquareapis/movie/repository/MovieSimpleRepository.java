@@ -24,4 +24,13 @@ public interface MovieSimpleRepository extends JpaRepository<MovieSimple, Intege
     @Modifying
     @Query("UPDATE MovieSimple m SET m.score = :score WHERE m.movieId = :movieId")
     int updateAvgScore(Double score, Integer movieId);
+
+    // 랜덤 영화 조회
+    // native 쿼리 쓸때 마지막에 옵션 추가 필요!! + value 명시 필요!
+    @Query(value = "SELECT A.* FROM cinesquare.tb_movie_simple A LEFT JOIN cinesquare.tb_user_movie_score B ON A.movie_id = B.movie_id WHERE B.movie_id IS NULL ORDER BY RAND()", nativeQuery = true)
+    List<MovieSimple> findRandomMovie();
+
+    // 카테고리 조건으로 랜덤 영화 조회
+    @Query(value = "SELECT A.* FROM cinesquare.tb_movie_simple A LEFT JOIN cinesquare.tb_user_movie_score B ON A.movie_id = B.movie_id WHERE B.movie_id IS NULL AND A.genre = :category ORDER BY RAND()", nativeQuery = true)
+    List<MovieSimple> findRandomMovieWithCategory(String category);
 }

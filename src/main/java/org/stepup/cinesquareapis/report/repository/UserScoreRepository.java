@@ -23,4 +23,7 @@ public interface UserScoreRepository extends JpaRepository<UserScore, UserScoreK
 
     @Query("SELECT tb_user_movie_score.score FROM UserScore tb_user_movie_score WHERE tb_user_movie_score.userId = ?1 AND tb_user_movie_score.movieId = ?2")
     Double findScoreByUserIdAndMovieId(Integer userId, Integer movieId);
+
+    // 부과된 별점 개수
+    int countByUserId(Integer userId);
 }

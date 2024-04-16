@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.stepup.cinesquareapis.common.model.DataResponse;
 import org.stepup.cinesquareapis.common.model.ListResponse;
 import org.stepup.cinesquareapis.common.model.ResultResponse;
 import org.stepup.cinesquareapis.report.model.*;
@@ -223,6 +224,22 @@ public class UserReportController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    /**
+     * 부과된 별점 개수 조회
+     *
+     * @param user_id
+     * table : tv_user_movie_score
+     */
+    @Operation(summary = "평가한 별점 개수 조회",
+            description = "https://pedia.watcha.com/ko-KR/review 평가하기 영화 별점 개수 조회")
+    @GetMapping("users/{user_id}/report-counts")
+    public ResponseEntity<DataResponse<Integer>> getScoredCount(@PathVariable("user_id") Integer userId) {
+        int data = userReportService.getScoredCount(userId);
+        DataResponse<Integer> response = new DataResponse<>();
+        response.setData(data);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
 
 
