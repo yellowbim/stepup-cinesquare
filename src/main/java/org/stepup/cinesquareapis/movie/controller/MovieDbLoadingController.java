@@ -5,8 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.movie.service.MovieDbLoadingService;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @RequiredArgsConstructor
-@Tag(name = "db", description = "DB 적재 관련 API")
+@Tag(name = "DB-loading", description = "DB 적재 관련 API (담당자 외 사용 금지)")
 @RequestMapping("db-loading")
 @RestController
 public class MovieDbLoadingController {
@@ -23,7 +27,7 @@ public class MovieDbLoadingController {
         // 영화 기본 정보 저장
         int[] createdMovieIds = movieDbLoadingService.saveKoficMovies(currentPage, itemPerPage, startProductionYear);
 
-        movieDbLoadingService.crawlAndDownloadImages(createdMovieIds);
+        movieDbLoadingService.crawlMovieSubInfo(createdMovieIds);
     }
 
     /**
@@ -38,27 +42,37 @@ public class MovieDbLoadingController {
 
         if (createdMovieId > 0) {
             int[] createdMovieIds = {createdMovieId};
-            movieDbLoadingService.crawlAndDownloadImages(createdMovieIds);
+            movieDbLoadingService.crawlMovieSubInfo(createdMovieIds);
         }
     }
 
     /**
-     * CINE 영화 코드로 썸네일 다운로드
+     * movie_id로 썸네일 다운로드
      *
      * @return
      */
     @PostMapping("cine/{movie_id}/thumbnail")
-    public void createMoviePoster(int movieId) {
+    public void updateMovieSubInfo(int movieId) {
         int[] arr = {movieId};
-        movieDbLoadingService.crawlAndDownloadImages(arr);
+        movieDbLoadingService.crawlMovieSubInfo(arr);
     }
 
     /**
-     * KOFIC 영화 코드로 썸네일 다운로드
+     * 박스오피스 수동 업로드 (업로드 하고자 하는 주의 다음주 월요일 날짜를 yyyyMMdd 형식으로 입력
      *
      * @return
      */
-    @PostMapping("kofic/{kofic_movie_code}/thumbnail")
+    @PostMapping("cine/boxoffice")
+    public void createBoxofficeManual(@RequestParam("monday_date") String mondaDayte) throws IOException {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        movieDbLoadingService.saveMovieBoxoffice(10,  LocalDate.parse(mondaDayte, formatter));
+    }
+
+    /**
+     * KOFIC 영화 코드로 썸네일 다운로드 (테스트)
+     *
+     * @return
+     */
     public void createMoviePoster(@RequestParam("kofic_movie_code") String koficMovieCode) {
         String[] arr = {koficMovieCode};
         movieDbLoadingService.crawlAndDownloadImages(arr);

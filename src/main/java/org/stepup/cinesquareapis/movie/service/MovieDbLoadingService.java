@@ -427,9 +427,9 @@ public class MovieDbLoadingService {
     }
 
 
-    // CINE CODE
+    // CINE movie_id로 크롤링 데이터 업데이트
     @Transactional
-    public void crawlAndDownloadImages(int[] movieIds) {
+    public void crawlMovieSubInfo(int[] movieIds) {
         for (int movieId : movieIds) {
             Movie movie = movieRepository.findById(movieId).orElse(null);
 
