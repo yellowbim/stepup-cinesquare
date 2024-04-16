@@ -27,6 +27,7 @@ Project Managing | https://petalite-bearberry-a1a.notion.site/CINESQUARE-25b196f
 - AWS S3
 - Spring Batch & Quartz
 - Swagger-ui | http://3.38.64.130:8080/swagger-ui/index.html
+- Crawling (data loading)
 
 ## Front-end & Design Skill
 - Figma
