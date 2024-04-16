@@ -36,7 +36,7 @@ public class MovieDetailResponse {
 
     private String[] actors;
 
-    private String[] imageIds;
+    private String[] images;
 
     private LocalDate openDate;
 
@@ -63,16 +63,16 @@ public class MovieDetailResponse {
         openDate = movie.getOpenDate();
         score = movieSimple.getScore();
 
-        // imageIds 배열에 URL을 붙여서 새 배열 생성
-        if (movie.getImageIds() != null) {
-            String[] x = movie.getImageIds().split(",");
-            imageIds = new String[x.length];  // 배열 초기화
+        // images 배열에 URL을 붙여서 새 배열 생성
+        if (movie.getImages() != null) {
+            String[] x = movie.getImages().split(",");
+            images = new String[x.length];  // 배열 초기화
             String baseUrl = "https://cinesquare-s3.s3.ap-northeast-2.amazonaws.com/movies/" + movieId + "/images/";
             for (int i = 0; i < x.length; i++) {
-                imageIds[i] = baseUrl + x[i] + ".jpg";
+                images[i] = baseUrl + x[i] + ".jpg";
             }
         } else {
-            imageIds = new String[0];
+            images = new String[0];
         }
 
     }
