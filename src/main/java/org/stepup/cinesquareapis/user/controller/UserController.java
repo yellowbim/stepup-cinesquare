@@ -14,7 +14,7 @@ import org.stepup.cinesquareapis.user.model.UserResponse;
 import org.stepup.cinesquareapis.user.service.UserService;
 
 @RequiredArgsConstructor
-@Tag(name = "users", description = "회원 정보 관련 API")
+@Tag(name = "2 users", description = "유저 API")
 @RequestMapping("api/users")
 @RestController
 public class UserController {

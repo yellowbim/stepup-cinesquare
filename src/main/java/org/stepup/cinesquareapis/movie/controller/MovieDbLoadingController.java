@@ -10,7 +10,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
 @RequiredArgsConstructor
-@Tag(name = "DB-loading", description = "DB 적재 관련 API (담당자 외 사용 금지)")
+@Tag(name = "7 DB-loading", description = "DB 적재 관련 API (담당자 외 사용 금지)")
 @RequestMapping("db-loading")
 @RestController
 public class MovieDbLoadingController {

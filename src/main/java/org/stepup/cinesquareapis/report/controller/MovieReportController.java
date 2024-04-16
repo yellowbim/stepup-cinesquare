@@ -12,19 +12,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.common.model.DataResponse;
 import org.stepup.cinesquareapis.common.model.ListResponse;
-import org.stepup.cinesquareapis.common.model.ResultResponse;
 import org.stepup.cinesquareapis.report.entity.Comment;
 import org.stepup.cinesquareapis.report.entity.CommentReply;
 import org.stepup.cinesquareapis.report.model.*;
 import org.stepup.cinesquareapis.report.service.MovieReportService;
 
-import javax.xml.transform.Result;
-import java.net.http.HttpResponse;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "movie-reports", description = "영화 리뷰 API")
+@Tag(name = "5 movie-reports", description = "영화 리뷰 API")
 @RequestMapping("api/movie-reports")
 public class MovieReportController {
 

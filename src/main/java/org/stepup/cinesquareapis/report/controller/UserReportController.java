@@ -20,7 +20,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "user-reports", description = "유저별 영화 리뷰 API")
+@Tag(name = "4 user-reports", description = "유저별 영화 리뷰 API")
 @RequestMapping("api/user-reports")
 public class UserReportController {
 
