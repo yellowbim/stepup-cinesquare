@@ -1,6 +1,7 @@
 package org.stepup.cinesquareapis.upload.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.stepup.cinesquareapis.upload.service.FileUploadService;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "6 upload", description = "파일 업로드 API")
 @RequestMapping("api/upload")
 public class FileUploadController {
 

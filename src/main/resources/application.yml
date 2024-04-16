@@ -64,6 +64,12 @@ logging:
           jdbc:
             bind: trace
 
+spring-doc:
+  swagger-ui:
+    tags-sorter: alpha
+    #    operations-sorter : method
+    doc-expansion : none
+
 ---
 jasypt:
   encryptor:
@@ -114,3 +120,9 @@ logging:
         orm:
           jdbc:
             bind: debug
+
+spring-doc:
+  swagger-ui:
+    tags-sorter: alpha
+#    operations-sorter : method
+    doc-expansion : none

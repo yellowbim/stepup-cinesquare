@@ -1,6 +1,7 @@
 package org.stepup.cinesquareapis.test;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +14,7 @@ import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "9 test", description = "테스트용 API")
 @RequestMapping("api/test")
 public class TestController {
     @Operation(summary = "400 애러")
