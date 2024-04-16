@@ -1,8 +1,5 @@
 package org.stepup.cinesquareapis.upload.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,9 +12,6 @@ import org.stepup.cinesquareapis.upload.entity.UploadInfo;
 import org.stepup.cinesquareapis.upload.repository.FileUploadRepository;
 import org.stepup.cinesquareapis.user.repository.UserRepository;
 import org.stepup.cinesquareapis.util.AwsS3FileUpload;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -66,50 +60,49 @@ public class FileUploadService {
         return true;
     }
 
-    /**
-     * 영화 포스터 업로드(다중)
-     * @return
-     */
-    @Transactional
-    public Boolean moviePosterUpload(String category, MultipartFile[] multipartFile, Integer movieId) throws JsonProcessingException {
-
-        List<Integer> newPosterIds = new ArrayList<>();
-
-        // 기존 영화 포스터 url 확인
-        String curPosterIds = movieRepository.findPosterUrlByMovieId(movieId);
-
-        // 영화 포스터 업로드
-        for (int i = 0; i < multipartFile.length; i++) {
-            String uploadResult = awsS3FileUpload.uploadFileV1(category, multipartFile[i]);
-            if ("500".equals(uploadResult)) {
-                return false;
-            }
-
-            // 단건 DB insert
-            Integer uResult = setUploadInfo(multipartFile[i], uploadResult);
-
-            newPosterIds.add(uResult);
-        }
-
-        // 업로드 이력이 있으면 수정
-        if (curPosterIds.length()> 1) {
-            // JSON 문자열을 List<Integer>로 파싱
-            ObjectMapper mapper = new ObjectMapper();
-            List<Integer> integerList = mapper.readValue(curPosterIds, new TypeReference<List<Integer>>() {});
-            List<String> fileKeyList = fileUploadRepository.findAllByFileId(integerList);
-
-            for (String key : fileKeyList) {
-                awsS3FileUpload.deleteFileV1(key);
-            }
-        }
-
-        // 영화테이블 upload
-        movieRepository.updatePosterIds(movieId, newPosterIds.toString());
-
-
-
-        return true;
-    }
+    // updatePosterIds 사용하지 않으므로 에러 발생 -> 주석
+//    /**
+//     * 영화 포스터 업로드(다중)
+//     * @return
+//     */
+//    @Transactional
+//    public Boolean moviePosterUpload(String category, MultipartFile[] multipartFile, Integer movieId) throws JsonProcessingException {
+//
+//        List<Integer> newPosterIds = new ArrayList<>();
+//
+//        // 기존 영화 포스터 url 확인
+//        String curPosterIds = movieRepository.findPosterUrlByMovieId(movieId);
+//
+//        // 영화 포스터 업로드
+//        for (int i = 0; i < multipartFile.length; i++) {
+//            String uploadResult = awsS3FileUpload.uploadFileV1(category, multipartFile[i]);
+//            if ("500".equals(uploadResult)) {
+//                return false;
+//            }
+//
+//            // 단건 DB insert
+//            Integer uResult = setUploadInfo(multipartFile[i], uploadResult);
+//
+//            newPosterIds.add(uResult);
+//        }
+//
+//        // 업로드 이력이 있으면 수정
+//        if (curPosterIds.length()> 1) {
+//            // JSON 문자열을 List<Integer>로 파싱
+//            ObjectMapper mapper = new ObjectMapper();
+//            List<Integer> integerList = mapper.readValue(curPosterIds, new TypeReference<List<Integer>>() {});
+//            List<String> fileKeyList = fileUploadRepository.findAllByFileId(integerList);
+//
+//            for (String key : fileKeyList) {
+//                awsS3FileUpload.deleteFileV1(key);
+//            }
+//        }
+//
+//        // 영화테이블 upload
+//        movieRepository.updatePosterIds(movieId, newPosterIds.toString());
+//
+//        return true;
+//    }
 
     /**
      * 파일 업로드 정보 DB Insert (단건 return)

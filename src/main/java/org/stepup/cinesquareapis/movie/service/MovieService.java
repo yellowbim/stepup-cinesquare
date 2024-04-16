@@ -97,8 +97,9 @@ public class MovieService {
         // 4. 반환 데이터 생성
         MovieRankResponse[] movies = new MovieRankResponse[10];
         for (int i = 0; i < movies.length; i++) {
-            MovieBoxoffice movieBoxoffice = movieBoxoffices[i];
-            movies[i] = new MovieRankResponse(movieBoxoffice);
+            MovieSimple movieSimple = movieSimpleRepository.findById(movieBoxoffices[i].getMovieId())
+                    .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_MOVIE_SIMPLE));
+            movies[i] = new MovieRankResponse(movieSimple,i+1);
         }
 
         return movies;
@@ -124,7 +125,8 @@ public class MovieService {
         MovieSimple[] getCinesquareTop10 = movieSimpleRepository.findTop10ByOrderByScoreDesc();
         MovieRankResponse[] top10Movies = new MovieRankResponse[10];
         for (int i = 0; i < getCinesquareTop10.length; i++) {
-            top10Movies[i] = new MovieRankResponse(getCinesquareTop10[i].getMovieId(), i + 1);
+
+            top10Movies[i] = new MovieRankResponse(getCinesquareTop10[i], i + 1);
         }
 
         return top10Movies;

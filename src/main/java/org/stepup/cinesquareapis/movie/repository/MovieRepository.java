@@ -18,11 +18,16 @@ public interface MovieRepository extends JpaRepository<Movie, Integer> {
 
     Movie findByKoficMovieCode(String koficMovieCode);
 
-    @Query("SELECT m.posterIds FROM Movie m WHERE m.movieId = :movieId")
-    String findPosterUrlByMovieId(Integer movieId);
+    @Modifying
+    @Transactional
+    @Query("UPDATE Movie m SET m.synopsys = :synopsys WHERE m.movieId = :movieId")
+    void updateSynopsys(String synopsys, Integer movieId);
 
     @Modifying
     @Transactional
-    @Query("UPDATE Movie m SET m.posterIds = :posterIds WHERE m.movieId = :movieId")
-    void updatePosterIds(Integer movieId, String posterIds);
+    @Query("UPDATE Movie m SET m.imageIds = :imageIds WHERE m.movieId = :movieId")
+    void updateImageIds(String imageIds, Integer movieId);
+
+    @Query("SELECT m.imageIds FROM Movie m WHERE m.movieId = :movieId")
+    String findPosterUrlByMovieId(Integer movieId);
 }

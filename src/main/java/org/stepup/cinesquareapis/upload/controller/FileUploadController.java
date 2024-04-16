@@ -1,6 +1,5 @@
 package org.stepup.cinesquareapis.upload.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -34,20 +33,20 @@ public class FileUploadController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    /**
-     * 영화 포스터 업로드
-     */
-    @Operation(summary = "영화 포스터 업로드(다중)",
-            description = "UP : User Profile, MO : 영화 포스터, MA : Movie Actor 등 축약어로 구분하고있음"
-    )
-    @PostMapping("movies/{movie_id}")
-    public ResponseEntity<ResultResponse<Boolean>> moviePosterUpload(
-            @RequestPart(value = "file") MultipartFile[] multipartFile, @PathVariable("movie_id") Integer movieId) throws JsonProcessingException {
-
-        Boolean data = fileUploadService.moviePosterUpload("MO", multipartFile, movieId);
-        ResultResponse<Boolean> response = new ResultResponse<>();
-        response.setResult(data);
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
+//    /**
+//     * 영화 포스터 업로드
+//     */
+//    @Operation(summary = "영화 포스터 업로드(다중)",
+//            description = "UP : User Profile, MO : 영화 포스터, MA : Movie Actor 등 축약어로 구분하고있음"
+//    )
+//    @PostMapping("movies/{movie_id}")
+//    public ResponseEntity<ResultResponse<Boolean>> moviePosterUpload(
+//            @RequestPart(value = "file") MultipartFile[] multipartFile, @PathVariable("movie_id") Integer movieId) throws JsonProcessingException {
+//
+//        Boolean data = fileUploadService.moviePosterUpload("MO", multipartFile, movieId);
+//        ResultResponse<Boolean> response = new ResultResponse<>();
+//        response.setResult(data);
+//
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
 }

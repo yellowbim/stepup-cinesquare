@@ -1,24 +1,19 @@
 package org.stepup.cinesquareapis.movie.model;
 
 import lombok.Getter;
-import org.stepup.cinesquareapis.movie.entity.MovieBoxoffice;
+import org.stepup.cinesquareapis.movie.entity.MovieSimple;
 
 @Getter
 public class MovieRankResponse {
-    private int movieId;
+    private MovieSimpleResponse movie;
 
     private int rank;
 
     public MovieRankResponse() {
     }
 
-    public MovieRankResponse(int movieId, int rank) {
-        this.movieId = movieId;
+    public MovieRankResponse(MovieSimple movie, int rank) {
+        this.movie = new MovieSimpleResponse(movie);
         this.rank = rank;
-    }
-
-    public MovieRankResponse(MovieBoxoffice movieBoxoffice) {
-        movieId = movieBoxoffice.getMovieId();
-        rank = movieBoxoffice.getRank();
     }
 }
