@@ -4,12 +4,15 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.stepup.cinesquareapis.common.exception.enums.CustomErrorCode;
+import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
 import org.stepup.cinesquareapis.report.entity.Comment;
 import org.stepup.cinesquareapis.report.entity.CommentReply;
 import org.stepup.cinesquareapis.report.model.*;
 import org.stepup.cinesquareapis.report.repository.MovieCommentReplyRepository;
 import org.stepup.cinesquareapis.report.repository.MovieCommentRepository;
 import org.stepup.cinesquareapis.report.repository.MovieCommentSummaryRepository;
+import org.stepup.cinesquareapis.report.repository.UserLikeCommentRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,6 +24,7 @@ import java.util.stream.Collectors;
 public class MovieReportService {
 
     private final MovieCommentRepository movieCommentRepository;
+    private final UserLikeCommentRepository userLikeCommentRepository;
     private final MovieCommentReplyRepository movieCommentReplyRepository;
     private final MovieCommentSummaryRepository movieCommentSummaryRepository;
 
@@ -28,6 +32,12 @@ public class MovieReportService {
      * 영화 코멘트 작성
      */
     public Comment saveComment(MovieCommentSaveRequest request, Integer movieId) {
+        // 값 존재 여부 판단
+        int count = movieCommentRepository.countByMovieIdAndUserId(movieId, request.getUserId());
+        if (count > 0) {
+            throw new RestApiException(CustomErrorCode.ALREADY_REGISTED_COMMENT);
+        }
+
         return movieCommentRepository.save(request.toEntity(movieId));
     }
 
@@ -40,15 +50,10 @@ public class MovieReportService {
 
         // 유효성 체크
         if (data.getCommentId() == null || "".equals(data.getCommentId())) {
-            // 에러처리
-            System.out.println("코멘트 없음");
-            Comment result = new Comment();
-            return result;
+            throw new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT);
         }
 
         data.setContent(request.getContent());
-        data.setLike(request.getLike());
-        data.setReplyCount(request.getReplyCount());
         data.setUserId(request.getUserId());
         data.setMovieId(movieId);
         return movieCommentRepository.save(data);
@@ -57,7 +62,13 @@ public class MovieReportService {
     /**
      * 영화 코멘트 삭제
      */
+    @Transactional
     public int deleteComment(Integer commentId) {
+        // 코멘트 답변 삭제
+        movieCommentReplyRepository.deleteByCommentId(commentId);
+        // 코멘트 좋아요 삭제
+        userLikeCommentRepository.deleteByCommentId(commentId);
+        // 코멘트 삭제
         return movieCommentRepository.deleteByCommentId(commentId);
     }
 
@@ -65,6 +76,15 @@ public class MovieReportService {
      * 영화 코멘트 답글 작성
      */
     public CommentReply saveCommentReply(MovieCommentReplySaveRequest request, Integer commentId, Integer movieId) {
+        // 실제 존재하는 코멘트인지 조회
+        movieCommentRepository.findById(commentId).orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
+
+        // 이미 등록된 내용인지 조회
+        int count = movieCommentReplyRepository.countByMovieIdAndUserIdAndCommentId(movieId, request.getUserId(), commentId);
+        if (count > 0) {
+            throw new RestApiException(CustomErrorCode.ALREADY_REGISTED_COMMENT_REPLY);
+        }
+
         return movieCommentReplyRepository.save(request.toEntity(commentId, movieId));
     }
 
@@ -77,14 +97,10 @@ public class MovieReportService {
 
         // 유효성 체크
         if (data.getReplyId() == null || "".equals(data.getReplyId())) {
-            // 에러처리
-            System.out.println("코멘트 답글 없음");
-            CommentReply result = new CommentReply();
-            return new CommentReply();
+            throw new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT_REPLY);
         }
 
         data.setContent(request.getContent());
-        data.setLike(request.getLike());
         data.setUserId(request.getUserId());
         data.setCommentId(commentId);
         data.setMovieId(movieId);

@@ -10,6 +10,8 @@ import org.springframework.data.annotation.CreatedDate;
 import java.time.LocalDateTime;
 
 
+
+
 @Entity
 @Getter
 @Setter
@@ -27,7 +29,7 @@ public class UserScore {
     @Column(nullable = false)
     private Integer movieId;
 
-    @ColumnDefault("0")
+//    @ColumnDefault("0")
     @Column(name = "score")
     private Double score;
 

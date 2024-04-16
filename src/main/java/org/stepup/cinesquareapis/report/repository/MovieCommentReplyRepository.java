@@ -11,8 +11,13 @@ import java.util.List;
 @Repository
 @Transactional
 public interface MovieCommentReplyRepository extends JpaRepository<CommentReply, Integer> {
+    int countByMovieIdAndUserIdAndCommentId(Integer movieId, Integer userId, Integer commentId);
+
     // reply id 기준으로 조회
     CommentReply findByReplyId(Integer replyId);
+
+    // comment id 기준으로 삭제
+    int deleteByCommentId(Integer commentId);
 
     // reply id 기준으로 삭제
     int deleteByReplyId(Integer replyId);

@@ -26,13 +26,13 @@ public class UserLikeComment {
     @Column(name = "comment_id")
     private Integer commentId;
 
+    @Id
+    @Column(name = "movie_id", nullable = false)
+    private Integer movieId;
+
     @CreationTimestamp
     @Column(name = "created", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime created;
 
-    @UpdateTimestamp
-    @Column(name = "updated")
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime updated;
 }

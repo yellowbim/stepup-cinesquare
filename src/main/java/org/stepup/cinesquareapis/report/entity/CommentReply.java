@@ -31,9 +31,8 @@ public class CommentReply {
     @Column(name = "content", length = 1000)
     private String content;
 
-    @ColumnDefault("0")
-    @Column(name = "like") // 예약어라 제외를 시켜주는 방법
-    private Integer like;
+    @Column(name = "like")
+    private int like;
 
     @Column(name = "movie_id", nullable = false)
     private Integer movieId;

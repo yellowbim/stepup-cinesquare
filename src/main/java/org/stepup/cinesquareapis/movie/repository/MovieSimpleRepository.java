@@ -19,4 +19,9 @@ public interface MovieSimpleRepository extends JpaRepository<MovieSimple, Intege
     @Modifying
     @Query("UPDATE MovieSimple m SET m.thumbnail = true WHERE m.movieId = :movieId")
     void updateThumbnailToTrue(Integer movieId);
+
+    @Transactional
+    @Modifying
+    @Query("UPDATE MovieSimple m SET m.score = :score WHERE m.movieId = :movieId")
+    int updateAvgScore(Double score, Integer movieId);
 }

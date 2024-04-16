@@ -60,20 +60,29 @@ public class CommentSummary {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime updated;
 
-//    select
-//    A.comment_id,
+
+
+//    CREATE OR REPLACE
+//            ALGORITHM = UNDEFINED VIEW `cinesquare`.`v_movie_comment_summary` AS
+//            select
 //    A.movie_id ,
+//    A.comment_id,
 //    A.user_id ,
 //    A.content ,
-//    IFNULL(C.score, 0),
+//    IFNULL(C.score , 0) as score,
 //    B.nickname ,
-//    IFNULL(A.`like`, 0) ,
-//    IFNULL(A.reply_count, 0) ,
-//    A.created ,
-//    A.updated
+//    IFNULL(COUNT(D.comment_id), 0) as `like` ,
+//    IFNULL(COUNT(E.reply_id), 0) as reply_count ,
+//    A.created
 //    from cinesquare.tb_movie_comment A
 //    LEFT JOIN cinesquare.tb_user B
 //    on A.user_id = B.user_id
 //    LEFT join cinesquare.tb_user_movie_score C
-//    on B.user_id = C.user_id
+//    on A.user_id = C.user_id
+//    AND A.movie_id  = C.movie_id
+//    LEFT join cinesquare.tb_user_like_comment D
+//    ON A.comment_id = D.comment_id
+//    LEFT join cinesquare.tb_movie_comment_reply E
+//    ON A.comment_id = E.comment_id
+//    group by A.user_id
 }
