@@ -47,9 +47,9 @@ public class MovieDbLoadingController {
      *
      * @return
      */
-
-    public void createMoviePoster(int movieCode) {
-        int[] arr = {movieCode};
+    @PostMapping("cine/{movie_id}/thumbnail")
+    public void createMoviePoster(int movieId) {
+        int[] arr = {movieId};
         movieDbLoadingService.crawlAndDownloadImages(arr);
     }
 
@@ -58,8 +58,9 @@ public class MovieDbLoadingController {
      *
      * @return
      */
-    public void createMoviePoster(@RequestParam("movie_code") String movieCode) {
-        String[] arr = {movieCode};
+    @PostMapping("kofic/{kofic_movie_code}/thumbnail")
+    public void createMoviePoster(@RequestParam("kofic_movie_code") String koficMovieCode) {
+        String[] arr = {koficMovieCode};
         movieDbLoadingService.crawlAndDownloadImages(arr);
     }
 }

@@ -35,6 +35,9 @@ public class Movie {
     @Column(nullable = false)
     private boolean thumbnail;
 
+    @Column(length = 1000)
+    private String synopsys;
+
     private short runningTime;
 
     @Column(length = 20)
@@ -64,7 +67,7 @@ public class Movie {
     private String actors;
 
     @Column
-    private String posterIds;
+    private String imageIds;
 
     @CreationTimestamp
     @Column(updatable = false)

@@ -10,9 +10,13 @@ import java.time.LocalDate;
 public class MovieDetailResponse {
     private int movieId;
 
-    private String movieTitle;
+    private String title;
 
-    private String movieTitleEn;
+    private String titleEn;
+
+    private String thumbnail;
+
+    private String synopsys;
 
     private int runningTime;
 
@@ -20,17 +24,19 @@ public class MovieDetailResponse {
 
     private String nation;
 
-    private String nations;
+    private String[] nations;
 
     private String genre;
 
-    private String genres;
+    private String[] genres;
 
     private String director;
 
-    private String directors;
+    private String[] directors;
 
-    private String actors;
+    private String[] actors;
+
+    private String[] imageIds;
 
     private LocalDate openDate;
 
@@ -41,18 +47,33 @@ public class MovieDetailResponse {
 
     public MovieDetailResponse(Movie movie, MovieSimple movieSimple) {
         movieId = movieSimple.getMovieId();
-        movieTitle = movieSimple.getTitle();
-        movieTitleEn = movie.getTitleEn();
+        title = movieSimple.getTitle();
+        titleEn = movie.getTitleEn();
+        thumbnail = movie.isThumbnail() ? "https://cinesquare-s3.s3.ap-northeast-2.amazonaws.com/movies/" + getMovieId() + "/thumbnail.jpg" : null;
+        synopsys = movie.getSynopsys();
         runningTime = movieSimple.getRunningTime();
         productionYear = movieSimple.getProductionYear();
         nation = movieSimple.getNation();
-        nations = movie.getNations();
+        nations = movie.getNations() != null ? movie.getNations().split(",") : new String[0];
         genre = movie.getGenre();
-        genres = movie.getGenres();
+        genres = movie.getGenres().split(",");
         director = movie.getDirector();
-        directors = movie.getDirectors();
-        actors = movie.getActors();
+        directors = movie.getDirectors() != null ? movie.getDirectors().split(",") : new String[0];
+        actors = movie.getActors() != null ? movie.getActors().split(",") : new String[0];
         openDate = movie.getOpenDate();
         score = movieSimple.getScore();
+
+        // imageIds 배열에 URL을 붙여서 새 배열 생성
+        if (movie.getImageIds() != null) {
+            String[] x = movie.getImageIds().split(",");
+            imageIds = new String[x.length];  // 배열 초기화
+            String baseUrl = "https://cinesquare-s3.s3.ap-northeast-2.amazonaws.com/movies/" + movieId + "/images/";
+            for (int i = 0; i < x.length; i++) {
+                imageIds[i] = baseUrl + x[i] + ".jpg";
+            }
+        } else {
+            imageIds = new String[0];
+        }
+
     }
 }

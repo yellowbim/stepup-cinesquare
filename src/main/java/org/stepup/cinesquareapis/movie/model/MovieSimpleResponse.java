@@ -7,7 +7,7 @@ import org.stepup.cinesquareapis.movie.entity.MovieSimple;
 public class MovieSimpleResponse {
     private int movieId;
 
-    private String movieTitle;
+    private String title;
 
     private int runningTime;
 
@@ -22,7 +22,7 @@ public class MovieSimpleResponse {
 
     public MovieSimpleResponse(MovieSimple movieSimple) {
         movieId = movieSimple.getMovieId();
-        movieTitle = movieSimple.getTitle();
+        title = movieSimple.getTitle();
         runningTime = movieSimple.getRunningTime();
         productionYear = movieSimple.getProductionYear();
         nation = movieSimple.getNation();
