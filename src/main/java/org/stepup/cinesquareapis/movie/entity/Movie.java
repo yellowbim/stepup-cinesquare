@@ -66,8 +66,8 @@ public class Movie {
     @Column(length = 300)
     private String actors;
 
-    @Column
-    private String imageIds;
+    @Column(length = 100)
+    private String images;
 
     @CreationTimestamp
     @Column(updatable = false)

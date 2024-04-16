@@ -445,12 +445,15 @@ public class MovieDbLoadingService {
                 Elements elements = doc.select("div > div.item_tab.basic");
                 // 1. 썸네일 이미지 크롤링
                 try {
-                    String koficImageUrl = elements.select("div.ovf.info.info1 > a").get(0).attr("href");
+                    Elements x = elements.select("div.ovf.info.info1 > a");
+                    if (x.size() > 0) {
+                        String koficImageUrl = x.get(0).attr("href");
 
-                    // S3에 이미지 저장
-                    String savePath = "movies/" + movieId;
-                    String filename = "thumbnail";
-                    downloadImage(koficImageUrl, savePath, filename);
+                        // S3에 이미지 저장
+                        String savePath = "movies/" + movieId;
+                        String filename = "thumbnail";
+                        downloadImage(koficImageUrl, savePath, filename);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     // 로그 DB 저장
@@ -462,19 +465,25 @@ public class MovieDbLoadingService {
 
                 // 2. 스틸컷 이미지 1개 크롤링
                 try {
-                    String koficImageUrl = elements.select("div:nth-child(4) > div.thumb_slide > div").get(0).select("img").attr("src");
+                    Elements x = elements.select("div:nth-child(4) > div.thumb_slide > div");
+                    if (x.size() > 0) {
+                        String koficImageUrl = x.get(0).select("img").attr("src");
 
-                    // S3에 이미지 저장
-                    String savePath = "movies/" + movieId + "/images";
-                    imageIds = "1";
-                    downloadImage(koficImageUrl, savePath, imageIds);
+                        // S3에 이미지 저장
+                        String savePath = "movies/" + movieId + "/images";
+                        imageIds = "1";
+                        downloadImage(koficImageUrl, savePath, imageIds);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
 
                 // 3. 시놉시스 html 크롤링
                 try {
-                    synopsys = elements.select("div:nth-child(5) > p").get(0).toString();
+                    Elements x = elements.select("div:nth-child(5) > p");
+                    if (x.size() > 0) {
+                        synopsys = x.get(0).toString();
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -486,7 +495,7 @@ public class MovieDbLoadingService {
                     movieRepository.updateSynopsys(synopsys, movieId);
                 }
                 if (imageIds != null) {
-                    movieRepository.updateImageIds(imageIds, movieId);
+                    movieRepository.updateImages(imageIds, movieId);
                 }
 
                 // 로그 DB 저장
