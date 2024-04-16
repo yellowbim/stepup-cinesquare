@@ -9,14 +9,12 @@ import java.time.LocalDateTime;
 public class MovieCommentReplySaveRequest {
     private int userId;
     private String content;
-    private int like;
 
     public CommentReply toEntity(Integer commentId, Integer movieId) {
         return new CommentReply().builder()
                 .commentId(commentId)
                 .userId(userId)
                 .content(content)
-                .like(like)
                 .movieId(movieId)
                 .build();
     }

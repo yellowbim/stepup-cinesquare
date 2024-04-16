@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 public class MovieCommentReplyUpdateRequest {
     private int userId;
     private String content;
-    private int like;
 
     public CommentReply toEntity(int replyId, int commentId, int movieId) {
         return new CommentReply().builder()
@@ -17,7 +16,6 @@ public class MovieCommentReplyUpdateRequest {
                 .commentId(commentId)
                 .userId(userId)
                 .content(content)
-                .like(like)
                 .movieId(movieId)
                 .build();
     }

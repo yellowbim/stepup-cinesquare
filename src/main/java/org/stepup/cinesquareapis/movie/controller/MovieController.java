@@ -4,14 +4,20 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.common.model.DataResponse;
 import org.stepup.cinesquareapis.common.model.ListResponse;
+import org.stepup.cinesquareapis.movie.entity.MovieSimple;
 import org.stepup.cinesquareapis.movie.model.MovieDetailResponse;
 import org.stepup.cinesquareapis.movie.model.MovieRankResponse;
 import org.stepup.cinesquareapis.movie.model.MovieSimpleResponse;
+import org.stepup.cinesquareapis.movie.model.RandomMovieResponse;
 import org.stepup.cinesquareapis.movie.service.MovieService;
+import org.stepup.cinesquareapis.report.model.MovieReplyResponse;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Tag(name = "movies", description = "영화 관련 API")
@@ -99,5 +105,35 @@ public class MovieController {
         response.setList(list);
 
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 영화 카테고리 리턴
+     *
+     * @return ResponseEntity.ok(response)
+     */
+//    @Operation(summary = "영화 카테고리 목록 조회")
+//    @GetMapping("movie-categories")
+//    public ResponseEntity<ListResponse<MovieSimpleResponse[]>> getRandomMovie(@RequestParam(name = "title", required = true) String title) {
+//        MovieSimpleResponse[] list = movieService.findMovie(title);
+//        ListResponse<MovieSimpleResponse[]> response = new ListResponse<>();
+//        response.setList(list);
+//
+//        return ResponseEntity.ok(response);
+//    }
+
+    /**
+     * 평가하기 (랜덤 영화 조회)
+     *
+     * @return ResponseEntity.ok(response)
+     */
+    @Operation(summary = "평가하기 (랜덤 영화 조회)")
+    @GetMapping("random")
+    public ResponseEntity<ListResponse<List<RandomMovieResponse>>> getRandomMovie(@RequestParam(name = "category", required = false) String category) {
+        List<RandomMovieResponse> data = movieService.getRandomMovies(category);
+        ListResponse<List<RandomMovieResponse>> response = new ListResponse<>();
+        response.setList(data);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

@@ -25,18 +25,9 @@ public class UserStatus {
     @Column(nullable = false)
     private Integer movieId;
 
-    @ColumnDefault("1")
-    @Column(name = "status")
-    private Integer status;
-
     @CreationTimestamp
     @Column(name = "created", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime created;
-
-    @UpdateTimestamp
-    @Column(name = "updated")
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime updated;
 
 }

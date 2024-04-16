@@ -7,13 +7,9 @@ import java.time.LocalDateTime;
 
 @Data
 public class UserScoreRequest {
-    private int userId;
-    private int movieId;
     private Double score;
-    private LocalDateTime created;
-    private LocalDateTime updated;
 
-    public UserScore toEntity() {
+    public UserScore toEntity(int userId, int movieId) {
         return new UserScore().builder()
                 .userId(userId)
                 .movieId(movieId)
