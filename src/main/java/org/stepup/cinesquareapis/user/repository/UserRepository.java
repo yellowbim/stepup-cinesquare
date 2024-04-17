@@ -2,7 +2,7 @@ package org.stepup.cinesquareapis.user.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import org.stepup.cinesquareapis.auth.jwt.RoleType;
+import org.stepup.cinesquareapis.user.enums.RoleType;
 import org.stepup.cinesquareapis.user.entity.User;
 
 import java.util.List;

@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
+// JWT 생성 및 복호화
 @PropertySource("classpath:jwt.yml")
 @Service
 public class TokenProvider {
