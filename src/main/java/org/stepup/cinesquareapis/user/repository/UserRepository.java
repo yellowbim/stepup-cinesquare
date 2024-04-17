@@ -13,8 +13,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByAccount(String account);
 
-//    User findByAccount(String account);
-
 //    @Modifying
 //    @Query("UPDATE User u set u.profile= :fileId where u.userId = :userId")
 //    void updateProfileByUserId(Integer userId, @Param("fileId") Integer fileId);
