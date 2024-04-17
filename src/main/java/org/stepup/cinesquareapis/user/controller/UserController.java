@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.common.model.DataResponse;
 import org.stepup.cinesquareapis.common.model.ResultResponse;
@@ -17,6 +18,7 @@ import org.stepup.cinesquareapis.user.service.UserService;
 @Tag(name = "2 users", description = "유저 API")
 @RequestMapping("api/users")
 @RestController
+@PreAuthorize("hasAuthority('USER')")
 public class UserController {
 
     private final UserService UserService;

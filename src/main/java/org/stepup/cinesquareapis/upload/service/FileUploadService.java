@@ -38,24 +38,24 @@ public class FileUploadService {
     public Boolean userProfileUpload(String category, MultipartFile multipartFile, Integer userId) {
 
         // 기존 사용자 profile 정보 조회
-        String profilePath = userRepository.findUserProfile(userId);
-
-        String uploadResult = awsS3FileUpload.uploadFileV1(category, multipartFile);
-
-        if ("500".equals(uploadResult)) {
-            return false;
-        }
-
-        // 단건 DB Insert
-        Integer uResult = setUploadInfo(multipartFile, uploadResult);
-
-        // 기존 사용자 이미지 삭제
-        if (profilePath != null) {
-            awsS3FileUpload.deleteFileV1(profilePath);
-        }
-
-        // 사용자 테이블 upload
-        userRepository.updateProfileByUserId(userId, uResult);
+//        String profilePath = userRepository.findUserProfile(userId);
+//
+//        String uploadResult = awsS3FileUpload.uploadFileV1(category, multipartFile);
+//
+//        if ("500".equals(uploadResult)) {
+//            return false;
+//        }
+//
+//        // 단건 DB Insert
+//        Integer uResult = setUploadInfo(multipartFile, uploadResult);
+//
+//        // 기존 사용자 이미지 삭제
+//        if (profilePath != null) {
+//            awsS3FileUpload.deleteFileV1(profilePath);
+//        }
+//
+//        // 사용자 테이블 upload
+//        userRepository.updateProfileByUserId(userId, uResult);
 
         return true;
     }
