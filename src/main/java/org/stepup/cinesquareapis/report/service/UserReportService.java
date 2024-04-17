@@ -10,6 +10,7 @@ import org.stepup.cinesquareapis.movie.repository.MovieSimpleRepository;
 import org.stepup.cinesquareapis.report.entity.*;
 import org.stepup.cinesquareapis.report.model.MovieLikeCommentResponse;
 import org.stepup.cinesquareapis.report.model.UserScoreRequest;
+import org.stepup.cinesquareapis.report.model.UserScoredResponse;
 import org.stepup.cinesquareapis.report.repository.MovieCommentRepository;
 import org.stepup.cinesquareapis.report.repository.UserLikeCommentRepository;
 import org.stepup.cinesquareapis.report.repository.UserScoreRepository;
@@ -194,9 +195,6 @@ public class UserReportService {
      */
     @Transactional
     public Boolean saveLikeComment(Integer userId, Integer movieId, Integer commentId) {
-        // key setting
-        UserLikeCommentKey userLikeCommentKey = new UserLikeCommentKey(userId, movieId, commentId);
-
         // 실제 존재하는 코멘트인지 확인
         Comment data = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
         if (data == null) {
@@ -237,12 +235,28 @@ public class UserReportService {
     }
 
     /**
-     * 부과된 별점 개수 조회
+     * 사용자가 부과한 별점 개수 조회
      */
     @Transactional
     public int getScoredCount(Integer userId) {
         return userScoreRepository.countByUserId(userId);
     }
+
+    /**
+     * 좋아요 한 코맨트 개수 조회
+     */
+    @Transactional
+    public int getLikeCommentCounts(Integer userId) {
+        return userLikeCommentRepository.countAllByUserId(userId);
+    }
+
+    /**
+     * 평가한 영화 목록 조회(별점만)
+     */
+//    @Transactional
+//    public List<UserScoredResponse> getScoredMovies(Integer userId) {
+//        return userScoreRepository.findAllMoviesByUserId(userId);
+//    }
 
 
     /**

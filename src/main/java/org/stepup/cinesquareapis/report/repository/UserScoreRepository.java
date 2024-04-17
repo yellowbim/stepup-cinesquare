@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.stepup.cinesquareapis.report.entity.UserScore;
 import org.stepup.cinesquareapis.report.entity.UserScoreKey;
+import org.stepup.cinesquareapis.report.model.UserScoredResponse;
 
 import java.util.List;
 
@@ -26,4 +27,8 @@ public interface UserScoreRepository extends JpaRepository<UserScore, UserScoreK
 
     // 부과된 별점 개수
     int countByUserId(Integer userId);
+
+//    // 평가한 영화 목록
+//    @Query(value = "SELECT A.movie_id , B.title , A.score  FROM cinesquare.tb_user_movie_score A INNER JOIN cinesquare.tb_movie_simple B ON A.movie_id = B.movie_id", nativeQuery = true)
+//    List<UserScoredResponse> findAllMoviesByUserId(Integer userId);
 }

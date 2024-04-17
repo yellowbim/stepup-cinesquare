@@ -24,4 +24,7 @@ public interface UserLikeCommentRepository extends JpaRepository<UserLikeComment
     int deleteByCommentId(Integer commentId);
 
     List<UserLikeComment> findAllByUserIdAndMovieId(Integer userId, Integer movieId);
+
+    // 좋아요한 코멘트 개수 조회
+    int countAllByUserId(Integer userId);
 }

@@ -188,13 +188,29 @@ public class MovieReportController {
      * @param comment_id
      * table : tb_movie_comment_summary
      */
-    @Operation(summary = "영화 코멘트 상세 및 답글 조회",
+    @Operation(summary = "영화 코멘트 답글 조회",
                 description = "https://pedia.watcha.com/ko-KR/comments/NXnE5gwnkyMzG 코멘트 답글 조회")
     @GetMapping("comments/{comment_id}")
     public ResponseEntity<ListResponse<List<MovieReplyResponse>>> searchReplyList(@PathVariable("comment_id") Integer commentId) {
         List<MovieReplyResponse> data = movieReportService.searchReplyList(commentId);
         ListResponse<List<MovieReplyResponse>> response = new ListResponse<>();
         response.setList(data);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * 사용자가 평가한 코멘트 개수 조회
+     *
+     * @param comment_id
+     * table : tb_movie_comment_summary
+     */
+    @Operation(summary = "사용자가 평가한 코멘트 개수 조회 (mypage)")
+    @GetMapping("comments/counts")
+    public ResponseEntity<DataResponse<Integer>> getUserCommentCounts(@RequestParam(value = "user_id", required = true) Integer user_id) {
+        int data = movieReportService.getUserCommentCount(user_id);
+        DataResponse<Integer> response = new DataResponse<>();
+        response.setData(data);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
