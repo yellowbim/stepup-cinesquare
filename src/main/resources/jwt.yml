@@ -2,7 +2,7 @@
 secret-key: NiOeyFbN1Gqo10bPgUyTFsRMkJpGLXSvGP04eFqj5B30r5TcrtlSXfQ7TndvYjNvfkEKLqILn0j1SmKODO1Yw3JpBBgI3nVPEahqxeY8qbPSFGyzyEVxnl4AQcrnVneI
 
 # 토큰 만료 시간
-expiration-hours: 3
+expiration-hours: 24
 
 # 토큰 발급자
 issuer: cinesquare
