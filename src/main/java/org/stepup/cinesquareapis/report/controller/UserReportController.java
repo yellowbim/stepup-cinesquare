@@ -199,7 +199,7 @@ public class UserReportController {
             @ApiResponse(responseCode = "40001", description = "코멘트가 존재하지 않는 경우 에러코드", content = @Content()),
             @ApiResponse(responseCode = "40009", description = "이미 등록된 상태의 경우 에러코드 (삭제 API 요청)", content = @Content())
     })
-    @PostMapping("movies/{movie_id}/users/{user_id}/comments/{comment_id}")
+    @PostMapping("movies/{movie_id}/users/{user_id}/like-comments/{comment_id}")
     public ResponseEntity<ResultResponse<Boolean>> saveLikeComment(@PathVariable("user_id") Integer userId, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
         Boolean data = userReportService.saveLikeComment(userId, movieId, commentId);
         ResultResponse<Boolean> response = new ResultResponse<>();
@@ -215,7 +215,7 @@ public class UserReportController {
             @ApiResponse(responseCode = "200", description = "정상적으로 저장 되었을 경우 HTTP 상태코드", content = @Content()),
             @ApiResponse(responseCode = "404", description = "데이터가 없는 경우 HTTP 상태코드", content = @Content())
     })
-    @DeleteMapping("movies/{movie_id}/users/{user_id}/comments/{comment_id}")
+    @DeleteMapping("movies/{movie_id}/users/{user_id}/like-comments/{comment_id}")
     public ResponseEntity<ResultResponse<Boolean>> deleteLikeComment(@PathVariable("user_id") Integer userId, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
         Boolean data = userReportService.deleteLikeComment(userId, movieId, commentId);
         ResultResponse<Boolean> response = new ResultResponse<>();
@@ -225,14 +225,14 @@ public class UserReportController {
     }
 
     /**
-     * 부과된 별점 개수 조회
+     * 평가한 별점 개수 조회
      *
      * @param user_id
      * table : tv_user_movie_score
      */
     @Operation(summary = "평가한 별점 개수 조회",
             description = "https://pedia.watcha.com/ko-KR/review 평가하기 영화 별점 개수 조회")
-    @GetMapping("users/{user_id}/report-counts")
+    @GetMapping("users/{user_id}/score-counts")
     public ResponseEntity<DataResponse<Integer>> getScoredCount(@PathVariable("user_id") Integer userId) {
         int data = userReportService.getScoredCount(userId);
         DataResponse<Integer> response = new DataResponse<>();
@@ -240,6 +240,38 @@ public class UserReportController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    /**
+     * 좋아요 한 코맨트 개수 조회
+     *
+     * @param user_id
+     * table : tv_user_movie_score
+     */
+    @Operation(summary = "좋아요 한 코맨트 개수 조회")
+    @GetMapping("users/{user_id}/like-comment-counts")
+    public ResponseEntity<DataResponse<Integer>> getLikeCommentCounts(@PathVariable("user_id") Integer userId) {
+        int data = userReportService.getLikeCommentCounts(userId);
+        DataResponse<Integer> response = new DataResponse<>();
+        response.setData(data);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * 평가한 영화 목록 조회(별점만)
+     *
+     * @param user_id
+     * table : tv_user_movie_score
+     */
+//    @Operation(summary = "평가한 영화 목록 조회(별점 평가만)")
+//    @GetMapping("movies/scored")
+//    public ResponseEntity<ListResponse<List<UserScoredResponse>>> getScoredMovies(@RequestParam("user_id") Integer userId) {
+//        List<UserScoredResponse> data = userReportService.getScoredMovies(userId);
+//        ListResponse<List<UserScoredResponse>> response = new ListResponse<>();
+//        response.setList(data);
+//
+//        return new ResponseEntity<>(response, HttpStatus.OK);
+//    }
 
 
 

@@ -55,10 +55,10 @@ public class CommentSummary {
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime created;
 
-    @UpdateTimestamp
-    @Column(name = "updated")
-    @Temporal(TemporalType.TIMESTAMP)
-    private LocalDateTime updated;
+//    @UpdateTimestamp
+//    @Column(name = "updated")
+//    @Temporal(TemporalType.TIMESTAMP)
+//    private LocalDateTime updated;
 
 
 

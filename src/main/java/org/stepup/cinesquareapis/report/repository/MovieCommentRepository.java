@@ -19,9 +19,9 @@ public interface MovieCommentRepository extends JpaRepository<Comment, Integer> 
     // commentId 로 삭제
     int deleteByCommentId(Integer commentId);
 
-
     // key 값 있는지 조회
     Boolean existsByCommentId(Integer commentId);
 
-//    void findByCommentId(Comment comment);
+    // 사용자가 평가한 코멘트 개수 조회
+    int countAllByUserId(Integer userId);
 }

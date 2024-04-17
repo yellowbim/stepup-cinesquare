@@ -134,6 +134,16 @@ public class MovieReportService {
         return movieCommentReplyRepository.findAllByCommentId(commentId).stream().map(MovieReplyResponse::new).collect(Collectors.toList());
     }
 
+    /**
+     * 사용자가 평가한 코멘트 개수 조회
+     *
+     * @param comment_id
+     * table : tb_movie_comment_summary
+     */
+    public int getUserCommentCount(Integer userId) {
+        return movieCommentRepository.countAllByUserId(userId);
+    }
+
 
 
 
