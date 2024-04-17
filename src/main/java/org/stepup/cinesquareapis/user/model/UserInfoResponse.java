@@ -1,7 +1,7 @@
 package org.stepup.cinesquareapis.user.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import org.stepup.cinesquareapis.auth.jwt.RoleType;
+import org.stepup.cinesquareapis.user.enums.RoleType;
 import org.stepup.cinesquareapis.user.entity.User;
 
 import java.time.LocalDateTime;

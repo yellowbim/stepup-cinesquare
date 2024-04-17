@@ -1,4 +1,4 @@
-package org.stepup.cinesquareapis.auth.jwt;
+package org.stepup.cinesquareapis.user.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

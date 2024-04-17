@@ -21,39 +21,41 @@ package org.stepup.cinesquareapis.auth;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.stepup.cinesquareapis.auth.jwt.JwtAuthenticationFilter;
 
+// 스프링 시큐리티 기본 설정
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity // 메소드 시큐리니 활성화
 public class SecurityConfig {
 
-    //공개 API 경로
-    private final String[] allowedUrls = {"/", "/swagger-ui/**", "/v3/**", "/api/auth/**"};
+    // 공개 API 경로
+    private final String[] allowedUrls = {"/", "/swagger-ui/**", "/v3/**"};
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
-        http
-                .authorizeHttpRequests(auth -> auth
-                                .requestMatchers(allowedUrls).permitAll()
-//                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()  // Swagger 관련 공개 url
-//                        .requestMatchers("/api/auth/**").permitAll()  // 공개 API 경로
-                        .anyRequest().authenticated()  // 기타 모든 요청은 인증 필요
-                )
-                .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
-                .cors(Customizer.withDefaults()) // CORS 설정 (필요한 경우)
-                .addFilterBefore(jwtAuthenticationFilter, BasicAuthenticationFilter.class);
+        http.csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
+            .authorizeHttpRequests(auth -> auth
+                    .requestMatchers(allowedUrls).permitAll()
+                    .anyRequest().authenticated()
+            )
+            .sessionManagement(sessionManagement ->
+                    sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션을 사용하지 않으므로 STATELESS 설정
+            )
+            .addFilterBefore(jwtAuthenticationFilter, BasicAuthenticationFilter.class);
         return http.build();
     }
 
-    // 비밀번호 암호화 저장을 위해
+    // 스프링 시큐리티를 통해 암호화를 진행하려면
+    // 스프링 시큐리티 설정에서 PasswordEncoder를 구현한 클래스를 빈으로 추가해야 함
+    // BCryptPasswordEncoder: 스프링 시큐리티에서 기본으로 제공하는 암호화 모듈
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
