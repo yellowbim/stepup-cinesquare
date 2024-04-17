@@ -9,8 +9,6 @@ public class UserResponse {
 
     private String account;
 
-    private String password;
-
     private String name;
 
     private String nickname;
@@ -21,7 +19,6 @@ public class UserResponse {
     public UserResponse(User user) {
         userId = user.getUserId();
         account = user.getAccount();
-        password = user.getPassword();
         name = user.getName();
         nickname = user.getNickname();
     }
