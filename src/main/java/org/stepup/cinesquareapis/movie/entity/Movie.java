@@ -35,7 +35,7 @@ public class Movie {
     @Column(nullable = false)
     private boolean thumbnail;
 
-    @Column(length = 1000)
+    @Column(length = 3000)
     private String synopsys;
 
     private short runningTime;
