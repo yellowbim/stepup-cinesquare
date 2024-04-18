@@ -23,9 +23,11 @@ public class MovieDbLoadingController {
      * @return
      */
     @PostMapping("kofics")
-    public void createKoficMovies(@RequestParam("current_page") int currentPage, @RequestParam("item_per_page") int itemPerPage, @RequestParam("start_production_year") int startProductionYear) {
+    public void createKoficMovies(@RequestParam("current_page") int currentPage, @RequestParam("item_per_page") int itemPerPage
+            , @RequestParam("start_production_year") int startProductionYear, @RequestParam("end_production_year") int endProductionYear
+            , @RequestParam("open_start_date") int openStartDate) {
         // 영화 기본 정보 저장
-        int[] createdMovieIds = movieDbLoadingService.saveKoficMovies(currentPage, itemPerPage, startProductionYear);
+        int[] createdMovieIds = movieDbLoadingService.saveKoficMovies(currentPage, itemPerPage, startProductionYear, endProductionYear, openStartDate);
 
         movieDbLoadingService.crawlMovieSubInfo(createdMovieIds);
     }

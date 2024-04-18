@@ -61,7 +61,7 @@ public class MovieDbLoadingService {
      * @return createdMovieIds
      */
 
-    public int[] saveKoficMovies(int currentPage, int itemPerPage, int startProductionYear) {
+    public int[] saveKoficMovies(int currentPage, int itemPerPage, int startProductionYear, int endProductionYear, int openStartDate) {
         // 영화 API 키 및 요청 URL 설정
         String movieListUrl = KOFIC_MOVIE_LIST_API_URL + "?key=" + KOFIC_KEY;
 
@@ -72,7 +72,7 @@ public class MovieDbLoadingService {
 
         try {
             // 1. 영화 목록 조회 API URL 생성
-            String apiUrl = buildMovieListApiUrl(movieListUrl, currentPage, itemPerPage, startProductionYear);
+            String apiUrl = buildMovieListApiUrl(movieListUrl, currentPage, itemPerPage, startProductionYear, endProductionYear, openStartDate);
 
             // 2. 영화 목록 조회 API 호출 후 JSON 파싱
             JsonObject movieListJsonObject = fetchJsonFromUrl(apiUrl);
@@ -221,7 +221,7 @@ public class MovieDbLoadingService {
     }
 
     // 영화 목록 호출 API URL 생성
-    private String buildMovieListApiUrl(String baseUrl, int currentPage, int itemPerPage, int productionYear) {
+    private String buildMovieListApiUrl(String baseUrl, int currentPage, int itemPerPage, int productionYear, int endProductionYear, int openStartDate) {
         StringBuilder apiUrlBuilder = new StringBuilder(baseUrl);
         if (currentPage > 0) {
             apiUrlBuilder.append("&curPage=").append(currentPage);
@@ -231,6 +231,12 @@ public class MovieDbLoadingService {
         }
         if (productionYear > 0) {
             apiUrlBuilder.append("&prdtStartYear=").append(productionYear);
+        }
+        if (endProductionYear > 0) {
+            apiUrlBuilder.append("&prdtEndYear=").append(endProductionYear);
+        }
+        if (openStartDate > 0) {
+            apiUrlBuilder.append("&openStartDt=").append(openStartDate);
         }
         return apiUrlBuilder.toString();
     }
@@ -449,10 +455,12 @@ public class MovieDbLoadingService {
                     if (x.size() > 0) {
                         String koficImageUrl = x.get(0).attr("href");
 
-                        // S3에 이미지 저장
-                        String savePath = "movies/" + movieId;
-                        String filename = "thumbnail";
-                        downloadImage(koficImageUrl, savePath, filename);
+                        if (!koficImageUrl.equals("#")) {
+                            // S3에 이미지 저장
+                            String savePath = "movies/" + movieId;
+                            String filename = "thumbnail";
+                            downloadImage(koficImageUrl, savePath, filename);
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
