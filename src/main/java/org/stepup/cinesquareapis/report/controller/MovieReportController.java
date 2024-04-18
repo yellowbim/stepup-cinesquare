@@ -9,7 +9,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
+import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
 import org.stepup.cinesquareapis.common.model.DataResponse;
 import org.stepup.cinesquareapis.common.model.ListResponse;
 import org.stepup.cinesquareapis.report.entity.Comment;
@@ -34,15 +37,17 @@ public class MovieReportController {
      *
      * @return Comment
      */
-    @Operation(summary = "영화 코멘트 등록",
-                description = "요청 필수값 : user_id")
+    @Operation(summary = "영화 코멘트 등록")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 등록 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "40000", description = "코멘트가 이미 존재하는 경우 에러코드", content = @Content())
     })
+    @UserAuthorize
     @PostMapping("{movie_id}/comments")
-    public ResponseEntity<DataResponse<Comment>> saveComment(@RequestBody MovieCommentSaveRequest request, @PathVariable("movie_id") Integer movieId) {
-        Comment data = movieReportService.saveComment(request, movieId);
+    public ResponseEntity<DataResponse<Comment>> saveComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @RequestBody MovieCommentSaveRequest request) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        Comment data = movieReportService.saveComment(request, movieId, userId);
         DataResponse<Comment> response = new DataResponse<>();
         response.setData(data);
 
@@ -62,9 +67,12 @@ public class MovieReportController {
             @ApiResponse(responseCode = "200", description = "정상적으로 수정 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "40001", description = "코멘트가 존재하지 않는 경우 에러코드", content = @Content())
     })
+    @UserAuthorize
     @PatchMapping("{movie_id}/comments/{comment_id}")
-    public ResponseEntity<DataResponse<Comment>> updateComment(@RequestBody MovieCommentUpdateRequest request, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
-        Comment data = movieReportService.updateComment(request, movieId, commentId);
+    public ResponseEntity<DataResponse<Comment>> updateComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId, @RequestBody MovieCommentUpdateRequest request) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        Comment data = movieReportService.updateComment(request, movieId, commentId, userId);
         DataResponse<Comment> response = new DataResponse<>();
         response.setData(data);
 
@@ -85,8 +93,11 @@ public class MovieReportController {
             @ApiResponse(responseCode = "200", description = "정상적으로 삭제 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "404", description = "데이터가 없는 경우 HTTP 상태코드", content = @Content())
     })
-    @DeleteMapping("{movie_id}/comments/{comment_id}/{user_id}")
-    public ResponseEntity<HttpStatus> deleteComment(@PathVariable("movie_id") Integer movieId, @PathVariable("user_id") Integer userId, @PathVariable("comment_id") Integer commentId) {
+    @UserAuthorize
+    @DeleteMapping("{movie_id}/comments/{comment_id}")
+    public ResponseEntity<HttpStatus> deleteComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
         int data = movieReportService.deleteComment(commentId);
         if (data > 0) { //정상 삭제
             return new ResponseEntity<>(HttpStatus.OK);
@@ -109,9 +120,12 @@ public class MovieReportController {
             @ApiResponse(responseCode = "40001", description = "코멘트가 존재하지 않는 경우 에러코드", content = @Content()),
             @ApiResponse(responseCode = "40002", description = "코멘트 답변이 이미 등록된 경우 에러코드", content = @Content())
     })
+    @UserAuthorize
     @PostMapping("{movie_id}/comments/{comment_id}/replies")
-    public ResponseEntity<DataResponse<CommentReply>> saveCommentReply(@RequestBody MovieCommentReplySaveRequest request, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
-        CommentReply data = movieReportService.saveCommentReply(request, commentId, movieId);
+    public ResponseEntity<DataResponse<CommentReply>> saveCommentReply(@RequestBody MovieCommentReplySaveRequest request, @AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        CommentReply data = movieReportService.saveCommentReply(request, commentId, movieId, userId);
         DataResponse<CommentReply> response = new DataResponse<>();
         response.setData(data);
 
@@ -132,9 +146,12 @@ public class MovieReportController {
             @ApiResponse(responseCode = "200", description = "정상적으로 수정 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "40003", description = "데이터가 없는 경우 HTTP 상태코드", content = @Content())
     })
+    @UserAuthorize
     @PatchMapping("{movie_id}/comments/{comment_id}/replies/{reply_id}")
-    public ResponseEntity<DataResponse<CommentReply>> updateCommentReply(@RequestBody MovieCommentReplyUpdateRequest request, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId, @PathVariable("reply_id") Integer replyId) {
-        CommentReply data = movieReportService.updateCommentReply(request, commentId, movieId, replyId);
+    public ResponseEntity<DataResponse<CommentReply>> updateCommentReply(@RequestBody MovieCommentReplyUpdateRequest request, @AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId, @PathVariable("reply_id") Integer replyId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        CommentReply data = movieReportService.updateCommentReply(request, commentId, movieId, replyId, userId);
         DataResponse<CommentReply> response = new DataResponse<>();
         response.setData(data);
 
@@ -154,9 +171,12 @@ public class MovieReportController {
             @ApiResponse(responseCode = "200", description = "정상적으로 삭제 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "404", description = "데이터가 없는 경우 HTTP 상태코드", content = @Content())
     })
+    @UserAuthorize
     @DeleteMapping("{movie_id}/comments/{comment_id}/replies/{reply_id}")
-    public ResponseEntity<HttpStatus> deleteCommentReply(@PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId, @PathVariable("reply_id") Integer replyId) {
-        int data = movieReportService.deleteCommentReply(commentId, movieId, replyId);
+    public ResponseEntity<HttpStatus> deleteCommentReply(@PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId, @PathVariable("reply_id") Integer replyId, @AuthenticationPrincipal User principal) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        int data = movieReportService.deleteCommentReply(commentId, movieId, replyId, userId);
         if (data > 0) {
             return new ResponseEntity<>(HttpStatus.OK);
         } else  {
@@ -206,9 +226,12 @@ public class MovieReportController {
      * table : tb_movie_comment_summary
      */
     @Operation(summary = "사용자가 평가한 코멘트 개수 조회 (mypage)")
+    @UserAuthorize
     @GetMapping("comments/counts")
-    public ResponseEntity<DataResponse<Integer>> getUserCommentCounts(@RequestParam(value = "user_id", required = true) Integer user_id) {
-        int data = movieReportService.getUserCommentCount(user_id);
+    public ResponseEntity<DataResponse<Integer>> getUserCommentCounts(@AuthenticationPrincipal User principal) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        int data = movieReportService.getUserCommentCount(userId);
         DataResponse<Integer> response = new DataResponse<>();
         response.setData(data);
 

@@ -6,9 +6,8 @@ import org.stepup.cinesquareapis.report.entity.Comment;
 @Data
 public class MovieCommentSaveRequest {
     private String content;
-    private int userId;
 
-    public Comment toEntity(int movieId) {
+    public Comment toEntity(int movieId, int userId) {
         return new Comment().builder()
                 .content(content)
                 .userId(userId)

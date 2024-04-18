@@ -31,20 +31,20 @@ public class MovieReportService {
     /**
      * 영화 코멘트 작성
      */
-    public Comment saveComment(MovieCommentSaveRequest request, Integer movieId) {
+    public Comment saveComment(MovieCommentSaveRequest request, Integer movieId, Integer userId) {
         // 값 존재 여부 판단
-        int count = movieCommentRepository.countByMovieIdAndUserId(movieId, request.getUserId());
+        int count = movieCommentRepository.countByMovieIdAndUserId(movieId, userId);
         if (count > 0) {
             throw new RestApiException(CustomErrorCode.ALREADY_REGISTED_COMMENT);
         }
 
-        return movieCommentRepository.save(request.toEntity(movieId));
+        return movieCommentRepository.save(request.toEntity(movieId, userId));
     }
 
     /**
      * 영화 코멘트 수정
      */
-    public Comment updateComment(MovieCommentUpdateRequest request, Integer movieId, Integer commentId) {
+    public Comment updateComment(MovieCommentUpdateRequest request, Integer movieId, Integer commentId, Integer userId) {
         // 데이터 조회
         Comment data = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
 
@@ -54,7 +54,7 @@ public class MovieReportService {
         }
 
         data.setContent(request.getContent());
-        data.setUserId(request.getUserId());
+        data.setUserId(userId);
         data.setMovieId(movieId);
         return movieCommentRepository.save(data);
     }
@@ -75,23 +75,23 @@ public class MovieReportService {
     /**
      * 영화 코멘트 답글 작성
      */
-    public CommentReply saveCommentReply(MovieCommentReplySaveRequest request, Integer commentId, Integer movieId) {
+    public CommentReply saveCommentReply(MovieCommentReplySaveRequest request, Integer commentId, Integer movieId, Integer userId) {
         // 실제 존재하는 코멘트인지 조회
         movieCommentRepository.findById(commentId).orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
 
         // 이미 등록된 내용인지 조회
-        int count = movieCommentReplyRepository.countByMovieIdAndUserIdAndCommentId(movieId, request.getUserId(), commentId);
+        int count = movieCommentReplyRepository.countByMovieIdAndUserIdAndCommentId(movieId, userId, commentId);
         if (count > 0) {
             throw new RestApiException(CustomErrorCode.ALREADY_REGISTED_COMMENT_REPLY);
         }
 
-        return movieCommentReplyRepository.save(request.toEntity(commentId, movieId));
+        return movieCommentReplyRepository.save(request.toEntity(commentId, movieId, userId));
     }
 
     /**
      * 영화 코멘트 답글 수정
      */
-    public CommentReply updateCommentReply(MovieCommentReplyUpdateRequest request, Integer commentId, Integer movieId, Integer replyId) {
+    public CommentReply updateCommentReply(MovieCommentReplyUpdateRequest request, Integer commentId, Integer movieId, Integer replyId, Integer userId) {
         // reply id 기준으로 조회
         CommentReply data = movieCommentReplyRepository.findByReplyId(replyId);
 
@@ -101,7 +101,7 @@ public class MovieReportService {
         }
 
         data.setContent(request.getContent());
-        data.setUserId(request.getUserId());
+        data.setUserId(userId);
         data.setCommentId(commentId);
         data.setMovieId(movieId);
         return movieCommentReplyRepository.save(data);
@@ -110,7 +110,11 @@ public class MovieReportService {
     /**
      * 영화 코멘트 답글 삭제
      */
-    public int deleteCommentReply(Integer commentId, Integer movieId, Integer replyId) {
+    public int deleteCommentReply(Integer commentId, Integer movieId, Integer replyId, Integer userId) {
+        // 유저 ID 확인
+        if (userId == null) {
+            throw new RestApiException(CustomErrorCode.NOT_FOUND_USER); // 사용자 정보가 없으면 에러
+        }
         // reply id 기준으로 삭제
         return movieCommentReplyRepository.deleteByReplyId(replyId);
     }
