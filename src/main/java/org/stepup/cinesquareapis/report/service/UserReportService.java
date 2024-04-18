@@ -10,7 +10,6 @@ import org.stepup.cinesquareapis.movie.repository.MovieSimpleRepository;
 import org.stepup.cinesquareapis.report.entity.*;
 import org.stepup.cinesquareapis.report.model.MovieLikeCommentResponse;
 import org.stepup.cinesquareapis.report.model.UserScoreRequest;
-import org.stepup.cinesquareapis.report.model.UserScoredResponse;
 import org.stepup.cinesquareapis.report.repository.MovieCommentRepository;
 import org.stepup.cinesquareapis.report.repository.UserLikeCommentRepository;
 import org.stepup.cinesquareapis.report.repository.UserScoreRepository;

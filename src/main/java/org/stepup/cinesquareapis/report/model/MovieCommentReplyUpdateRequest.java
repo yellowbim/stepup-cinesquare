@@ -7,10 +7,9 @@ import java.time.LocalDateTime;
 
 @Data
 public class MovieCommentReplyUpdateRequest {
-    private int userId;
     private String content;
 
-    public CommentReply toEntity(int replyId, int commentId, int movieId) {
+    public CommentReply toEntity(int replyId, int commentId, int movieId, int userId) {
         return new CommentReply().builder()
                 .replyId(replyId)
                 .commentId(commentId)

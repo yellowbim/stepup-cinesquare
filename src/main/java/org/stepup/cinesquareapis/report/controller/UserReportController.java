@@ -9,7 +9,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
+import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
 import org.stepup.cinesquareapis.common.model.DataResponse;
 import org.stepup.cinesquareapis.common.model.ListResponse;
 import org.stepup.cinesquareapis.common.model.ResultResponse;
@@ -37,8 +40,11 @@ public class UserReportController {
             @ApiResponse(responseCode = "200", description = "정상적으로 저장 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "500", description = "조회에 실패하는경우 HTTP 상태코드", content = @Content())
     })
-    @GetMapping("movies/{movie_id}/users/{user_id}/score")
-    public ResponseEntity<ResultResponse<Double>> searchMovieUserScore(@PathVariable("user_id") Integer userId, @PathVariable("movie_id") Integer movieId) {
+    @UserAuthorize
+    @GetMapping("movies/{movie_id}/score")
+    public ResponseEntity<ResultResponse<Double>> searchMovieUserScore(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
         Double data = userReportService.searchMovieUserScore(userId, movieId);
         ResultResponse<Double> response = new ResultResponse<>();
         response.setResult(data);
@@ -61,8 +67,11 @@ public class UserReportController {
         @ApiResponse(responseCode = "40006", description = "score 범위가 허용하지 않는 값인 경우", content = @Content()),
         @ApiResponse(responseCode = "40007", description = "영화 테이블 score 업데이트 실패 (기존 데이터가 없는 경우)", content = @Content())
     })
-    @PostMapping("movies/{movie_id}/users/{user_id}/score")
-    public ResponseEntity<HttpStatus> saveScore(@PathVariable("user_id") Integer userId, @PathVariable("movie_id") Integer movieId, @RequestBody UserScoreRequest request) {
+    @UserAuthorize
+    @PostMapping("movies/{movie_id}/score")
+    public ResponseEntity<HttpStatus> saveScore(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @RequestBody UserScoreRequest request) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
         Boolean data = userReportService.saveScore(userId, movieId, request);
         if (data) {
             return new ResponseEntity<>(HttpStatus.OK);
@@ -84,8 +93,11 @@ public class UserReportController {
             @ApiResponse(responseCode = "40005", description = "존재하지 않는 경우 (저장 API로 요청)", content = @Content()),
             @ApiResponse(responseCode = "40007", description = "영화 테이블 score 업데이트 실패 (기존 데이터가 없는 경우)", content = @Content())
     })
-    @PatchMapping("movies/{movie_id}/users/{user_id}/score")
-    public ResponseEntity<HttpStatus> updateScore(@PathVariable("user_id") Integer userId, @PathVariable("movie_id") Integer movieId, @RequestBody UserScoreRequest request) {
+    @UserAuthorize
+    @PatchMapping("movies/{movie_id}/score")
+    public ResponseEntity<HttpStatus> updateScore(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @RequestBody UserScoreRequest request) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
         Boolean data = userReportService.updateScore(userId, movieId, request);
         if (data) {
             return new ResponseEntity<>(HttpStatus.OK);
@@ -104,8 +116,11 @@ public class UserReportController {
             @ApiResponse(responseCode = "200", description = "정상적으로 삭제 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "500", description = "데이터가 없는 경우 HTTP 상태코드", content = @Content())
     })
-    @DeleteMapping("movies/{movie_id}/users/{user_id}/score")
-    public ResponseEntity<HttpStatus> deleteScore(@PathVariable("user_id") Integer userId, @PathVariable("movie_id") Integer movieId) {
+    @UserAuthorize
+    @DeleteMapping("movies/{movie_id}/score")
+    public ResponseEntity<HttpStatus> deleteScore(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
         userReportService.deleteScore(userId, movieId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -117,8 +132,11 @@ public class UserReportController {
     @Operation(summary = "영화별 사용자 상태 조회",
                 description = "- 상태가 변경되어있는 경우(보고싶어요 상태) return : true<br>" +
                               "- 상태가 변경되어있지 않은 경우(아무 상태 아닌경우) return : false")
-    @GetMapping("movies/{movie_id}/users/{user_id}/status")
-    public ResponseEntity<ResultResponse<Boolean>> getMovieUserStatus(@PathVariable("user_id") Integer userId, @PathVariable("movie_id") Integer movieId) {
+    @UserAuthorize
+    @GetMapping("movies/{movie_id}/status")
+    public ResponseEntity<ResultResponse<Boolean>> getMovieUserStatus(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
         Boolean data = userReportService.getMovieUserStatus(userId, movieId);
         ResultResponse<Boolean> response = new ResultResponse<>();
         response.setResult(data);
@@ -140,8 +158,11 @@ public class UserReportController {
             @ApiResponse(responseCode = "500", description = "저장에 실패하였을 경우 HTTP 상태코드", content = @Content()),
             @ApiResponse(responseCode = "40008", description = "이미 등록된 상태의 경우 에러코드 (삭제 API 요청)", content = @Content())
     })
-    @PostMapping("movies/{movie_id}/users/{user_id}/status")
-    public ResponseEntity<HttpStatus> saveScore(@PathVariable("user_id") Integer userId, @PathVariable("movie_id") Integer movieId) {
+    @UserAuthorize
+    @PostMapping("movies/{movie_id}/status")
+    public ResponseEntity<HttpStatus> saveScore(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
         Boolean data = userReportService.saveStatus(userId, movieId);
         if (data) {
             return new ResponseEntity<>(HttpStatus.OK);
@@ -163,8 +184,11 @@ public class UserReportController {
             @ApiResponse(responseCode = "200", description = "정상적으로 저장 되었을 경우 HTTP 상태코드", content = @Content()),
             @ApiResponse(responseCode = "404", description = "데이터가 없는 경우 HTTP 상태코드", content = @Content())
     })
-    @DeleteMapping("movies/{movie_id}/users/{user_id}/status")
-    public ResponseEntity<HttpStatus> deleteStatus(@PathVariable("user_id") Integer userId, @PathVariable("movie_id") Integer movieId) {
+    @UserAuthorize
+    @DeleteMapping("movies/{movie_id}/status")
+    public ResponseEntity<HttpStatus> deleteStatus(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
         Boolean data = userReportService.deleteStatus(userId, movieId);
         if (data) {
             return new ResponseEntity<>(HttpStatus.OK);
@@ -180,8 +204,11 @@ public class UserReportController {
     @Operation(summary = "유저별 좋아요한 코멘트 목록 조회",
                 description = "user_id, movie_id 기준으로 comment_id 목록 조회" +
                         "return 값 : comment_id 리스트, 해당 목록을 가지고 코멘트 목록에서 좋아요 했는지 비교해서 판단해야됨!!")
-    @GetMapping("movies/{movie_id}/users/{user_id}/like-comments")
-    public ResponseEntity<ListResponse<List<MovieLikeCommentResponse>>> getUserLikeCommentList(@PathVariable("user_id") Integer userId, @PathVariable("movie_id") Integer movieId) {
+    @UserAuthorize
+    @GetMapping("movies/{movie_id}/like-comments")
+    public ResponseEntity<ListResponse<List<MovieLikeCommentResponse>>> getUserLikeCommentList(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
         List<MovieLikeCommentResponse> data = userReportService.getUserLikeCommentList(userId, movieId);
         ListResponse<List<MovieLikeCommentResponse>> response = new ListResponse<>();
         response.setList(data);
@@ -199,8 +226,11 @@ public class UserReportController {
             @ApiResponse(responseCode = "40001", description = "코멘트가 존재하지 않는 경우 에러코드", content = @Content()),
             @ApiResponse(responseCode = "40009", description = "이미 등록된 상태의 경우 에러코드 (삭제 API 요청)", content = @Content())
     })
-    @PostMapping("movies/{movie_id}/users/{user_id}/like-comments/{comment_id}")
-    public ResponseEntity<ResultResponse<Boolean>> saveLikeComment(@PathVariable("user_id") Integer userId, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
+    @UserAuthorize
+    @PostMapping("movies/{movie_id}/like-comments/{comment_id}")
+    public ResponseEntity<ResultResponse<Boolean>> saveLikeComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
         Boolean data = userReportService.saveLikeComment(userId, movieId, commentId);
         ResultResponse<Boolean> response = new ResultResponse<>();
         response.setResult(data);
@@ -215,8 +245,11 @@ public class UserReportController {
             @ApiResponse(responseCode = "200", description = "정상적으로 저장 되었을 경우 HTTP 상태코드", content = @Content()),
             @ApiResponse(responseCode = "404", description = "데이터가 없는 경우 HTTP 상태코드", content = @Content())
     })
-    @DeleteMapping("movies/{movie_id}/users/{user_id}/like-comments/{comment_id}")
-    public ResponseEntity<ResultResponse<Boolean>> deleteLikeComment(@PathVariable("user_id") Integer userId, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
+    @UserAuthorize
+    @DeleteMapping("movies/{movie_id}/like-comments/{comment_id}")
+    public ResponseEntity<ResultResponse<Boolean>> deleteLikeComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
         Boolean data = userReportService.deleteLikeComment(userId, movieId, commentId);
         ResultResponse<Boolean> response = new ResultResponse<>();
         response.setResult(data);
@@ -232,8 +265,11 @@ public class UserReportController {
      */
     @Operation(summary = "평가한 별점 개수 조회",
             description = "https://pedia.watcha.com/ko-KR/review 평가하기 영화 별점 개수 조회")
-    @GetMapping("users/{user_id}/score-counts")
-    public ResponseEntity<DataResponse<Integer>> getScoredCount(@PathVariable("user_id") Integer userId) {
+    @UserAuthorize
+    @GetMapping("score-counts")
+    public ResponseEntity<DataResponse<Integer>> getScoredCount(@AuthenticationPrincipal User principal) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
         int data = userReportService.getScoredCount(userId);
         DataResponse<Integer> response = new DataResponse<>();
         response.setData(data);
@@ -248,8 +284,11 @@ public class UserReportController {
      * table : tv_user_movie_score
      */
     @Operation(summary = "좋아요 한 코맨트 개수 조회")
-    @GetMapping("users/{user_id}/like-comment-counts")
-    public ResponseEntity<DataResponse<Integer>> getLikeCommentCounts(@PathVariable("user_id") Integer userId) {
+    @UserAuthorize
+    @GetMapping("like-comment-counts")
+    public ResponseEntity<DataResponse<Integer>> getLikeCommentCounts(@AuthenticationPrincipal User principal) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
         int data = userReportService.getLikeCommentCounts(userId);
         DataResponse<Integer> response = new DataResponse<>();
         response.setData(data);
