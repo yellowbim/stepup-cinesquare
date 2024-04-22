@@ -64,7 +64,7 @@ public class MovieService {
     }
 
     /**
-     * 주간 박스오피스 조회 (10개)
+     * 주간 박스오피스 조회 (10개 이하)
      *
      * @return movies
      */
@@ -89,8 +89,8 @@ public class MovieService {
         // 3. DB 조회
         MovieBoxoffice[] movieBoxoffices = movieBoxofficeRepository.findByEndDate(boxofficeClosingDate);
 
-        // 조회된 데이터가 10개가 아님 -> DB 오류
-        if (movieBoxoffices.length != 10) {
+        // 조회된 데이터가 10개 초과 -> DB 오류
+        if (movieBoxoffices.length > 10) {
             throw new RestApiException(CustomErrorCode.NOT_FOUND_MOVIE_BOXOFFICE);
         }
 

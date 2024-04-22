@@ -191,20 +191,23 @@ public class MovieDbLoadingService {
                         // 3-2. 영화 DB 적재
                         saveMovie(koficMovieCode, createdMovieIds);
                         movie = movieRepository.findByKoficMovieCode(koficMovieCode);
+                        // 유효성 체크에 의해 저장이 안된 경우가 있을 수 있음
                     }
 
                     // 4. 박스오피스 저장
-                    MovieBoxoffice movieBoxoffice = new MovieBoxoffice();
-                    movieBoxoffice.setMovieId(movie.getMovieId());
-                    movieBoxoffice.setRank(i);
+                    if (movie != null) {
+                        MovieBoxoffice movieBoxoffice = new MovieBoxoffice();
+                        movieBoxoffice.setMovieId(movie.getMovieId());
+                        movieBoxoffice.setRank(i);
 
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-                    movieBoxoffice.setStartDate(LocalDate.parse(startDate, formatter));
-                    movieBoxoffice.setEndDate(LocalDate.parse(endDate, formatter));
-                    movieBoxoffice.setShowCount(showCnt);
-                    movieBoxoffice.setYearWeek(yearWeekTime);
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+                        movieBoxoffice.setStartDate(LocalDate.parse(startDate, formatter));
+                        movieBoxoffice.setEndDate(LocalDate.parse(endDate, formatter));
+                        movieBoxoffice.setShowCount(showCnt);
+                        movieBoxoffice.setYearWeek(yearWeekTime);
 
-                    movieBoxofficeRepository.save(movieBoxoffice);
+                        movieBoxofficeRepository.save(movieBoxoffice);
+                    }
                 } catch (IOException e) {
                     String message = "rank:"+ i + "|date:" + date;
                     reportLog(FAIL_LOADING_BOXOFFICE, null, null,  message);
@@ -475,12 +478,15 @@ public class MovieDbLoadingService {
                 try {
                     Elements x = elements.select("div:nth-child(4) > div.thumb_slide > div");
                     if (x.size() > 0) {
-                        String koficImageUrl = x.get(0).select("img").attr("src");
+                        String[] xx = x.get(0).select("a").attr("onclick").toString().split("'");
 
-                        // S3에 이미지 저장
-                        String savePath = "movies/" + movieId + "/images";
-                        imageIds = "1";
-                        downloadImage(koficImageUrl, savePath, imageIds);
+                        if (xx.length > 1) {
+                            // S3에 이미지 저장
+                            String koficImageUrl = xx[1];
+                            String savePath = "movies/" + movieId + "/images";
+                            imageIds = "1";
+                            downloadImage(koficImageUrl, savePath, imageIds);
+                        }
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
