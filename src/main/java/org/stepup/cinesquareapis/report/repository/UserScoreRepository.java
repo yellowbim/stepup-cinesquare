@@ -6,9 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.stepup.cinesquareapis.report.entity.UserScore;
 import org.stepup.cinesquareapis.report.entity.UserScoreKey;
-import org.stepup.cinesquareapis.report.model.UserScoredResponse;
-
-import java.util.List;
 
 @Repository
 @Transactional
