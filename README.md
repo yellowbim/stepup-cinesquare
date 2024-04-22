@@ -3,7 +3,7 @@
 
 <b>왓챠피디아의 클론 코딩을 기반으로 하는 영화 추천/평가 사이트입니다.</b>
 
-CINE SQUARE Web | http://cinesquare-s3.s3-website.ap-northeast-2.amazonaws.com
+CINE SQUARE Web | http://cine-square.s3-website.ap-northeast-2.amazonaws.com
 
 API Certification | http://3.38.64.130:8080/swagger-ui/index.html
 
@@ -24,7 +24,7 @@ Project Managing | https://petalite-bearberry-a1a.notion.site/CINESQUARE-25b196f
 - MariaDB 10.11 (AWS RDS)
 - JPA
 - Gradle
-- Spring Security 6.2 + Jwt (+OAuth)
+- Spring Security 6.2 + Jwt
 - Spring Batch & Quartz
 - Jenkins CI/CD + AWS EC2 배포
 - AWS S3
@@ -32,11 +32,11 @@ Project Managing | https://petalite-bearberry-a1a.notion.site/CINESQUARE-25b196f
 - Crawling (data loading)
 
 ## Front-end & Design Skill
-- Figma
+- Github | https://github.com/jihyeon-Do/cine-square-renewal.git
+- Figma | https://www.figma.com/file/fqlQhqfwxWKB9q0bQUiQci/cine-square
 - React
 - Typescript
 - scss
-- Github | https://github.com/jihyeon-Do/cine-square-renewal.git
 
 
 ## Later
