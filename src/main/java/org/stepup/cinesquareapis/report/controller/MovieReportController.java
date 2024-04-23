@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
 import org.stepup.cinesquareapis.common.model.DataResponse;
 import org.stepup.cinesquareapis.common.model.ListResponse;
+import org.stepup.cinesquareapis.common.model.ResultResponse;
 import org.stepup.cinesquareapis.report.entity.Comment;
 import org.stepup.cinesquareapis.report.entity.CommentReply;
 import org.stepup.cinesquareapis.report.model.*;
@@ -31,13 +32,38 @@ public class MovieReportController {
     private final MovieReportService movieReportService;
 
     /**
+     * 유저가 영화 1건에 남긴 코멘트 조회
+     *
+     */
+    @Operation(summary = "사용자 본인이 남긴 코멘트가 아닌 경우 상세 코멘트를 조회하는 API ")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "정상적으로 저장 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "404", description = "조회된 코멘트가 없는경우", content = @Content()),
+            @ApiResponse(responseCode = "500", description = "조회에 실패하는경우 HTTP 상태코드", content = @Content())
+    })
+    @GetMapping("{movie_id}/comments/{comment_id}")
+    public ResponseEntity<ResultResponse<MovieCommentResponse>> getMovieComment(@PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
+
+        MovieCommentResponse data = movieReportService.getMovieComment(movieId, commentId);
+        ResultResponse<MovieCommentResponse> response = new ResultResponse<>();
+
+        if (data.getCommentId() == null) {
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+        response.setResult(data);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
      * 영화 코멘트 등록
      * <p>
      * table : tb_movie_comment
      *
      * @return Comment
      */
-    @Operation(summary = "영화 코멘트 등록")
+    @Operation(summary = "영화 코멘트 등록",
+                description = "사용자가 영화에 대하여 코멘트를 등록하는 기능")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 등록 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "40000", description = "코멘트가 이미 존재하는 경우 에러코드", content = @Content())
@@ -114,7 +140,7 @@ public class MovieReportController {
      * @return CommentReply
      */
     @Operation(summary = "영화 코멘트 답글 등록",
-                description = "요청 필수값 : user_id")
+            description = "코멘트 답글 등록 시 해당 user의 comment 테이블에 reply count 증가")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 등록 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "40001", description = "코멘트가 존재하지 않는 경우 에러코드", content = @Content()),
@@ -166,7 +192,8 @@ public class MovieReportController {
      * - reply_id가 이상한 값으로 들어오는 경우, 자동으로 생성을 하게됨 => false
      * @return true, false
      */
-    @Operation(summary = "영화 코멘트 답글 삭제")
+    @Operation(summary = "영화 코멘트 답글 삭제",
+            description = "코멘트 답글 삭제 시 해당 user의 comment 테이블에 reply count 감소")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 삭제 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "404", description = "데이터가 없는 경우 HTTP 상태코드", content = @Content())
@@ -190,9 +217,9 @@ public class MovieReportController {
      * @param movie_id
      * table : tb_movie_comment_summary
      */
-    @Operation(summary = "영화 코멘트 + 점수 (api 호출용)",
-                description = "https://pedia.watcha.com/ko-KR/contents/mWz3rPP 코멘트 목록<br>" +
-                                "https://pedia.watcha.com/ko-KR/comments/NXnE5gwnkyMzG 코멘트 상세 항목")
+    @Operation(summary = "영화 코멘트 리스트 + 점수 ",
+                description = "기본적으로 영화만 기준으로 코멘트 목록을 조회하는 기능<br>" +
+                                "https://pedia.watcha.com/ko-KR/contents/mWz3rPP")
     @GetMapping("summary/movies/{movie_id}")
     public ResponseEntity<ListResponse<List<MovieCommentSummaryResponse>>> searchCommentSummary(@PathVariable("movie_id") Integer movieId) {
         List<MovieCommentSummaryResponse> data = movieReportService.searchCommentSummary(movieId);

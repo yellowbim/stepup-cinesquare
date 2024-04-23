@@ -29,6 +29,36 @@ public class UserReportController {
 
     private final UserReportService userReportService;
 
+
+    /**
+     * 유저가 영화 1건에 남긴 코멘트 조회
+     *
+     */
+    @Operation(summary = "유저가 영화 1건에 남긴 코멘트 조회",
+            description = "사용자가 영화 한건에 대하여 남긴 코멘트 조회 기능<br>" +
+                            "- 코멘트가 있는경우 return : comment_id, content<br>"+
+                            "- 코멘트가 없는경우 return : http 상태코드 404")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "정상적으로 저장 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "404", description = "조회된 코멘트가 없는경우", content = @Content()),
+            @ApiResponse(responseCode = "500", description = "조회에 실패하는경우 HTTP 상태코드", content = @Content())
+    })
+    @UserAuthorize
+    @GetMapping("movies/{movie_id}/comment")
+    public ResponseEntity<ResultResponse<MovieCommentResponse>> getMovieComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        MovieCommentResponse data = userReportService.getMovieComment(userId, movieId);
+        ResultResponse<MovieCommentResponse> response = new ResultResponse<>();
+
+        if (data.getCommentId() == null) {
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+        response.setResult(data);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
     /**
      * 유저별 영화별 별점 조회
      *
@@ -219,7 +249,8 @@ public class UserReportController {
     /**
      * 유저별 코멘트 좋아요 등록
      */
-    @Operation(summary = "유저별 코멘트 좋아요 등록")
+    @Operation(summary = "유저별 코멘트 좋아요 등록",
+                description = "코멘트 좋아요 등록 시 해당 user의 comment 테이블에 like count 증가<br>")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 저장 되었을 경우 HTTP 상태코드", content = @Content()),
             @ApiResponse(responseCode = "500", description = "저장에 실패하였을 경우 HTTP 상태코드", content = @Content()),
@@ -240,7 +271,8 @@ public class UserReportController {
     /**
      * 유저별 코멘트 좋아요 삭제
      */
-    @Operation(summary = "유저별 코멘트 좋아요 삭제")
+    @Operation(summary = "유저별 코멘트 좋아요 삭제",
+            description = "코멘트 좋아요 삭제 시 해당 user의 comment 테이블에 like count 감소")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 저장 되었을 경우 HTTP 상태코드", content = @Content()),
             @ApiResponse(responseCode = "404", description = "데이터가 없는 경우 HTTP 상태코드", content = @Content())

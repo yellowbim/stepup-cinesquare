@@ -8,6 +8,7 @@ import org.stepup.cinesquareapis.common.exception.enums.CustomErrorCode;
 import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
 import org.stepup.cinesquareapis.movie.repository.MovieSimpleRepository;
 import org.stepup.cinesquareapis.report.entity.*;
+import org.stepup.cinesquareapis.report.model.MovieCommentResponse;
 import org.stepup.cinesquareapis.report.model.MovieLikeCommentResponse;
 import org.stepup.cinesquareapis.report.model.UserScoreRequest;
 import org.stepup.cinesquareapis.report.repository.MovieCommentRepository;
@@ -15,7 +16,6 @@ import org.stepup.cinesquareapis.report.repository.UserLikeCommentRepository;
 import org.stepup.cinesquareapis.report.repository.UserScoreRepository;
 import org.stepup.cinesquareapis.report.repository.UserStatusRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -32,6 +32,23 @@ public class UserReportService {
     private final MovieSimpleRepository movieSimpleRepository;
 
 
+
+    /**
+     * 유저가 영화 1건에 남긴 코멘트 조회
+     *
+     */
+    public MovieCommentResponse getMovieComment(Integer userId, Integer movieId) {
+//        Comment data = new Comment();
+        Comment comment = new Comment();
+        MovieCommentResponse data = new MovieCommentResponse(comment);
+
+        if (movieCommentRepository.existsByUserIdAndMovieId(userId, movieId)) {
+            comment = movieCommentRepository.findByUserIdAndMovieId(userId, movieId);
+            data = new MovieCommentResponse(comment);
+        }
+
+        return data;
+    }
 
     /**
      * 유저별 영화별 별점 조회
@@ -212,6 +229,12 @@ public class UserReportService {
         userLikeComment.setCommentId(commentId);
 
         UserLikeComment userLikeCommentsResult = userLikeCommentRepository.save(userLikeComment);
+
+        // 해당 comment 에 좋아요 count 증가
+        Comment comment = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
+        comment.setLike(comment.getLike()+1);
+        movieCommentRepository.save(comment);
+
         if (userLikeCommentsResult.getUserId() != null) {
             return true;
         }
@@ -229,6 +252,12 @@ public class UserReportService {
             return false;
         } else {
             userLikeCommentRepository.deleteByUserIdAndMovieIdAndCommentId(userId, movieId, commentId);
+
+            // 해당 comment 에 좋아요 count 감소
+            // 해당 comment 에 좋아요 count 증가
+            Comment comment = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
+            comment.setLike(comment.getLike()-1);
+            movieCommentRepository.save(comment);
             return true;
         }
     }
