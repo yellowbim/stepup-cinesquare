@@ -11,5 +11,13 @@ import java.util.List;
 @Repository
 @Transactional
 public interface MovieCommentSummaryRepository extends JpaRepository<CommentSummary, Integer> {
-    List<CommentSummary> findAllByMovieId(Integer movieId);
+    // movie_id 하나만으로 조회
+//    List<CommentSummary> findAllByMovieId(Integer movieId);
+
+    // movie_id 하나만으로 조회, 정렬조건 추가
+    List<CommentSummary> findAllByMovieIdOrderByLike(Integer movieId);
+
+   // movie_id, comment_id 하나에 대하여 조회
+   CommentSummary findByMovieIdAndCommentId(Integer movieId, Integer commentId);
+
 }

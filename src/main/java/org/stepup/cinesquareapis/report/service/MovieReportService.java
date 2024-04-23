@@ -29,6 +29,22 @@ public class MovieReportService {
     private final MovieCommentSummaryRepository movieCommentSummaryRepository;
 
     /**
+     * 사용자 본인이 남긴 코멘트가 아닌 경우 상세 코멘트를 조회하는 API
+     */
+    public MovieCommentResponse getMovieComment(Integer movieId, Integer commentId) {
+//        Comment data = new Comment();
+        Comment comment = new Comment();
+        MovieCommentResponse data = new MovieCommentResponse(comment);
+
+        if (movieCommentRepository.existsByCommentIdAndMovieId(commentId, movieId)) {
+            comment = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
+            data = new MovieCommentResponse(comment);
+        }
+
+        return data;
+    }
+
+    /**
      * 영화 코멘트 작성
      */
     public Comment saveComment(MovieCommentSaveRequest request, Integer movieId, Integer userId) {
@@ -85,6 +101,11 @@ public class MovieReportService {
             throw new RestApiException(CustomErrorCode.ALREADY_REGISTED_COMMENT_REPLY);
         }
 
+        // 영화 답글 수 추가
+        // 해당 comment 에 좋아요 count 증가
+        Comment comment = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
+        comment.setReplyCount(comment.getReplyCount()+1);
+        movieCommentRepository.save(comment);
         return movieCommentReplyRepository.save(request.toEntity(commentId, movieId, userId));
     }
 
@@ -115,6 +136,13 @@ public class MovieReportService {
         if (userId == null) {
             throw new RestApiException(CustomErrorCode.NOT_FOUND_USER); // 사용자 정보가 없으면 에러
         }
+
+        // 영화 답글 수 감소
+        // 해당 comment 에 좋아요 count 증가
+        Comment comment = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
+        comment.setReplyCount(comment.getReplyCount()-1);
+        movieCommentRepository.save(comment);
+
         // reply id 기준으로 삭제
         return movieCommentReplyRepository.deleteByReplyId(replyId);
     }
@@ -125,7 +153,7 @@ public class MovieReportService {
      * table : tb_movie_comment_summary
      */
     public List<MovieCommentSummaryResponse> searchCommentSummary(Integer movieId) {
-        return movieCommentSummaryRepository.findAllByMovieId(movieId).stream().map(MovieCommentSummaryResponse::new).collect(Collectors.toList());
+        return movieCommentSummaryRepository.findAllByMovieIdOrderByLike(movieId).stream().map(MovieCommentSummaryResponse::new).collect(Collectors.toList());
     }
 
     /**
