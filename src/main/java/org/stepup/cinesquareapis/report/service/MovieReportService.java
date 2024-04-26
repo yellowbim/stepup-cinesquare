@@ -3,11 +3,14 @@ package org.stepup.cinesquareapis.report.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.stepup.cinesquareapis.common.exception.enums.CustomErrorCode;
 import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
 import org.stepup.cinesquareapis.report.entity.Comment;
 import org.stepup.cinesquareapis.report.entity.CommentReply;
+import org.stepup.cinesquareapis.report.entity.CommentSummary;
 import org.stepup.cinesquareapis.report.model.*;
 import org.stepup.cinesquareapis.report.repository.MovieCommentReplyRepository;
 import org.stepup.cinesquareapis.report.repository.MovieCommentRepository;
@@ -152,8 +155,8 @@ public class MovieReportService {
      *
      * table : tb_movie_comment_summary
      */
-    public List<MovieCommentSummaryResponse> searchCommentSummary(Integer movieId) {
-        return movieCommentSummaryRepository.findAllByMovieIdOrderByLike(movieId).stream().map(MovieCommentSummaryResponse::new).collect(Collectors.toList());
+    public Page<CommentSummary> searchCommentSummary(Integer movieId, Pageable pageable) {
+        return movieCommentSummaryRepository.findAllByMovieIdOrderByLike(movieId, pageable);
     }
 
     /**
@@ -162,8 +165,8 @@ public class MovieReportService {
      * @param comment_id
      * table : tb_movie_comment_summary
      */
-    public List<MovieReplyResponse> searchReplyList(Integer commentId) {
-        return movieCommentReplyRepository.findAllByCommentId(commentId).stream().map(MovieReplyResponse::new).collect(Collectors.toList());
+    public Page<CommentReply> searchReplyList(Integer commentId, Pageable pageable) {
+        return movieCommentReplyRepository.findAllByCommentId(commentId, pageable);
     }
 
     /**
