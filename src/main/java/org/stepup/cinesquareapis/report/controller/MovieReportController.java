@@ -7,6 +7,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,13 +18,16 @@ import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
 import org.stepup.cinesquareapis.common.model.DataResponse;
 import org.stepup.cinesquareapis.common.model.ListResponse;
+import org.stepup.cinesquareapis.common.model.PageResponse;
 import org.stepup.cinesquareapis.common.model.ResultResponse;
 import org.stepup.cinesquareapis.report.entity.Comment;
 import org.stepup.cinesquareapis.report.entity.CommentReply;
+import org.stepup.cinesquareapis.report.entity.CommentSummary;
 import org.stepup.cinesquareapis.report.model.*;
 import org.stepup.cinesquareapis.report.service.MovieReportService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -217,14 +223,22 @@ public class MovieReportController {
      * @param movie_id
      * table : tb_movie_comment_summary
      */
-    @Operation(summary = "영화 코멘트 리스트 + 점수 ",
+    @Operation(summary = "영화 코멘트 리스트 + 점수 (페이징)",
                 description = "기본적으로 영화만 기준으로 코멘트 목록을 조회하는 기능<br>" +
                                 "https://pedia.watcha.com/ko-KR/contents/mWz3rPP")
     @GetMapping("summary/movies/{movie_id}")
-    public ResponseEntity<ListResponse<List<MovieCommentSummaryResponse>>> searchCommentSummary(@PathVariable("movie_id") Integer movieId) {
-        List<MovieCommentSummaryResponse> data = movieReportService.searchCommentSummary(movieId);
-        ListResponse<List<MovieCommentSummaryResponse>> response = new ListResponse<>();
-        response.setList(data);
+    public ResponseEntity<PageResponse<List<MovieCommentSummaryResponse>>> searchCommentSummary(@PathVariable("movie_id") Integer movieId,
+                    @RequestParam(required = false, defaultValue = "1", value = "page") int page, @RequestParam(required = false, defaultValue = "10", value = "size") int size) {
+
+        // 페이지 셋팅 (Pageable은 0부터 시작해서 인입값 -1로 셋팅 필요)
+        Pageable pageable = PageRequest.of(page-1, size);
+        // PageResponse 생성(초기화)
+        PageResponse<List<MovieCommentSummaryResponse>> response = new PageResponse<>(page, size);
+
+        Page<CommentSummary> pagedData = movieReportService.searchCommentSummary(movieId, pageable);
+        response.setList(pagedData.getContent().stream().map(MovieCommentSummaryResponse::new).collect(Collectors.toList())); // data
+        response.setLastPage(pagedData.getTotalPages() == 0 ? 1: pagedData.getTotalPages()); // 마지막 페이지
+        response.setTotalCount(pagedData.getTotalElements()); // 총 건수
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -235,13 +249,21 @@ public class MovieReportController {
      * @param comment_id
      * table : tb_movie_comment_summary
      */
-    @Operation(summary = "영화 코멘트 답글 조회",
+    @Operation(summary = "영화 코멘트 답글 조회 (페이징)",
                 description = "https://pedia.watcha.com/ko-KR/comments/NXnE5gwnkyMzG 코멘트 답글 조회")
     @GetMapping("comments/{comment_id}")
-    public ResponseEntity<ListResponse<List<MovieReplyResponse>>> searchReplyList(@PathVariable("comment_id") Integer commentId) {
-        List<MovieReplyResponse> data = movieReportService.searchReplyList(commentId);
-        ListResponse<List<MovieReplyResponse>> response = new ListResponse<>();
-        response.setList(data);
+    public ResponseEntity<PageResponse<List<MovieReplyResponse>>> searchReplyList(@PathVariable("comment_id") Integer commentId,
+                      @RequestParam(required = false, defaultValue = "1", value = "page") int page, @RequestParam(required = false, defaultValue = "10", value = "size") int size) {
+
+        // 페이지 셋팅 (Pageable은 0부터 시작해서 인입값 -1로 셋팅 필요)
+        Pageable pageable = PageRequest.of(page-1, size);
+        // PageResponse 생성(초기화)
+        PageResponse<List<MovieReplyResponse>> response = new PageResponse<>(page, size);
+
+        Page<CommentReply> pagedData = movieReportService.searchReplyList(commentId, pageable);
+        response.setList(pagedData.getContent().stream().map(MovieReplyResponse::new).collect(Collectors.toList())); // data
+        response.setLastPage(pagedData.getTotalPages() == 0 ? 1: pagedData.getTotalPages()); // 마지막 페이지
+        response.setTotalCount(pagedData.getTotalElements()); // 총 건수
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

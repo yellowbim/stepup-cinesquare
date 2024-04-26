@@ -3,22 +3,21 @@ package org.stepup.cinesquareapis.report.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.stepup.cinesquareapis.common.exception.enums.CustomErrorCode;
 import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
 import org.stepup.cinesquareapis.movie.repository.MovieSimpleRepository;
 import org.stepup.cinesquareapis.report.entity.*;
 import org.stepup.cinesquareapis.report.model.MovieCommentResponse;
-import org.stepup.cinesquareapis.report.model.MovieLikeCommentResponse;
 import org.stepup.cinesquareapis.report.model.UserScoreRequest;
 import org.stepup.cinesquareapis.report.repository.MovieCommentRepository;
 import org.stepup.cinesquareapis.report.repository.UserLikeCommentRepository;
 import org.stepup.cinesquareapis.report.repository.UserScoreRepository;
 import org.stepup.cinesquareapis.report.repository.UserStatusRepository;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -199,11 +198,8 @@ public class UserReportService {
      *
      */
     @Transactional
-    public List<MovieLikeCommentResponse> getUserLikeCommentList(Integer userId, Integer movieId) {
-        // key setting
-//        UserLikeCommentKey userLikeCommentKey = new UserLikeCommentKey(userId, movieId);
-
-         return userLikeCommentRepository.findAllByUserIdAndMovieId(userId, movieId).stream().map(MovieLikeCommentResponse::new).collect(Collectors.toList());
+    public Page<UserLikeComment> getUserLikeCommentList(Integer userId, Integer movieId, Pageable pageable) {
+         return userLikeCommentRepository.findAllByUserIdAndMovieId(userId, movieId, pageable);
     }
 
     /**

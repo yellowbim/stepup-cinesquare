@@ -1,6 +1,8 @@
 package org.stepup.cinesquareapis.report.repository;
 
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.stepup.cinesquareapis.report.entity.Comment;
@@ -24,5 +26,5 @@ public interface MovieCommentReplyRepository extends JpaRepository<CommentReply,
 
     Boolean existsByReplyId(Integer replyId);
 
-    List<CommentReply> findAllByCommentId(Integer commendId);
+    Page<CommentReply> findAllByCommentId(Integer commendId, Pageable pageable);
 }

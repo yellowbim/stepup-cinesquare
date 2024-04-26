@@ -7,6 +7,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,11 +18,14 @@ import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
 import org.stepup.cinesquareapis.common.model.DataResponse;
 import org.stepup.cinesquareapis.common.model.ListResponse;
+import org.stepup.cinesquareapis.common.model.PageResponse;
 import org.stepup.cinesquareapis.common.model.ResultResponse;
+import org.stepup.cinesquareapis.report.entity.UserLikeComment;
 import org.stepup.cinesquareapis.report.model.*;
 import org.stepup.cinesquareapis.report.service.UserReportService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -231,17 +237,24 @@ public class UserReportController {
      * 유저별 좋아요한 코멘트 목록 조회
      *
      */
-    @Operation(summary = "유저별 좋아요한 코멘트 목록 조회",
-                description = "user_id, movie_id 기준으로 comment_id 목록 조회" +
+    @Operation(summary = "유저별 좋아요한 코멘트 목록 조회 (페이징)",
+                description = "user_id, movie_id 기준으로 comment_id 목록 조회<br>" +
                         "return 값 : comment_id 리스트, 해당 목록을 가지고 코멘트 목록에서 좋아요 했는지 비교해서 판단해야됨!!")
     @UserAuthorize
     @GetMapping("movies/{movie_id}/like-comments")
-    public ResponseEntity<ListResponse<List<MovieLikeCommentResponse>>> getUserLikeCommentList(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId) {
+    public ResponseEntity<PageResponse<List<MovieLikeCommentResponse>>> getUserLikeCommentList(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId,
+                                       @RequestParam(required = false, defaultValue = "1", value = "page") int page, @RequestParam(required = false, defaultValue = "10", value = "size") int size) {
         Integer userId = Integer.parseInt(principal.getUsername());
 
-        List<MovieLikeCommentResponse> data = userReportService.getUserLikeCommentList(userId, movieId);
-        ListResponse<List<MovieLikeCommentResponse>> response = new ListResponse<>();
-        response.setList(data);
+        // 페이지 셋팅 (Pageable은 0부터 시작해서 인입값 -1로 셋팅 필요)
+        Pageable pageable = PageRequest.of(page-1, size);
+        // PageResponse 생성(초기화)
+        PageResponse<List<MovieLikeCommentResponse>> response = new PageResponse<>(page, size);
+
+        Page<UserLikeComment> pagedData = userReportService.getUserLikeCommentList(userId, movieId, pageable);
+        response.setList(pagedData.getContent().stream().map(MovieLikeCommentResponse::new).collect(Collectors.toList())); // data
+        response.setLastPage(pagedData.getTotalPages() == 0 ? 1: pagedData.getTotalPages()); // 마지막 페이지
+        response.setTotalCount(pagedData.getTotalElements()); // 총 건수
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

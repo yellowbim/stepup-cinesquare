@@ -1,6 +1,8 @@
 package org.stepup.cinesquareapis.report.repository;
 
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.stepup.cinesquareapis.report.entity.CommentSummary;
@@ -15,7 +17,7 @@ public interface MovieCommentSummaryRepository extends JpaRepository<CommentSumm
 //    List<CommentSummary> findAllByMovieId(Integer movieId);
 
     // movie_id 하나만으로 조회, 정렬조건 추가
-    List<CommentSummary> findAllByMovieIdOrderByLike(Integer movieId);
+    Page<CommentSummary> findAllByMovieIdOrderByLike(Integer movieId, Pageable pageable);
 
    // movie_id, comment_id 하나에 대하여 조회
    CommentSummary findByMovieIdAndCommentId(Integer movieId, Integer commentId);
