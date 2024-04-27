@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.stepup.cinesquareapis.report.entity.UserLikeComment;
 import org.stepup.cinesquareapis.report.entity.UserLikeCommentKey;
 import org.stepup.cinesquareapis.report.entity.UserStatus;
+import org.stepup.cinesquareapis.report.model.LikeCommentsResponse;
 import org.stepup.cinesquareapis.report.model.MovieLikeCommentResponse;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public interface UserLikeCommentRepository extends JpaRepository<UserLikeComment
     // commentId 기준으로 코멘트 좋아요 삭제
     int deleteByCommentId(Integer commentId);
 
+    //영화별 유저가 좋아요한 코멘트 목록 조회
     Page<UserLikeComment> findAllByUserIdAndMovieId(Integer userId, Integer movieId, Pageable pageable);
 
     // 좋아요한 코멘트 개수 조회

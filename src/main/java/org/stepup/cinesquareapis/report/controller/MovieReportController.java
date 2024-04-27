@@ -17,7 +17,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
 import org.stepup.cinesquareapis.common.model.DataResponse;
-import org.stepup.cinesquareapis.common.model.ListResponse;
 import org.stepup.cinesquareapis.common.model.PageResponse;
 import org.stepup.cinesquareapis.common.model.ResultResponse;
 import org.stepup.cinesquareapis.report.entity.Comment;

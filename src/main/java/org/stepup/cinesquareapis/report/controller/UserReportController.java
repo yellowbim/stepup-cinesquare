@@ -20,6 +20,7 @@ import org.stepup.cinesquareapis.common.model.DataResponse;
 import org.stepup.cinesquareapis.common.model.ListResponse;
 import org.stepup.cinesquareapis.common.model.PageResponse;
 import org.stepup.cinesquareapis.common.model.ResultResponse;
+import org.stepup.cinesquareapis.report.entity.CommentSummary;
 import org.stepup.cinesquareapis.report.entity.UserLikeComment;
 import org.stepup.cinesquareapis.report.model.*;
 import org.stepup.cinesquareapis.report.service.UserReportService;
@@ -234,10 +235,10 @@ public class UserReportController {
     }
 
     /**
-     * 유저별 좋아요한 코멘트 목록 조회
+     * 영화별 유저가 좋아요한 코멘트 목록 조회
      *
      */
-    @Operation(summary = "유저별 좋아요한 코멘트 목록 조회 (페이징)",
+    @Operation(summary = "영화별 유저가 좋아요한 코멘트 목록 조회 (페이징)",
                 description = "user_id, movie_id 기준으로 comment_id 목록 조회<br>" +
                         "return 값 : comment_id 리스트, 해당 목록을 가지고 코멘트 목록에서 좋아요 했는지 비교해서 판단해야됨!!")
     @UserAuthorize
@@ -251,10 +252,35 @@ public class UserReportController {
         // PageResponse 생성(초기화)
         PageResponse<List<MovieLikeCommentResponse>> response = new PageResponse<>(page, size);
 
-        Page<UserLikeComment> pagedData = userReportService.getUserLikeCommentList(userId, movieId, pageable);
+        Page<UserLikeComment> pagedData = userReportService.getUserMovieLikeCommentList(userId, movieId, pageable);
         response.setList(pagedData.getContent().stream().map(MovieLikeCommentResponse::new).collect(Collectors.toList())); // data
         response.setLastPage(pagedData.getTotalPages() == 0 ? 1: pagedData.getTotalPages()); // 마지막 페이지
         response.setTotalCount(pagedData.getTotalElements()); // 총 건수
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * 좋아요한 코멘트 목록
+     *
+     */
+    @Operation(summary = "좋아요한 코멘트 목록 (페이징)",
+                description = "")
+    @UserAuthorize
+    @GetMapping("like-comments")
+    public ResponseEntity<PageResponse<List<LikeCommentsResponse>>> getLikeComments(@AuthenticationPrincipal User principal,
+                                                                 @RequestParam(required = false, defaultValue = "1", value = "page") int page, @RequestParam(required = false, defaultValue = "10", value = "size") int size) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        //페이지 셋팅
+        Pageable pageable = PageRequest.of(page-1, size);
+
+        Page<CommentSummary> pagedData = userReportService.getUserLikeComments(userId, pageable);
+        PageResponse<List<LikeCommentsResponse>> response = new PageResponse<>(page, size);
+        response.setList(pagedData.getContent().stream().map(LikeCommentsResponse::new).collect(Collectors.toList())); // data
+        response.setLastPage(pagedData.getTotalPages() == 0 ? 1: pagedData.getTotalPages()); // 마지막 페이지
+        response.setTotalCount(pagedData.getTotalElements()); // 총 건수
+
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -303,13 +329,13 @@ public class UserReportController {
     }
 
     /**
-     * 평가한 별점 개수 조회
+     * 평가한 영화 개수 조회
      *
      * @param user_id
      * table : tv_user_movie_score
      */
-    @Operation(summary = "평가한 별점 개수 조회",
-            description = "https://pedia.watcha.com/ko-KR/review 평가하기 영화 별점 개수 조회")
+    @Operation(summary = "평가한(별점) 영화 개수 조회",
+            description = "https://pedia.watcha.com/ko-KR/review 평가하기 영화 별점 개수 조회 + 마이페이지 상단")
     @UserAuthorize
     @GetMapping("score-counts")
     public ResponseEntity<DataResponse<Integer>> getScoredCount(@AuthenticationPrincipal User principal) {
@@ -325,10 +351,9 @@ public class UserReportController {
     /**
      * 좋아요 한 코맨트 개수 조회
      *
-     * @param user_id
-     * table : tv_user_movie_score
      */
-    @Operation(summary = "좋아요 한 코맨트 개수 조회")
+    @Operation(summary = "좋아요 한 코맨트 개수 조회",
+                description = "마이피이지 하단")
     @UserAuthorize
     @GetMapping("like-comment-counts")
     public ResponseEntity<DataResponse<Integer>> getLikeCommentCounts(@AuthenticationPrincipal User principal) {
@@ -342,20 +367,40 @@ public class UserReportController {
     }
 
     /**
+     * 영화 별점 분포 조회 (mypage)
+     *
+     */
+    @Operation(summary = "영화 별점 분포 조회",
+                description = "마이페이지")
+    @UserAuthorize
+    @GetMapping("movie-rating")
+    public ResponseEntity<ListResponse<List<UserMovieRating>>> getUserMovieRating(@AuthenticationPrincipal User principal) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        List<UserMovieRating> list = userReportService.getUserMovieRating(userId);
+        ListResponse<List<UserMovieRating>> response = new ListResponse<>();
+        response.setList(list);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
      * 평가한 영화 목록 조회(별점만)
      *
      * @param user_id
      * table : tv_user_movie_score
      */
-//    @Operation(summary = "평가한 영화 목록 조회(별점 평가만)")
-//    @GetMapping("movies/scored")
-//    public ResponseEntity<ListResponse<List<UserScoredResponse>>> getScoredMovies(@RequestParam("user_id") Integer userId) {
-//        List<UserScoredResponse> data = userReportService.getScoredMovies(userId);
-//        ListResponse<List<UserScoredResponse>> response = new ListResponse<>();
-//        response.setList(data);
-//
-//        return new ResponseEntity<>(response, HttpStatus.OK);
-//    }
+    @Operation(summary = "평가한 영화 목록 조회(별점 평가만)")
+    @GetMapping("movies/scored")
+    public ResponseEntity<ListResponse<List<UserScoredMovies>>> getScoredMovies(@AuthenticationPrincipal User principal) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        List<UserScoredMovies> data = userReportService.getScoredMovies(userId);
+        ListResponse<List<UserScoredMovies>> response = new ListResponse<>();
+        response.setList(data);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
 
 
