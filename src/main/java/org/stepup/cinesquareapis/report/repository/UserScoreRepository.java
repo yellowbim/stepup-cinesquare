@@ -6,6 +6,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.stepup.cinesquareapis.report.entity.UserScore;
 import org.stepup.cinesquareapis.report.entity.UserScoreKey;
+import org.stepup.cinesquareapis.report.model.UserMovieRating;
+import org.stepup.cinesquareapis.report.model.UserScoredMovies;
+
+import java.util.List;
 
 @Repository
 @Transactional
@@ -25,7 +29,12 @@ public interface UserScoreRepository extends JpaRepository<UserScore, UserScoreK
     // 부과된 별점 개수
     int countByUserId(Integer userId);
 
-//    // 평가한 영화 목록
-//    @Query(value = "SELECT A.movie_id , B.title , A.score  FROM cinesquare.tb_user_movie_score A INNER JOIN cinesquare.tb_movie_simple B ON A.movie_id = B.movie_id", nativeQuery = true)
-//    List<UserScoredResponse> findAllMoviesByUserId(Integer userId);
+    // 영화 별점 분포 (jpql 방식)
+    // 이렇게 interface로 선언하려면 as 로 해당 컬럼 명을 한번 더 명시해줘야됨.
+    @Query("select us.score as score, count(us.score) as count from UserScore us group by us.userId, us.score having us.userId = :userId")
+    List<UserMovieRating> findUserMovieRating(Integer userId);
+
+//    // 평가한 영화 목록 (AS 선언할때 언더스코어로 표기하면 안되고, 카멜케이스로 작성해야 인식됨!!!!)
+    @Query(value = "select A.movie_id as movieId , A.score as score , B.title as title from cinesquare.tb_user_movie_score A inner join cinesquare.tb_movie B on A.movie_id = B.movie_id where A.user_id = :userId", nativeQuery = true)
+    List<UserScoredMovies> findMoviesAllByUserId(Integer userId);
 }

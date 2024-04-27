@@ -84,5 +84,5 @@ public class CommentSummary {
 //    ON A.comment_id = D.comment_id
 //    LEFT join cinesquare.tb_movie_comment_reply E
 //    ON A.comment_id = E.comment_id
-//    group by A.user_id
+//    group by A.user_id, A.movie_id
 }

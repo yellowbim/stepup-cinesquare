@@ -1,5 +1,6 @@
 package org.stepup.cinesquareapis.report.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,12 +12,14 @@ import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
 import org.stepup.cinesquareapis.movie.repository.MovieSimpleRepository;
 import org.stepup.cinesquareapis.report.entity.*;
 import org.stepup.cinesquareapis.report.model.MovieCommentResponse;
+import org.stepup.cinesquareapis.report.model.UserMovieRating;
 import org.stepup.cinesquareapis.report.model.UserScoreRequest;
-import org.stepup.cinesquareapis.report.repository.MovieCommentRepository;
-import org.stepup.cinesquareapis.report.repository.UserLikeCommentRepository;
-import org.stepup.cinesquareapis.report.repository.UserScoreRepository;
-import org.stepup.cinesquareapis.report.repository.UserStatusRepository;
+import org.stepup.cinesquareapis.report.model.UserScoredMovies;
+import org.stepup.cinesquareapis.report.repository.*;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -28,6 +31,7 @@ public class UserReportService {
     private final UserStatusRepository userStatusRepository;
     private final UserLikeCommentRepository userLikeCommentRepository;
     private final MovieCommentRepository movieCommentRepository;
+    private final MovieCommentSummaryRepository movieCommentSummaryRepository;
     private final MovieSimpleRepository movieSimpleRepository;
 
 
@@ -194,12 +198,21 @@ public class UserReportService {
     }
 
     /**
-     * 유저별 좋아요한 코멘트 목록 조회
+     * 영화별 유저가 좋아요한 코멘트 목록 조회
      *
      */
     @Transactional
-    public Page<UserLikeComment> getUserLikeCommentList(Integer userId, Integer movieId, Pageable pageable) {
+    public Page<UserLikeComment> getUserMovieLikeCommentList(Integer userId, Integer movieId, Pageable pageable) {
          return userLikeCommentRepository.findAllByUserIdAndMovieId(userId, movieId, pageable);
+    }
+
+    /**
+     * 좋아요한 코멘트 목록 (페이징)
+     *
+     */
+    @Transactional
+    public Page<CommentSummary> getUserLikeComments(Integer userId, Pageable pageable) {
+         return movieCommentSummaryRepository.findByLikeUserId(userId, pageable);
     }
 
     /**
@@ -275,13 +288,20 @@ public class UserReportService {
     }
 
     /**
+     * 영화 별점 분포 조회 (mypage)
+     */
+    @Transactional
+    public List<UserMovieRating> getUserMovieRating(Integer userId) {
+        return userScoreRepository.findUserMovieRating(userId);
+    }
+
+    /**
      * 평가한 영화 목록 조회(별점만)
      */
-//    @Transactional
-//    public List<UserScoredResponse> getScoredMovies(Integer userId) {
-//        return userScoreRepository.findAllMoviesByUserId(userId);
-//    }
-
+    @Transactional
+    public List<UserScoredMovies> getScoredMovies(Integer userId) {
+        return userScoreRepository.findMoviesAllByUserId(userId);
+    }
 
     /**
      * score 범위 확인, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5
