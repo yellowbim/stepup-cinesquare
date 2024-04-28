@@ -352,7 +352,7 @@ public class UserReportController {
      * 좋아요 한 코맨트 개수 조회
      *
      */
-    @Operation(summary = "좋아요 한 코맨트 개수 조회",
+    @Operation(summary = "좋아요 한 코멘트 개수 조회",
                 description = "마이피이지 하단")
     @UserAuthorize
     @GetMapping("like-comment-counts")
@@ -371,7 +371,8 @@ public class UserReportController {
      *
      */
     @Operation(summary = "영화 별점 분포 조회",
-                description = "마이페이지")
+                description = "마이페이지 <br>" +
+                              "우선 있는 경우 해당 별점, 개수 이렇게 표기 됨. 추후에 score는 기본값으로 셋팅 예정")
     @UserAuthorize
     @GetMapping("movie-rating")
     public ResponseEntity<ListResponse<List<UserMovieRating>>> getUserMovieRating(@AuthenticationPrincipal User principal) {
@@ -390,40 +391,21 @@ public class UserReportController {
      * @param user_id
      * table : tv_user_movie_score
      */
-    @Operation(summary = "평가한 영화 목록 조회(별점 평가만)")
+    @Operation(summary = "평가한(별점) 영화 목록 조회 (페이징)")
     @GetMapping("movies/scored")
-    public ResponseEntity<ListResponse<List<UserScoredMovies>>> getScoredMovies(@AuthenticationPrincipal User principal) {
+    public ResponseEntity<PageResponse<List<UserScoredMovies>>> getScoredMovies(@AuthenticationPrincipal User principal,
+                        @RequestParam(required = false, defaultValue = "1", value = "page") int page, @RequestParam(required = false, defaultValue = "10", value = "size") int size) {
         Integer userId = Integer.parseInt(principal.getUsername());
 
-        List<UserScoredMovies> data = userReportService.getScoredMovies(userId);
-        ListResponse<List<UserScoredMovies>> response = new ListResponse<>();
-        response.setList(data);
+        //페이지 셋팅
+        Pageable pageable = PageRequest.of(page-1, size);
+
+        Page<UserScoredMovies> pagedData = userReportService.getScoredMovies(userId, pageable);
+        PageResponse<List<UserScoredMovies>> response = new PageResponse<>(page, size);
+        response.setList(pagedData.getContent()); // data
+        response.setLastPage(pagedData.getTotalPages() == 0 ? 1: pagedData.getTotalPages()); // 마지막 페이지
+        response.setTotalCount(pagedData.getTotalElements()); // 총 건수
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
