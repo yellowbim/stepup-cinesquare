@@ -1,6 +1,8 @@
 package org.stepup.cinesquareapis.report.repository;
 
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -36,5 +38,5 @@ public interface UserScoreRepository extends JpaRepository<UserScore, UserScoreK
 
 //    // 평가한 영화 목록 (AS 선언할때 언더스코어로 표기하면 안되고, 카멜케이스로 작성해야 인식됨!!!!)
     @Query(value = "select A.movie_id as movieId , A.score as score , B.title as title from cinesquare.tb_user_movie_score A inner join cinesquare.tb_movie B on A.movie_id = B.movie_id where A.user_id = :userId", nativeQuery = true)
-    List<UserScoredMovies> findMoviesAllByUserId(Integer userId);
+    Page<UserScoredMovies> findMoviesAllByUserId(Integer userId, Pageable pageable);
 }

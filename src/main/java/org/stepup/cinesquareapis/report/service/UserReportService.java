@@ -1,6 +1,5 @@
 package org.stepup.cinesquareapis.report.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,9 +16,7 @@ import org.stepup.cinesquareapis.report.model.UserScoreRequest;
 import org.stepup.cinesquareapis.report.model.UserScoredMovies;
 import org.stepup.cinesquareapis.report.repository.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -299,8 +296,8 @@ public class UserReportService {
      * 평가한 영화 목록 조회(별점만)
      */
     @Transactional
-    public List<UserScoredMovies> getScoredMovies(Integer userId) {
-        return userScoreRepository.findMoviesAllByUserId(userId);
+    public Page<UserScoredMovies> getScoredMovies(Integer userId, Pageable pageable) {
+        return userScoreRepository.findMoviesAllByUserId(userId, pageable);
     }
 
     /**
