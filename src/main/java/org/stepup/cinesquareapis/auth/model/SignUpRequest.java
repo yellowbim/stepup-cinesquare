@@ -3,13 +3,13 @@ package org.stepup.cinesquareapis.auth.model;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record SignUpRequest(
-        @Schema(description = "회원 아이디", example = "colabear754")
+        @Schema(description = "계정", example = "soomin@gmail.com")
         String account,
-        @Schema(description = "회원 비밀번호", example = "1234")
+        @Schema(description = "비밀번호", example = "qwe123")
         String password,
-        @Schema(description = "회원 이름", example = "콜라곰")
+        @Schema(description = "이름", example = "조수민")
         String name,
-        @Schema(description = "회원 나이", example = "30")
+        @Schema(description = "닉네임", example = "쑴")
         String nickname
 ) {
 }

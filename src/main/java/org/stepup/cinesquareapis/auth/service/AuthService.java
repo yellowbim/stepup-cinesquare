@@ -1,15 +1,19 @@
 package org.stepup.cinesquareapis.auth.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.stepup.cinesquareapis.auth.entity.UserRefreshToken;
+import org.stepup.cinesquareapis.auth.jwt.JwtAuthenticationFilter;
 import org.stepup.cinesquareapis.auth.jwt.TokenProvider;
 import org.stepup.cinesquareapis.auth.model.SignInRequest;
 import org.stepup.cinesquareapis.auth.model.SignInResponse;
 import org.stepup.cinesquareapis.auth.model.SignUpRequest;
 import org.stepup.cinesquareapis.auth.model.SignUpResponse;
+import org.stepup.cinesquareapis.auth.repository.UserRefreshTokenRepository;
 import org.stepup.cinesquareapis.user.entity.User;
 import org.stepup.cinesquareapis.user.repository.UserRepository;
 
@@ -17,7 +21,9 @@ import org.stepup.cinesquareapis.user.repository.UserRepository;
 @Service
 public class AuthService {
     private final UserRepository userRepository;
+    private final UserRefreshTokenRepository userRefreshTokenRepository;
     private final PasswordEncoder encoder;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final TokenProvider tokenProvider;
 
     @Transactional
@@ -31,15 +37,32 @@ public class AuthService {
         return SignUpResponse.from(user);
     }
 
-    @Transactional(readOnly = true)
+//    @Transactional(readOnly =
+    @Transactional
     public SignInResponse signIn(SignInRequest request) {
             User user = userRepository.findByAccount(request.account())
 //                .filter(it -> it.getPassword().equals(request.password()))
                 .filter(it -> encoder.matches(request.password(), it.getPassword())) // 암호화된 비밀번호와 비교
-                .orElseThrow(() -> new IllegalArgumentException("아이디 또는 비밀번호가 일치하지 않습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid account or password."));
 
-        String token = tokenProvider.createToken(String.format("%s:%s", user.getUserId(), user.getType()));	// 토큰 생성
+        String accessToken = tokenProvider.createAccessToken(String.format("%s:%s", user.getUserId(), user.getType()));	// 토큰 생성
+        String refreshToken = tokenProvider.createRefreshToken();
 
-        return new SignInResponse(user.getName(), user.getType(), token);	// 생성자에 토큰 추가
+        userRefreshTokenRepository.findById(user.getUserId())
+                .ifPresentOrElse(
+                        it -> it.updateRefreshToken(refreshToken),
+                        () -> userRefreshTokenRepository.save(new UserRefreshToken(user, refreshToken))
+                );
+
+        // User 정보 + token 정보
+        return new SignInResponse(user.getName(), user.getType(), accessToken, refreshToken);
+    }
+
+    @Transactional
+    public String reissueAccessToken(String refreshToken, HttpServletRequest request) throws Exception {
+        if (refreshToken == null) {
+            throw new Exception();
+        }
+        return jwtAuthenticationFilter.reissueAccessToken(refreshToken, request);
     }
 }

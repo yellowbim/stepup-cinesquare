@@ -29,6 +29,17 @@ public class SwaggerConfig {
                 .info(apiInfo());
     }
 
+//    @Bean
+//    public OperationCustomizer globalHeader() {
+//        return (operation, handlerMethod) -> {
+//            operation.addParametersItem(new Parameter()
+//                    .in(ParameterIn.HEADER.toString())
+//                    .schema(new StringSchema().name("Refresh-Token"))
+//                    .name("Refresh-Token"));
+//            return operation;
+//        };
+//    }
+
     private Info apiInfo() {
         return new Info()
                 .title("CINESQUARE API") // API의 제목
