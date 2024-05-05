@@ -13,6 +13,8 @@ public class UserResponse {
 
     private String nickname;
 
+    private String image;
+
     public UserResponse() {
     }
 
@@ -21,5 +23,6 @@ public class UserResponse {
         account = user.getAccount();
         name = user.getName();
         nickname = user.getNickname();
+        image = user.getImage() != null ? "https://cinesquare-s3.s3.ap-northeast-2.amazonaws.com/" + user.getImage() : null;
     }
 }

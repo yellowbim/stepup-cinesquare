@@ -13,6 +13,11 @@ import org.stepup.cinesquareapis.upload.repository.FileUploadRepository;
 import org.stepup.cinesquareapis.user.repository.UserRepository;
 import org.stepup.cinesquareapis.util.AwsS3FileUpload;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -58,6 +63,20 @@ public class FileUploadService {
 //        userRepository.updateProfileByUserId(userId, uResult);
 
         return true;
+    }
+
+    public String uploadFileV2(String directory, MultipartFile multipartFile) throws Exception {
+        String uploadFilePath = awsS3FileUpload.uploadFileV2(directory, multipartFile);
+
+        if ("500".equals(uploadFilePath)) {
+            throw new Exception();
+        }
+
+        return uploadFilePath;
+    }
+
+    public void deleteFileV1(String filePath) {
+        awsS3FileUpload.deleteFileV1(filePath);
     }
 
     // updatePosterIds 사용하지 않으므로 에러 발생 -> 주석
@@ -107,7 +126,7 @@ public class FileUploadService {
     /**
      * 파일 업로드 정보 DB Insert (단건 return)
      */
-    private Integer setUploadInfo(MultipartFile multipartFile, String uploadResult) {
+    public Integer setUploadInfo(MultipartFile multipartFile, String uploadResult) {
         UploadInfo uploadInfo = new UploadInfo();
         uploadInfo.setFileName(multipartFile.getOriginalFilename());
         uploadInfo.setFilePath(uploadResult);
@@ -127,5 +146,41 @@ public class FileUploadService {
         uploadInfo.setFileType(multipartFile.getName().substring(multipartFile.getName().lastIndexOf(".") + 1));
 
         return fileUploadRepository.save(uploadInfo).getFileId();
+    }
+
+    public MultipartFile createMultipartFile(byte[] content, String fileName) {
+        return new MultipartFile() {
+            public String getName() {
+                return fileName;
+            }
+
+            public String getOriginalFilename() {
+                return fileName;
+            }
+
+            public String getContentType() {
+                return "image/jpeg";
+            }
+
+            public boolean isEmpty() {
+                return content.length == 0;
+            }
+
+            public long getSize() {
+                return content.length;
+            }
+
+            public byte[] getBytes() throws IOException {
+                return content;
+            }
+
+            public InputStream getInputStream() throws IOException {
+                return new ByteArrayInputStream(content);
+            }
+
+            public void transferTo(File dest) throws IOException, IllegalStateException {
+                // not implemented
+            }
+        };
     }
 }

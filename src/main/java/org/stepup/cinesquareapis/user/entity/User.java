@@ -39,8 +39,8 @@ public class User {
     @Column(length = 20, nullable = false)
     private String nickname;
 
-//    @Column
-//    private Integer profile;
+    @Column
+    private String image;
 
     @Column(name = "role", nullable = false)
     @Enumerated(EnumType.STRING)

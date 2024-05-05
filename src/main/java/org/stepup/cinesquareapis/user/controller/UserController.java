@@ -3,10 +3,12 @@ package org.stepup.cinesquareapis.user.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
 import org.stepup.cinesquareapis.common.model.DataResponse;
 import org.stepup.cinesquareapis.common.model.ResultResponse;
@@ -61,7 +63,7 @@ public class UserController {
     /**
      * 내 정보 수정
      *
-     * @return return ResponseEntity.ok(response);
+     * @return return ResponseEntity.ok(response)
      */
     @Operation(
             summary = "내 정보 수정 ",
@@ -86,4 +88,21 @@ public class UserController {
         userService.deleteUser(userId);
     }
 
+    /**
+     * 프로필 이미지 업로드
+     *
+     * @return return ResponseEntity.ok(response)
+     */
+    @Operation(summary = "프로필 이미지 업로드")
+    @PostMapping(value =  "me/image",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<DataResponse<UserResponse>> profileUpload(@AuthenticationPrincipal User principal,
+             @RequestPart("file") MultipartFile multipartFile) throws Exception {
+        Integer userId = Integer.parseInt(principal.getUsername());
+        UserResponse data = userService.profileUpload(multipartFile, userId);
+        DataResponse<UserResponse> response = new DataResponse<>();
+        response.setData(data);
+
+        return ResponseEntity.ok(response);
+    }
 }

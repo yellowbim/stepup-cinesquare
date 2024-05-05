@@ -53,6 +53,35 @@ public class AwsS3FileUpload {
     }
 
     /**
+     * 카테고리 구분 없이 path 대로 저장
+     * @param directory
+     * @param multipartFile
+     * @return String (500, url)
+     */
+    public String uploadFileV2(String directory, MultipartFile multipartFile) {
+        // 파일 존재 여부 확인
+        if (multipartFile.isEmpty()) {
+            return "500";
+        }
+
+        // 파일 경로
+        String path = directory + multipartFile.getOriginalFilename();
+
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+        objectMetadata.setContentType(multipartFile.getContentType());
+
+        try (InputStream inputStream = multipartFile.getInputStream()) {
+            amazonS3Client.putObject(new PutObjectRequest(bucketName, path, inputStream, objectMetadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead));
+        } catch (IOException e) {
+            log.error("FileUploadFailedException");
+            return "500";
+        }
+
+        return amazonS3Client.getUrl(bucketName, path).toString();
+    }
+
+    /**
      * 특정 카테고리 구분
      * @param category (UP: user profile, MA : movie actor)
      * @param multipartFile
