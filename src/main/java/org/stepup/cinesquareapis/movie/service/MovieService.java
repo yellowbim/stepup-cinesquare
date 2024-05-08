@@ -2,6 +2,8 @@ package org.stepup.cinesquareapis.movie.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.stepup.cinesquareapis.common.exception.enums.CommonErrorCode;
 import org.stepup.cinesquareapis.common.exception.enums.CustomErrorCode;
@@ -9,10 +11,10 @@ import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
 import org.stepup.cinesquareapis.movie.entity.Movie;
 import org.stepup.cinesquareapis.movie.entity.MovieBoxoffice;
 import org.stepup.cinesquareapis.movie.entity.MovieSimple;
+import org.stepup.cinesquareapis.movie.model.MovieCategoryResponse;
 import org.stepup.cinesquareapis.movie.model.MovieDetailResponse;
 import org.stepup.cinesquareapis.movie.model.MovieRankResponse;
 import org.stepup.cinesquareapis.movie.model.MovieSimpleResponse;
-import org.stepup.cinesquareapis.movie.model.RandomMovieResponse;
 import org.stepup.cinesquareapis.movie.repository.MovieBoxofficeRepository;
 import org.stepup.cinesquareapis.movie.repository.MovieRepository;
 import org.stepup.cinesquareapis.movie.repository.MovieSimpleRepository;
@@ -21,10 +23,10 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -153,18 +155,44 @@ public class MovieService {
     }
 
     /**
+     * 카테고리 조회
+     * - tb_movie 테이블에서 geners 컬럼을 조회해서 distinct 결과 전달
+     *
+     * @return
+     */
+    public MovieCategoryResponse[] getCategoryList() {
+        List<String> categoryList = movieRepository.findAllGenres();
+        Set<String> categorySet = new HashSet<>();
+
+        for (String genres : categoryList) {
+            String[] genresArray = genres.split(",");
+            for (String genre : genresArray) {
+                categorySet.add(genre.trim());
+            }
+        }
+        MovieCategoryResponse[] list = categorySet.stream().map(
+                category -> {
+                    MovieCategoryResponse response = new MovieCategoryResponse();
+                    response.setCategory(category);
+                    return response;
+                }).toArray(MovieCategoryResponse[]::new);
+
+        return list;
+    }
+
+    /**
      * 랜덤 영화 조회 (추후에 카테고리 조건이 추가되야함)
      * - 내가 평가한 영화 항목들은 제외되야함.
      *
      * @return movies
      */
-    public List<RandomMovieResponse> getRandomMovies(String category) {
-        List<RandomMovieResponse> movies = new ArrayList<>();
+    public Page<Movie> getRandomMovies(Integer userId, String category, Pageable pageable) {
+        Page<Movie> movies;
 
         if (category == null || "".equals(category)) {
-            movies =  movieSimpleRepository.findRandomMovie().stream().map(RandomMovieResponse::new).collect(Collectors.toList());
+            movies =  movieRepository.findRandomMovie(userId, pageable);
         } else {
-            movies =  movieSimpleRepository.findRandomMovieWithCategory(category).stream().map(RandomMovieResponse::new).collect(Collectors.toList());
+            movies =  movieRepository.findRandomMovieWithCategory(userId, category, pageable);
         }
         return movies;
     }
