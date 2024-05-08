@@ -15,6 +15,7 @@ import org.stepup.cinesquareapis.user.model.UserResponse;
 import org.stepup.cinesquareapis.user.repository.UserRepository;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -99,12 +100,24 @@ public class UserService {
         try {
             // MultipartFile을 BufferedImage로 변환
             BufferedImage bufferedImage = ImageIO.read(multipartFile.getInputStream());
+            if (bufferedImage == null) {
+                throw new IOException("이미지를 읽을 수 없습니다.");
+            }
+            if (bufferedImage.getColorModel().hasAlpha()) {
+                BufferedImage newBufferedImage = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+                newBufferedImage.createGraphics().drawImage(bufferedImage, 0, 0, Color.WHITE, null);
+                bufferedImage = newBufferedImage; // 투명도 제거
+            }
 
             // jpg로 변환
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            ImageIO.write(bufferedImage, "jpg", outputStream);
+            try {
+                ImageIO.write(bufferedImage, "jpg", outputStream);
+            } finally {
+                outputStream.close();
+            }
 
-            // MultipartFile로 변환
+            // 새 파일로 변환
             MultipartFile convertedMultipartFile = fileUploadService.createMultipartFile(outputStream.toByteArray(), "thumbnail.jpg");
 
             // 새 프로필 이미지 디렉토리
