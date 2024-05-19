@@ -15,8 +15,10 @@ spring:
   config:
     activate:
       on-profile: local
+
   jackson:
     property-naming-strategy: SNAKE_CASE
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -24,19 +26,21 @@ spring:
       hibernate:
         auto_quote_keyword: true
         format_sql: true
-        show-sql: true
-  # file upload max size (파일 업로드 크기 설정)
+
   servlet:
     multipart:
-      max-file-size: 20MB
+      max-file-size: 20MB # 파일 업로드 크기 설정
       max-request-size: 20MB
-
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://localhost:3306/cinesquare
     username: ENC(9quXXHScEVuQHxY5o4sFfIa67tV8gtIb0EtHd9lmZEVbfyj7rf+dMpV1l0pgZEh/)
     password: ENC(/YUs9sVzMKU9iQdrCfjyCjOFQZE2Td9KROPqa5kWrbfrToNiNh+OthVQSzueBgfd)
+    p6spy:
+      enable-logging: true
+      multiline: true
+      logging: slf4j
 
 cloud:
   aws:
@@ -51,36 +55,31 @@ cloud:
     stack:
       auto: false
 
-
 logging:
   level:
-    org:
-      hibernate:
-        type:
-          descriptor:
-            sql: trace
-        SQL: debug
-        orm:
-          jdbc:
-            bind: trace
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type: TRACE # parameter 값 보기
+    com.p6spy: DEBUG # P6Spy 로깅 설정
 
-spring-doc:
+springdoc:
   swagger-ui:
     tags-sorter: alpha
-    #    operations-sorter : method
-    doc-expansion : none
+    doc-expansion: none
 
 ---
 jasypt:
   encryptor:
     bean: jasyptEncryptorAES
+    password: cinesquare
 
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: local
+
   jackson:
     property-naming-strategy: SNAKE_CASE
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -88,13 +87,21 @@ spring:
       hibernate:
         auto_quote_keyword: true
         format_sql: true
-        show-sql: true
+
+  servlet:
+    multipart:
+      max-file-size: 20MB # 파일 업로드 크기 설정
+      max-request-size: 20MB
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://cinesquare.cpwaykqiuiux.ap-northeast-2.rds.amazonaws.com:3306/cinesquare
     username: ENC(9quXXHScEVuQHxY5o4sFfIa67tV8gtIb0EtHd9lmZEVbfyj7rf+dMpV1l0pgZEh/)
     password: ENC(YWMh7utaNfc4U3dK52/+XCWuo13vKZSN2nWNf7zXu9Z9aO58Dq9Zj/MWWyap0XZnlneS9ex446ncJUL4myv2hw==)
+    p6spy:
+      enable-logging: true
+      multiline: true
+      logging: slf4j
 
 cloud:
   aws:
@@ -111,18 +118,11 @@ cloud:
 
 logging:
   level:
-    org:
-      hibernate:
-        type:
-          descriptor:
-            sql: trace
-        SQL: debug
-        orm:
-          jdbc:
-            bind: debug
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type: TRACE # parameter 값 보기
+    com.p6spy: DEBUG # P6Spy 로깅 설정
 
-spring-doc:
+springdoc:
   swagger-ui:
     tags-sorter: alpha
-#    operations-sorter : method
-    doc-expansion : none
+    doc-expansion: none
