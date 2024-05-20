@@ -16,7 +16,7 @@ public class MovieCommentSummaryResponse {
     @Schema(description = "코멘트 내용", example = "영화 너무 재밌어요!!")
     private String content;
     @Schema(description = "코멘트 작성자가 남긴 별점", example = "3.5")
-    private Double score;
+    private Float score;
     @Schema(description = "사용자 닉네임", example = "콜라곰")
     private String nickname;
     @Schema(description = "코멘트 좋아요 수", example = "12")

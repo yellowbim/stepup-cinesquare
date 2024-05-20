@@ -2,10 +2,8 @@ package org.stepup.cinesquareapis.report.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
@@ -31,7 +29,7 @@ public class UserScore {
 
 //    @ColumnDefault("0")
     @Column(name = "score")
-    private Double score;
+    private Float score;
 
     @CreationTimestamp
     @Column(name = "created", updatable = false)
@@ -42,5 +40,4 @@ public class UserScore {
     @Column(name = "updated")
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime updated;
-
 }

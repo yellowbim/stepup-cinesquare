@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.Immutable;
 
 import java.time.LocalDateTime;
@@ -19,7 +18,6 @@ import java.time.LocalDateTime;
 @IdClass(CommentSummaryKey.class)
 @Table(name="v_movie_comment_summary")
 public class CommentSummary {
-
     @Id
     @Column(nullable = false)
     private Integer commentId;
@@ -37,7 +35,7 @@ public class CommentSummary {
 
     @ColumnDefault("0")
     @Column(name = "score")
-    private Double score;
+    private Float score;
 
     @Column(name = "nickname")
     private String nickname;

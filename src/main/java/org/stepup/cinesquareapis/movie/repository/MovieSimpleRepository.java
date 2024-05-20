@@ -23,6 +23,5 @@ public interface MovieSimpleRepository extends JpaRepository<MovieSimple, Intege
     @Transactional
     @Modifying
     @Query("UPDATE MovieSimple m SET m.score = :score WHERE m.movieId = :movieId")
-    int updateAvgScore(Double score, Integer movieId);
-
+    int updateAvgScore(Float score, Integer movieId);
 }
