@@ -24,23 +24,23 @@ import java.util.Map;
 @Service
 public class TokenProvider {
     private final String secretKey;
-    private final String expirationHours;
-    private final String refreshExpirationHours;
+    private final String accessTokenExpirationTime;
+    private final String refreshTokenExpirationTime;
     private final String issuer;
+    //    private final long reissueLimit;
 
-//    private final long reissueLimit;
     private final UserRefreshTokenRepository userRefreshTokenRepository;
 
     public TokenProvider(
             @Value("${secret-key}") String secretKey,
-            @Value("${expiration-hours}") String expirationHours,
-            @Value("${refresh-expiration-hours}") String refreshExpirationHours,
+            @Value("${access-token-expiration-time}") String accessTokenExpirationTime,
+            @Value("${refresh-token-expiration-time}") String refreshTokenExpirationTime,
             @Value("${issuer}") String issuer,
             UserRefreshTokenRepository userRefreshTokenRepository
     ) {
         this.secretKey = secretKey;
-        this.expirationHours = expirationHours;
-        this.refreshExpirationHours = refreshExpirationHours;
+        this.accessTokenExpirationTime = accessTokenExpirationTime;
+        this.refreshTokenExpirationTime = refreshTokenExpirationTime;
         this.issuer = issuer;
         this.userRefreshTokenRepository = userRefreshTokenRepository;
 //        reissueLimit = refreshExpirationHours / expirationHours;	// 재발급 한도
@@ -53,7 +53,7 @@ public class TokenProvider {
                 .setSubject(userSpecification)  // JWT 토큰 제목
                 .setIssuer(issuer)  // JWT 토큰 발급자
                 .setIssuedAt(Timestamp.valueOf(LocalDateTime.now()))    // JWT 토큰 발급 시간
-                .setExpiration(Date.from(Instant.now().plus(Long.parseLong(expirationHours), ChronoUnit.HOURS)))    // JWT 토큰 만료 시간
+                .setExpiration(Date.from(Instant.now().plus(Long.parseLong(accessTokenExpirationTime), ChronoUnit.MINUTES)))    // JWT 토큰 만료 시간
                 .compact(); // JWT 토큰 생성
     }
 
@@ -65,7 +65,7 @@ public class TokenProvider {
                 .signWith(new SecretKeySpec(secretKey.getBytes(), SignatureAlgorithm.HS512.getJcaName()))
                 .setIssuer(issuer)
                 .setIssuedAt(Timestamp.valueOf(LocalDateTime.now()))
-                .setExpiration(Date.from(Instant.now().plus(Long.parseLong(expirationHours), ChronoUnit.HOURS)))
+                .setExpiration(Date.from(Instant.now().plus(Long.parseLong(refreshTokenExpirationTime), ChronoUnit.MINUTES)))
                 .compact();
     }
 
