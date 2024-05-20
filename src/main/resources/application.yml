@@ -75,7 +75,7 @@ jasypt:
 spring:
   config:
     activate:
-      on-profile: local
+      on-profile: dev
 
   jackson:
     property-naming-strategy: SNAKE_CASE
@@ -95,7 +95,7 @@ spring:
 
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://cinesquare.cpwaykqiuiux.ap-northeast-2.rds.amazonaws.com:3306/cinesquare
+    url: jdbc:mariadb://cinesquare.cbccq00go18j.ap-northeast-2.rds.amazonaws.com:3306/cinesquare
     username: ENC(9quXXHScEVuQHxY5o4sFfIa67tV8gtIb0EtHd9lmZEVbfyj7rf+dMpV1l0pgZEh/)
     password: ENC(YWMh7utaNfc4U3dK52/+XCWuo13vKZSN2nWNf7zXu9Z9aO58Dq9Zj/MWWyap0XZnlneS9ex446ncJUL4myv2hw==)
     p6spy:
