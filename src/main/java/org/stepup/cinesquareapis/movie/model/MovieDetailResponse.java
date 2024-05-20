@@ -49,7 +49,7 @@ public class MovieDetailResponse {
         movieId = movieSimple.getMovieId();
         title = movieSimple.getTitle();
         titleEn = movie.getTitleEn();
-        thumbnail = movie.isThumbnail() ? "https://cinesquare-s3.s3.ap-northeast-2.amazonaws.com/movies/" + getMovieId() + "/thumbnail.jpg" : null;
+        thumbnail = movie.isThumbnail() ? "https://cinesquares3.s3.ap-northeast-2.amazonaws.com/movies/" + getMovieId() + "/thumbnail.jpg" : null;
         synopsys = movie.getSynopsys();
         runningTime = movieSimple.getRunningTime();
         productionYear = movieSimple.getProductionYear();
@@ -67,7 +67,7 @@ public class MovieDetailResponse {
         if (movie.getImages() != null) {
             String[] x = movie.getImages().split(",");
             images = new String[x.length];  // 배열 초기화
-            String baseUrl = "https://cinesquare-s3.s3.ap-northeast-2.amazonaws.com/movies/" + movieId + "/images/";
+            String baseUrl = "https://cinesquares3.s3.ap-northeast-2.amazonaws.com/movies/" + movieId + "/images/";
             for (int i = 0; i < x.length; i++) {
                 images[i] = baseUrl + x[i] + ".jpg";
             }

@@ -1,7 +1,7 @@
 package org.stepup.cinesquareapis.movie.contant;
 
 public class MovieDbLoadingConstant {
-    public static final String S3_BUCKET_NAME = "cinesquare-s3";
+    public static final String S3_BUCKET_NAME = "cinesquares3";
 
     public static final String GENRE_ETC = "기타";
     public static final String GENRE_EROTIC = "성인물(에로)";

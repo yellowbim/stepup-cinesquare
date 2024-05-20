@@ -1,6 +1,7 @@
 package org.stepup.cinesquareapis.movie.model;
 
 import lombok.Data;
+import lombok.Value;
 import org.stepup.cinesquareapis.movie.entity.Movie;
 
 @Data
@@ -14,7 +15,7 @@ public class RandomMovieResponse {
     public RandomMovieResponse(Movie randomMovieResponse) {
         movieId = randomMovieResponse.getMovieId();
         title = randomMovieResponse.getTitle();
-        thumbnail = randomMovieResponse.isThumbnail() ? "https://cinesquare-s3.s3.ap-northeast-2.amazonaws.com/movies/" + getMovieId() + "/thumbnail.jpg" : null;
+        thumbnail = randomMovieResponse.isThumbnail() ? "https://cinesquares3.s3.ap-northeast-2.amazonaws.com/movies/" + getMovieId() + "/thumbnail.jpg" : null;
         productionYear = randomMovieResponse.getProductionYear();
         nation = randomMovieResponse.getNation();
     }

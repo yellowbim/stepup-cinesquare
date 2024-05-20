@@ -25,7 +25,7 @@ public class MovieSimpleResponse {
     public MovieSimpleResponse(MovieSimple movieSimple) {
         movieId = movieSimple.getMovieId();
         title = movieSimple.getTitle();
-        thumbnail = movieSimple.isThumbnail() ? "https://cinesquare-s3.s3.ap-northeast-2.amazonaws.com/movies/" + getMovieId() + "/thumbnail.jpg" : null;
+        thumbnail = movieSimple.isThumbnail() ? "https://cinesquares3.s3.ap-northeast-2.amazonaws.com/movies/" + getMovieId() + "/thumbnail.jpg" : null;
         runningTime = movieSimple.getRunningTime();
         productionYear = movieSimple.getProductionYear();
         nation = movieSimple.getNation();
