@@ -5,7 +5,7 @@
 
 CINE SQUARE Web | http://cine-square.s3-website.ap-northeast-2.amazonaws.com
 
-API Certification | http://3.38.64.130:8080/swagger-ui/index.html
+API Certification | http://54.180.155.60:8080/swagger-ui/index.html
 
 Project Managing | https://petalite-bearberry-a1a.notion.site/CINESQUARE-25b196f281be446ab1ee3d0aa67f1927
 
