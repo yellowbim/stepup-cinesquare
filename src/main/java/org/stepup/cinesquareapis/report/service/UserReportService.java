@@ -10,10 +10,7 @@ import org.stepup.cinesquareapis.common.exception.enums.CustomErrorCode;
 import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
 import org.stepup.cinesquareapis.movie.repository.MovieSimpleRepository;
 import org.stepup.cinesquareapis.report.entity.*;
-import org.stepup.cinesquareapis.report.model.MovieCommentResponse;
-import org.stepup.cinesquareapis.report.model.UserMovieRating;
-import org.stepup.cinesquareapis.report.model.UserScoreRequest;
-import org.stepup.cinesquareapis.report.model.UserScoredMovies;
+import org.stepup.cinesquareapis.report.model.*;
 import org.stepup.cinesquareapis.report.repository.*;
 
 import java.util.List;
@@ -27,9 +24,11 @@ public class UserReportService {
     private final UserScoreRepository userScoreRepository;
     private final UserStatusRepository userStatusRepository;
     private final UserLikeCommentRepository userLikeCommentRepository;
+
+    private final MovieSimpleRepository movieSimpleRepository;
+    private final MovieSummaryRepository movieSummaryRepository;
     private final MovieCommentRepository movieCommentRepository;
     private final MovieCommentSummaryRepository movieCommentSummaryRepository;
-    private final MovieSimpleRepository movieSimpleRepository;
 
 
 
@@ -51,94 +50,167 @@ public class UserReportService {
     }
 
     /**
-     * 유저별 영화별 별점 조회
-     *
+     * 유저별 영화 별점 조회
      */
-    public Double searchMovieUserScore(Integer userId, Integer movieId) {
-        Double result = 0.0;
-        if (userScoreRepository.existsByUserIdAndMovieId(userId, movieId)) {
-            result = userScoreRepository.findScoreByUserIdAndMovieId(userId, movieId);
+    public UserMovieScoreResponse getUserMovieScore(int userId, int movieId) {
+        UserScore userScore = userScoreRepository.findByUserIdAndMovieId(userId, movieId);
+        if (userScore == null) {
+            return new UserMovieScoreResponse(movieId);
         }
-        return result;
+
+        return new UserMovieScoreResponse(userScore);
     }
 
     /**
      * 유저별 영화 별점 부과
      */
     @Transactional
-    public boolean saveScore(Integer userId, int movieId, UserScoreRequest request) {
-        // score 범위 체크
+    public UserMovieScoreResponse saveUserMovieScore(int userId, int movieId, UserScoreRequest request) {
+        /// 유효성 체크1: score 범위 확인
         if (!isInValues(request.getScore())) {
             throw new RestApiException(CustomErrorCode.SCORE_RANGE_NOT_VALID);
         }
 
-        // 해당 유저의 별점 확인
-        Boolean checkUserData = userScoreRepository.existsByUserIdAndMovieId(userId, movieId);
+        // 유효성 체크2: 영화 존재 여부 확인
+        MovieSummary movieSummary = movieSummaryRepository.findById(movieId)
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_MOVIE_SUMMARY));
+
+        // 유효성 체크3: 해당 유저의 별점 확인
+        boolean checkUserData = userScoreRepository.existsByUserIdAndMovieId(userId, movieId);
         if (checkUserData) {
             throw new RestApiException(CustomErrorCode.ALREADY_REGISTED_SCORE);
         }
 
-        UserScore svaeUserScore = userScoreRepository.save(request.toEntity(userId, movieId));
-        if (svaeUserScore.getScore() != null) {
-            // 정상 처리인 경우 전체 평점 계산 로직 추가
-            Double avgMovieScore = userScoreRepository.avgMovieScore(movieId);
+        // Data 업데이트1: 유저별 영화 별점 저장
+        UserScore userScore = userScoreRepository.save(request.toEntity(userId, movieId));
 
-            // 영화 기본정보에 update
-            int updateCount = movieSimpleRepository.updateAvgScore(avgMovieScore, movieId);
-            if (updateCount == 0) {
-                throw new RestApiException(CustomErrorCode.MOVIE_DB_UPDATE_FAILED);
-            }
+        // Data 업데이트2: 영화별 별점 저장
+        // 1) 전체 별점 부과 개수 +1
+        movieSummary.setScoreCount(movieSummary.getScoreCount() + 1);
 
-            return true;
+        // 2) 전체 별점 총합 반영
+        if (movieSummary.getTotalScore() == null) {
+            movieSummary.setTotalScore(request.getScore());
+        } else {
+            movieSummary.setTotalScore(movieSummary.getTotalScore() + request.getScore());
         }
-        return false;
+
+        // 3) 각 별점 개수 +1
+        updateMovieScoreCounts(movieSummary, request.getScore(), 1);
+
+        movieSummaryRepository.save(movieSummary);
+
+        // Data 업데이트3: 영화별 평점 계산&저장
+        // 평점 계산 (소수점 아래 2번째 자리에서 반올림)
+        float roundedAvgScore = Math.round((movieSummary.getTotalScore() / movieSummary.getScoreCount()) * 10) / 10.0f;
+        int updateCount = movieSimpleRepository.updateAvgScore(roundedAvgScore, movieId);
+        if (updateCount == 0) {
+            log.error("Failed to update average score for movieId: {} with roundedAvgScore: {}", movieId, roundedAvgScore);
+            throw new RestApiException(CustomErrorCode.MOVIE_DB_UPDATE_FAILED);
+        }
+
+        return new UserMovieScoreResponse(userScore);
     }
 
     /**
      * 유저별 영화 별점 수정
      */
     @Transactional
-    public boolean updateScore(Integer userId, int movieId, UserScoreRequest request) {
-        // score 범위 체크
+    public UserMovieScoreResponse updateScore(int userId, int movieId, UserScoreRequest request) {
+        // 유효성 체크1: score 범위 확인
         if (!isInValues(request.getScore())) {
             throw new RestApiException(CustomErrorCode.SCORE_RANGE_NOT_VALID);
         }
 
-        // key 셋팅
-        UserScoreKey userScoreKey = new UserScoreKey(userId, movieId);
-        // 해당 유저의 별점 확인
+        // 유효성 체크2: 영화 존재 여부 확인
+        MovieSummary movieSummary = movieSummaryRepository.findById(movieId)
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_MOVIE_SUMMARY));
+
+        // 유효성 체크3: 해당 유저의 별점 확인
+        UserScoreKey userScoreKey = new UserScoreKey(userId, movieId); // key 셋팅
         UserScore userScore = userScoreRepository.findById(userScoreKey).orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_USER_SCORE));
-        userScore.setScore(request.getScore());
 
-        userScoreRepository.save(userScore);
-        if (userScore.getScore() != null) {
-            // 정상 처리인 경우 전체 평점 계산 로직 추가
-            Double avgMovieScore = userScoreRepository.avgMovieScore(movieId);
+        // 유효성 체크4: 별점 변화 확인
+        float newScore = request.getScore();
+        float oldScore = userScore.getScore();
 
-            // 영화 기본정보에 update
-            int updateCount = movieSimpleRepository.updateAvgScore(avgMovieScore, movieId);
-            if (updateCount == 0) {
-                throw new RestApiException(CustomErrorCode.MOVIE_DB_UPDATE_FAILED);
-            }
-            return true;
+        if (newScore == oldScore) {
+            throw new RestApiException(CustomErrorCode.ALREADY_REGISTED_SCORE);
         }
-        return false;
+
+        // Data 업데이트1: 유저별 영화 별점 저장
+        userScore.setScore(newScore);
+        userScoreRepository.save(userScore);
+
+        // Data 업데이트2: 영화별 별점 저장
+        // 1) 전체 별점 부과 개수 -> 변화 없음
+
+        // 2) 전체 별점 총합 반영
+        float newTotalScore = movieSummary.getTotalScore() - oldScore + newScore;
+        movieSummary.setTotalScore(newTotalScore);
+
+        // 3) 각 별점 개수 +1, -1
+        updateMovieScoreCounts(movieSummary, newScore, 1);
+        updateMovieScoreCounts(movieSummary, oldScore, -1);
+
+        movieSummaryRepository.save(movieSummary);
+
+        // Data 업데이트3: 영화별 평점 계산&저장
+        // 평점 계산 (소수점 아래 2번째 자리에서 반올림)
+        float roundedAvgScore = Math.round((movieSummary.getTotalScore() / movieSummary.getScoreCount()) * 10) / 10.0f;
+
+        int updateCount = movieSimpleRepository.updateAvgScore(roundedAvgScore, movieId);
+        if (updateCount == 0) {
+            log.error("Failed to update average score for movieId: {} with roundedAvgScore: {}", movieId, roundedAvgScore);
+            throw new RestApiException(CustomErrorCode.MOVIE_DB_UPDATE_FAILED);
+        }
+
+        return new UserMovieScoreResponse(userScore);
     }
 
     /**
      * 유저별 영화 별점 삭제
      */
     @Transactional
-    public void deleteScore(Integer userId, int movieId) {
-        // 별점 삭제
+    public void deleteScore(int userId, int movieId) {
+        // 유효성 체크: 해당 유저의 별점 확인
+        UserScoreKey userScoreKey = new UserScoreKey(userId, movieId); // key 셋팅
+        UserScore userScore = userScoreRepository.findById(userScoreKey).orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_USER_SCORE));
+
+        // Data 업데이트1: 유저별 영화 별점 삭제
         userScoreRepository.deleteByUserIdAndMovieId(userId, movieId);
 
-        // 정상 처리인 경우 전체 평점 계산 로직 추가
-        Double avgMovieScore = userScoreRepository.avgMovieScore(movieId);
+        // Data 업데이트2: 영화별 별점 저장
+        MovieSummary movieSummary = movieSummaryRepository.findById(movieId)
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_MOVIE_SUMMARY));
 
-        // 영화 기본정보에 update
-        int updateCount = movieSimpleRepository.updateAvgScore(avgMovieScore, movieId);
+        int oldScoreCount = movieSummary.getScoreCount();  // 현재 별점 부과 개수
+
+        // 1) 전체 별점 부과 개수 -> -1
+        movieSummary.setScoreCount(oldScoreCount - 1);
+
+        // 2) 전체 별점 총합 반영
+        if (oldScoreCount == 1) {
+            movieSummary.setTotalScore(null); // 부과된 별점이 0개 일 땐, null
+        } else {
+            movieSummary.setTotalScore(movieSummary.getTotalScore() - userScore.getScore());
+        }
+
+        // 3) 각 별점 개수 계산 (삭제: -1)
+        updateMovieScoreCounts(movieSummary, userScore.getScore(), -1);
+
+        movieSummaryRepository.save(movieSummary);
+
+        // Data 업데이트3: 영화별 평점 계산&저장
+        // 평점 계산 (소수점 아래 2번째 자리에서 반올림)
+        Float roundedAvgScore = null;
+        if (oldScoreCount != 1) {
+            roundedAvgScore = Math.round((movieSummary.getTotalScore() / movieSummary.getScoreCount()) * 10) / 10.0f;
+        }
+
+        int updateCount = movieSimpleRepository.updateAvgScore(roundedAvgScore, movieId);
         if (updateCount == 0) {
+            log.error("Failed to update average score for movieId: {} with roundedAvgScore: {}", movieId, roundedAvgScore);
             throw new RestApiException(CustomErrorCode.MOVIE_DB_UPDATE_FAILED);
         }
     }
@@ -303,12 +375,12 @@ public class UserReportService {
     /**
      * score 범위 확인, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5
      *
-     * @param score
+     * @param value
      * @return true, false
      */
-    private boolean isInValues(double value) {
-        double[] values = {0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5};
-        for (double v : values) {
+    private boolean isInValues(float value) {
+        float[] values = {0.5F, 1, 1.5F, 2, 2.5F, 3, 3.5F, 4, 4.5F, 5};
+        for (float v : values) {
             if (value == v) {
                 return true;
             }
@@ -316,25 +388,34 @@ public class UserReportService {
         return false;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    /**
+     * score 개수 가감
+     *
+     * @param movieSummary, score, delta
+     */
+    private void updateMovieScoreCounts(MovieSummary movieSummary, float score, int delta) {
+        if (score == 0.5f) {
+            movieSummary.setScoreCount_0_5(movieSummary.getScoreCount_0_5() + delta);
+        } else if (score == 1.0f) {
+            movieSummary.setScoreCount_1(movieSummary.getScoreCount_1() + delta);
+        } else if (score == 1.5f) {
+            movieSummary.setScoreCount_1_5(movieSummary.getScoreCount_1_5() + delta);
+        } else if (score == 2.0f) {
+            movieSummary.setScoreCount_2(movieSummary.getScoreCount_2() + delta);
+        } else if (score == 2.5f) {
+            movieSummary.setScoreCount_2_5(movieSummary.getScoreCount_2_5() + delta);
+        } else if (score == 3.0f) {
+            movieSummary.setScoreCount_3(movieSummary.getScoreCount_3() + delta);
+        } else if (score == 3.5f) {
+            movieSummary.setScoreCount_3_5(movieSummary.getScoreCount_3_5() + delta);
+        } else if (score == 4.0f) {
+            movieSummary.setScoreCount_4(movieSummary.getScoreCount_4() + delta);
+        } else if (score == 4.5f) {
+            movieSummary.setScoreCount_4_5(movieSummary.getScoreCount_4_5() + delta);
+        } else if (score == 5.0f) {
+            movieSummary.setScoreCount_5(movieSummary.getScoreCount_5() + delta);
+        } else {
+            throw new IllegalArgumentException("Invalid score: " + score);
+        }
+    }
 }

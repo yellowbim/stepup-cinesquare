@@ -2,7 +2,6 @@ package org.stepup.cinesquareapis.report.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import org.stepup.cinesquareapis.report.entity.Comment;
 import org.stepup.cinesquareapis.report.entity.CommentSummary;
 
 @Data
@@ -23,7 +22,7 @@ public class LikeCommentsResponse {
     @Schema(description = "코멘트 답변 개수", example = "11")
     private int replyCount; // 조회한 사용자
     @Schema(description = "코멘트 사용자가 남긴 별점", example = "4")
-    private Double score; // 조회한 사용자
+    private Float score; // 조회한 사용자
 
     // 생성자
     public LikeCommentsResponse(CommentSummary comment) {
