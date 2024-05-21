@@ -26,8 +26,8 @@ public interface UserScoreRepository extends JpaRepository<UserScore, UserScoreK
     @Query("SELECT u FROM UserScore u WHERE u.userId = :userId AND u.movieId = :movieId")
     UserScore findByUserIdAndMovieId(@Param("userId") int userId, @Param("movieId") int movieId);
 
-    // 부과된 별점 개수
-    int countByUserId(Integer userId);
+    // 유저별 평가한 영화 개수
+    int countByUserId(int userId);
 
     // 영화 별점 분포 (jpql 방식)
     // 이렇게 interface로 선언하려면 as 로 해당 컬럼 명을 한번 더 명시해줘야됨.
