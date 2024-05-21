@@ -20,34 +20,16 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserReportService {
-
-    private final UserScoreRepository userScoreRepository;
-    private final UserStatusRepository userStatusRepository;
-    private final UserLikeCommentRepository userLikeCommentRepository;
-
     private final MovieSimpleRepository movieSimpleRepository;
+
     private final MovieSummaryRepository movieSummaryRepository;
+    private final UserScoreRepository userScoreRepository;
+
+    private final UserStatusRepository userStatusRepository;
+
     private final MovieCommentRepository movieCommentRepository;
     private final MovieCommentSummaryRepository movieCommentSummaryRepository;
-
-
-
-    /**
-     * 유저가 영화 1건에 남긴 코멘트 조회
-     *
-     */
-    public MovieCommentResponse getMovieComment(Integer userId, Integer movieId) {
-//        Comment data = new Comment();
-        Comment comment = new Comment();
-        MovieCommentResponse data = new MovieCommentResponse(comment);
-
-        if (movieCommentRepository.existsByUserIdAndMovieId(userId, movieId)) {
-            comment = movieCommentRepository.findByUserIdAndMovieId(userId, movieId);
-            data = new MovieCommentResponse(comment);
-        }
-
-        return data;
-    }
+    private final UserLikeCommentRepository userLikeCommentRepository;
 
     /**
      * 유저별 영화 별점 조회
@@ -80,6 +62,7 @@ public class UserReportService {
         if (checkUserData) {
             throw new RestApiException(CustomErrorCode.ALREADY_REGISTED_SCORE);
         }
+
 
         // Data 업데이트1: 유저별 영화 별점 저장
         UserScore userScore = userScoreRepository.save(request.toEntity(userId, movieId));
@@ -137,6 +120,7 @@ public class UserReportService {
         if (newScore == oldScore) {
             throw new RestApiException(CustomErrorCode.ALREADY_REGISTED_SCORE);
         }
+
 
         // Data 업데이트1: 유저별 영화 별점 저장
         userScore.setScore(newScore);
@@ -216,7 +200,7 @@ public class UserReportService {
     }
 
     /**
-     * 영화별 사용자 상태 조회
+     * 유저별 영화 상태(보고싶어요) 조회
      */
     @Transactional
     public Boolean getMovieUserStatus(Integer userId, Integer movieId) {
@@ -226,7 +210,7 @@ public class UserReportService {
     }
 
     /**
-     * 유저별 영화 상태 저장
+     * 영화 상태(보고싶어요) 저장
      */
     @Transactional
     public boolean saveStatus(Integer userId, Integer movieId) {
@@ -251,10 +235,10 @@ public class UserReportService {
     }
 
     /**
-     * 유저별 영화 상태 삭제
+     * 영화 상태(보고싶어요) 삭제
      */
     @Transactional
-    public Boolean deleteStatus(Integer userId, int movieId) {
+    public boolean deleteStatus(int userId, int movieId) {
         // 기존 데이터 조회
         UserStatusKey userStatusKey = new UserStatusKey(userId, movieId);
         Optional<UserStatus> checkUserStatusData = userStatusRepository.findById(userStatusKey);
@@ -264,6 +248,23 @@ public class UserReportService {
             userStatusRepository.deleteById(userStatusKey);
             return true;
         }
+    }
+
+    /**
+     * 유저가 영화 1건에 남긴 코멘트 조회
+     *
+     */
+    public MovieCommentResponse getMovieComment(Integer userId, Integer movieId) {
+//        Comment data = new Comment();
+        Comment comment = new Comment();
+        MovieCommentResponse data = new MovieCommentResponse(comment);
+
+        if (movieCommentRepository.existsByUserIdAndMovieId(userId, movieId)) {
+            comment = movieCommentRepository.findByUserIdAndMovieId(userId, movieId);
+            data = new MovieCommentResponse(comment);
+        }
+
+        return data;
     }
 
     /**
@@ -341,10 +342,10 @@ public class UserReportService {
     }
 
     /**
-     * 사용자가 부과한 별점 개수 조회
+     * 유저별 평가한(별점 부과) 영화 개수 조회
      */
     @Transactional
-    public int getScoredCount(Integer userId) {
+    public int getScoredCount(int userId) {
         return userScoreRepository.countByUserId(userId);
     }
 
@@ -357,18 +358,18 @@ public class UserReportService {
     }
 
     /**
-     * 영화 별점 분포 조회 (mypage)
+     * 유저별 영화 별점 분포 조회 (mypage)
      */
     @Transactional
-    public List<UserMovieRating> getUserMovieRating(Integer userId) {
+    public List<UserMovieRating> getUserMovieRating(int userId) {
         return userScoreRepository.findUserMovieRating(userId);
     }
 
     /**
-     * 평가한 영화 목록 조회(별점만)
+     * 유저별 평가한(별점 부과) 영화 목록 조회
      */
     @Transactional
-    public Page<UserScoredMovies> getScoredMovies(Integer userId, Pageable pageable) {
+    public Page<UserScoredMovies> getScoredMovies(int userId, Pageable pageable) {
         return userScoreRepository.findMoviesAllByUserId(userId, pageable);
     }
 
