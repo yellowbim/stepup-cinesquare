@@ -7,8 +7,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.stepup.cinesquareapis.user.enums.RoleType;
-import org.stepup.cinesquareapis.auth.model.SignUpRequest;
-import org.stepup.cinesquareapis.user.model.UserUpdateRequest;
+import org.stepup.cinesquareapis.auth.dto.SignUpRequest;
+import org.stepup.cinesquareapis.user.dto.UserUpdateRequest;
 
 import java.time.LocalDateTime;
 
