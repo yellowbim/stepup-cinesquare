@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
 import org.stepup.cinesquareapis.common.dto.*;
 import org.stepup.cinesquareapis.report.dto.*;
+import org.stepup.cinesquareapis.report.entity.Comment;
 import org.stepup.cinesquareapis.report.entity.CommentSummary;
 import org.stepup.cinesquareapis.report.entity.UserLikeComment;
 import org.stepup.cinesquareapis.report.service.UserReportService;
@@ -335,6 +336,83 @@ public class UserReportController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    /**
+     * 영화 코멘트 저장
+     *
+     * table : tb_movie_comment
+     *
+     * @return Comment
+     */
+    @Operation(summary = "영화 코멘트 저장")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "정상적으로 등록 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "40000", description = "코멘트가 이미 존재하는 경우 에러코드", content = @Content())
+    })
+    @UserAuthorize
+    @PostMapping("-/movies/{movie_id}/comments")
+    public ResponseEntity<DataResponse<Comment>> saveComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @RequestBody MovieCommentSaveRequest request) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        Comment data = userReportService.saveComment(request, movieId, userId);
+        DataResponse<Comment> response = new DataResponse<>();
+        response.setData(data);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    
+    /**
+     * 영화 코멘트 수정
+     *
+     * table : tb_movie_comment
+     *
+     * @return true, false
+     */
+    @Operation(summary = "영화 코멘트 수정",
+            description = "요청 필수값 : comment_id, user_id")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "정상적으로 수정 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "40001", description = "코멘트가 존재하지 않는 경우 에러코드", content = @Content())
+    })
+    @UserAuthorize
+    @PatchMapping("-/movies/{movie_id}/comments/{comment_id}")
+    public ResponseEntity<DataResponse<Comment>> updateComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId, @RequestBody MovieCommentUpdateRequest request) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        Comment data = userReportService.updateComment(request, movieId, commentId, userId);
+        DataResponse<Comment> response = new DataResponse<>();
+        response.setData(data);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * 영화 코멘트 삭제
+     *
+     * table : tb_movie_comment
+     *
+     * @return true, false
+     */
+    @Operation(summary = "영화 코멘트 삭제",
+            description = "요청 필수값 : comment_id, user_id는 추후에 필요없는 데이터인데 일단 필요해서 해당 url에 포함시켜놓음<br>" +
+                    "기본 Flow : 코멘트가 삭제되면 이에따른 코멘트 답글, 코멘트 좋아요도 불필요한 데이터라 삭제됨!!!!")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "정상적으로 삭제 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "404", description = "데이터가 없는 경우 HTTP 상태코드", content = @Content())
+    })
+    @UserAuthorize
+    @DeleteMapping("-/movies/{movie_id}/comments/{comment_id}")
+    public ResponseEntity<HttpStatus> deleteComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        int data = userReportService.deleteComment(commentId);
+        if (data > 0) { //정상 삭제
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
 
     /**
      * 유저가 영화 1건에 남긴 코멘트 조회
