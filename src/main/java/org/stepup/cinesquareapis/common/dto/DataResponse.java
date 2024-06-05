@@ -8,4 +8,11 @@ import lombok.Setter;
 @Setter
 public class DataResponse<T> {
     private T data;
+
+    public DataResponse() {
+    }
+
+    public DataResponse(T data) {
+        this.data = data;
+    }
 }

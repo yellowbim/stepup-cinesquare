@@ -3,8 +3,6 @@ package org.stepup.cinesquareapis.report.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
@@ -32,7 +30,5 @@ public class UserLikeComment {
 
     @CreationTimestamp
     @Column(name = "created", updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime created;
-
 }

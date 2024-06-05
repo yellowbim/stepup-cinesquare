@@ -7,7 +7,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum CommonErrorCode implements ErrorCode {
-    INVALID_PARAMETER(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "Invalid parameter included"),
+    INVALID_PARAMETER(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "Invalid parameter included"), // 저장할 파라미터 오류
+    BAD_REQUEST(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.value(), "Invalid request"), // 저장할 파라미터 외 요청 오류
+    UNAUTHORIZED_ACTION(HttpStatus.FORBIDDEN,  HttpStatus.FORBIDDEN.value(), "You are not authorized to perform this action"),
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, HttpStatus.BAD_REQUEST.value(),"Resource not exists"),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error")
     ;
