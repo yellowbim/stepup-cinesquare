@@ -6,8 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.stepup.cinesquareapis.common.exception.enums.CommonErrorCode;
 import org.stepup.cinesquareapis.common.exception.enums.CustomErrorCode;
 import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
+import org.stepup.cinesquareapis.movie.repository.MovieRepository;
 import org.stepup.cinesquareapis.movie.repository.MovieSimpleRepository;
 import org.stepup.cinesquareapis.report.dto.*;
 import org.stepup.cinesquareapis.report.entity.*;
@@ -20,6 +22,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserReportService {
+    private final MovieRepository movieRepository;
     private final MovieSimpleRepository movieSimpleRepository;
 
     private final MovieSummaryRepository movieSummaryRepository;
@@ -254,6 +257,7 @@ public class UserReportService {
     public boolean deleteStatus(int userId, int movieId) {
         // 기존 데이터 조회
         UserMovieStatusKey userMovieStatusKey = new UserMovieStatusKey(userId, movieId);
+
         Optional<UserMovieStatus> checkUserStatusData = userMovieStatusRepository.findById(userMovieStatusKey);
         if (checkUserStatusData.isEmpty()) {
             return false;
@@ -268,78 +272,104 @@ public class UserReportService {
     /**
      * 영화 코멘트 작성
      */
-    public Comment saveComment(MovieCommentSaveRequest request, Integer movieId, Integer userId) {
+    public MovieCommentResponse saveComment(MovieCommentSaveRequest request, Integer movieId, Integer userId) {
         // 값 존재 여부 판단
-        int count = movieCommentRepository.countByMovieIdAndUserId(movieId, userId);
-        if (count > 0) {
+        boolean result = movieCommentRepository.existsByMovieIdAndUserId(movieId, userId);
+        if (result) {
             throw new RestApiException(CustomErrorCode.ALREADY_REGISTED_COMMENT);
         }
 
-        return movieCommentRepository.save(request.toEntity(movieId, userId));
+        MovieComment movieComment = movieCommentRepository.save(request.toEntity(movieId, userId));
+
+        return new MovieCommentResponse(movieComment);
     }
 
     /**
      * 영화 코멘트 수정
      */
-    public Comment updateComment(MovieCommentUpdateRequest request, Integer movieId, Integer commentId, Integer userId) {
-        // 데이터 조회
-        Comment data = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
 
-        // 유효성 체크
-        if (data.getCommentId() == null || "".equals(data.getCommentId())) {
-            throw new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT);
+    @Transactional
+    public MovieCommentResponse updateComment(MovieCommentUpdateRequest request, Integer movieId, Integer commentId, Integer userId) {
+        // 코멘트 초회
+        MovieComment movieComment = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId)
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
+
+        // 유효성 체크: 코멘트 작성자, 영화 확인
+        if (movieComment.getUserId() != userId) {
+            throw new RestApiException(CommonErrorCode.UNAUTHORIZED_ACTION);
+        }
+        if (movieComment.getMovieId() != movieId) {
+            throw new RestApiException(CommonErrorCode.BAD_REQUEST);
         }
 
-        data.setContent(request.getContent());
-        data.setUserId(userId);
-        data.setMovieId(movieId);
-        return movieCommentRepository.save(data);
+        movieComment.setContent(request.getContent());
+        movieComment = movieCommentRepository.save(movieComment);
+
+        return new MovieCommentResponse(movieComment);
     }
 
     /**
      * 영화 코멘트 삭제
      */
     @Transactional
-    public int deleteComment(Integer commentId) {
+    public void deleteComment(Integer userId, Integer movieId, Integer commentId) {
+        MovieComment movieComment = movieCommentRepository.findById(commentId)
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
+
+        // 유효성 체크: 코멘트 작성자, 영화 확인
+        if (movieComment.getUserId() != userId) {
+            throw new RestApiException(CommonErrorCode.UNAUTHORIZED_ACTION);
+        }
+        if (movieComment.getMovieId() != movieId) {
+            throw new RestApiException(CommonErrorCode.BAD_REQUEST);
+        }
         // 코멘트 답변 삭제
         movieCommentReplyRepository.deleteByCommentId(commentId);
+
         // 코멘트 좋아요 삭제
         userLikeCommentRepository.deleteByCommentId(commentId);
+
         // 코멘트 삭제
-        return movieCommentRepository.deleteByCommentId(commentId);
+        movieCommentRepository.deleteById(commentId);
     }
 
     /**
-     * 유저가 영화 1건에 남긴 코멘트 조회
+     * 유저의 영화별 코멘트 조회
      *
      */
     public MovieCommentResponse getMovieComment(Integer userId, Integer movieId) {
-//        Comment data = new Comment();
-        Comment comment = new Comment();
-        MovieCommentResponse data = new MovieCommentResponse(comment);
+        MovieCommentResponse response = new MovieCommentResponse();
 
         if (movieCommentRepository.existsByUserIdAndMovieId(userId, movieId)) {
-            comment = movieCommentRepository.findByUserIdAndMovieId(userId, movieId);
-            data = new MovieCommentResponse(comment);
+            MovieComment movieComment = movieCommentRepository.findByUserIdAndMovieId(userId, movieId);
+            response = new MovieCommentResponse(movieComment);
         }
 
-        return data;
+        return response;
     }
 
     /**
-     * 영화별 유저가 좋아요한 코멘트 목록 조회
-     *
+     * 유저의 영화별 좋아요한 코멘트 목록 조회
      */
-    @Transactional
-    public Page<UserLikeComment> getUserMovieLikeCommentList(Integer userId, Integer movieId, Pageable pageable) {
-         return userLikeCommentRepository.findAllByUserIdAndMovieId(userId, movieId, pageable);
+    public LikedMovieCommentResponse[] getUserMovieLikeCommentList(Integer userId, Integer movieId) {
+        // 주어진 userId와 movieId로 유저의 좋아요한 코멘트 목록 조회
+        List<UserLikeComment> userLikeComments = userLikeCommentRepository.findAllByUserIdAndMovieId(userId, movieId);
+
+        // 결과 배열 초기화
+        LikedMovieCommentResponse[] responses = new LikedMovieCommentResponse[userLikeComments.size()];
+
+        // List를 배열로 변환
+        for (int i = 0; i < userLikeComments.size(); i++) {
+            responses[i] = new LikedMovieCommentResponse(userLikeComments.get(i));
+        }
+
+        return responses;
     }
 
     /**
      * 좋아요한 코멘트 목록 (페이징)
      *
      */
-    @Transactional
     public Page<CommentSummary> getUserLikeComments(Integer userId, Pageable pageable) {
          return movieCommentSummaryRepository.findByLikeUserId(userId, pageable);
     }
@@ -350,33 +380,31 @@ public class UserReportService {
     @Transactional
     public Boolean saveLikeComment(Integer userId, Integer movieId, Integer commentId) {
         // 실제 존재하는 코멘트인지 확인
-        Comment data = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
-        if (data == null) {
+        Optional<MovieComment> commentOpt = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
+        if (!commentOpt.isPresent()) {
             throw new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT);
         }
 
         // 기존에 좋아요를 누른 상태인지 확인
-        Boolean userLikeCommentCount = userLikeCommentRepository.existsByUserIdAndMovieIdAndCommentId(userId, movieId, commentId);
-        if (userLikeCommentCount) {
+        boolean userLikeCommentExists = userLikeCommentRepository.existsByUserIdAndMovieIdAndCommentId(userId, movieId, commentId);
+        if (userLikeCommentExists) {
             throw new RestApiException(CustomErrorCode.ALERADY_REGISTED_USER_LIKE_COMMENTS);
         }
 
+        // 새로운 좋아요 등록
         UserLikeComment userLikeComment = new UserLikeComment();
         userLikeComment.setUserId(userId);
         userLikeComment.setMovieId(movieId);
         userLikeComment.setCommentId(commentId);
 
-        UserLikeComment userLikeCommentsResult = userLikeCommentRepository.save(userLikeComment);
+        UserLikeComment savedUserLikeComment = userLikeCommentRepository.save(userLikeComment);
 
-        // 해당 comment 에 좋아요 count 증가
-        Comment comment = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
-        comment.setLike(comment.getLike()+1);
-        movieCommentRepository.save(comment);
+        // 해당 comment에 좋아요 count 증가
+        MovieComment movieComment = commentOpt.get();
+        movieComment.setLike(movieComment.getLike() + 1);
+        movieCommentRepository.save(movieComment);
 
-        if (userLikeCommentsResult.getUserId() != null) {
-            return true;
-        }
-        return false;
+        return savedUserLikeComment.getUserId() != null;
     }
 
     /**
@@ -385,19 +413,23 @@ public class UserReportService {
     @Transactional
     public Boolean deleteLikeComment(Integer userId, Integer movieId, Integer commentId) {
         // 기존에 좋아요를 누른 상태인지 확인
-        Boolean userLikeCommentCount = userLikeCommentRepository.existsByUserIdAndMovieIdAndCommentId(userId, movieId, commentId);
-        if (!userLikeCommentCount) {
+        boolean userLikeCommentExists = userLikeCommentRepository.existsByUserIdAndMovieIdAndCommentId(userId, movieId, commentId);
+        if (!userLikeCommentExists) {
             return false;
-        } else {
-            userLikeCommentRepository.deleteByUserIdAndMovieIdAndCommentId(userId, movieId, commentId);
-
-            // 해당 comment 에 좋아요 count 감소
-            // 해당 comment 에 좋아요 count 증가
-            Comment comment = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
-            comment.setLike(comment.getLike()-1);
-            movieCommentRepository.save(comment);
-            return true;
         }
+
+        // 좋아요 삭제
+        userLikeCommentRepository.deleteByUserIdAndMovieIdAndCommentId(userId, movieId, commentId);
+
+        // 해당 comment에 좋아요 count 감소
+        Optional<MovieComment> commentOpt = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
+        if (commentOpt.isPresent()) {
+            MovieComment movieComment = commentOpt.get();
+            movieComment.setLike(movieComment.getLike() - 1);
+            movieCommentRepository.save(movieComment);
+        }
+
+        return true;
     }
 
     /**

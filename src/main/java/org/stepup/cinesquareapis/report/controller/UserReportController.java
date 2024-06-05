@@ -19,9 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
 import org.stepup.cinesquareapis.common.dto.*;
 import org.stepup.cinesquareapis.report.dto.*;
-import org.stepup.cinesquareapis.report.entity.Comment;
 import org.stepup.cinesquareapis.report.entity.CommentSummary;
-import org.stepup.cinesquareapis.report.entity.UserLikeComment;
 import org.stepup.cinesquareapis.report.service.UserReportService;
 
 import java.util.List;
@@ -311,6 +309,7 @@ public class UserReportController {
         }
     }
 
+
     /**
      * 영화 상태(보고싶어요) 삭제
      *
@@ -337,6 +336,8 @@ public class UserReportController {
         }
     }
 
+
+
     /**
      * 영화 코멘트 저장
      *
@@ -346,19 +347,16 @@ public class UserReportController {
      */
     @Operation(summary = "영화 코멘트 저장")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "정상적으로 등록 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "40000", description = "코멘트가 이미 존재하는 경우 에러코드", content = @Content())
     })
     @UserAuthorize
     @PostMapping("-/movies/{movie_id}/comments")
-    public ResponseEntity<DataResponse<Comment>> saveComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @RequestBody MovieCommentSaveRequest request) {
+    public ResponseEntity<DataResponse<MovieCommentResponse>> saveComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @RequestBody MovieCommentSaveRequest request) {
         Integer userId = Integer.parseInt(principal.getUsername());
 
-        Comment data = userReportService.saveComment(request, movieId, userId);
-        DataResponse<Comment> response = new DataResponse<>();
-        response.setData(data);
+        MovieCommentResponse response = userReportService.saveComment(request, movieId, userId);
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(new DataResponse(response));
     }
     
     /**
@@ -369,21 +367,20 @@ public class UserReportController {
      * @return true, false
      */
     @Operation(summary = "영화 코멘트 수정",
-            description = "요청 필수값 : comment_id, user_id")
+            description = "- 요청 필수값 : comment_id, user_id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "정상적으로 수정 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
+            @ApiResponse(responseCode = "403", description = "코멘트를 수정할 수 없는 유저가 요청하는 경우의 에러코드"),
+            @ApiResponse(responseCode = "404", description = "파라미터 값을 잘못 요청하는 경우의 에러코드"),
             @ApiResponse(responseCode = "40001", description = "코멘트가 존재하지 않는 경우 에러코드", content = @Content())
     })
     @UserAuthorize
     @PatchMapping("-/movies/{movie_id}/comments/{comment_id}")
-    public ResponseEntity<DataResponse<Comment>> updateComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId, @RequestBody MovieCommentUpdateRequest request) {
+    public ResponseEntity<DataResponse<MovieCommentResponse>> updateComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId, @RequestBody MovieCommentUpdateRequest request) {
         Integer userId = Integer.parseInt(principal.getUsername());
 
-        Comment data = userReportService.updateComment(request, movieId, commentId, userId);
-        DataResponse<Comment> response = new DataResponse<>();
-        response.setData(data);
+        MovieCommentResponse response = userReportService.updateComment(request, movieId, commentId, userId);
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(new DataResponse(response));
     }
 
     /**
@@ -394,48 +391,41 @@ public class UserReportController {
      * @return true, false
      */
     @Operation(summary = "영화 코멘트 삭제",
-            description = "요청 필수값 : comment_id, user_id는 추후에 필요없는 데이터인데 일단 필요해서 해당 url에 포함시켜놓음<br>" +
-                    "기본 Flow : 코멘트가 삭제되면 이에따른 코멘트 답글, 코멘트 좋아요도 불필요한 데이터라 삭제됨!!!!")
+            description = "- 요청 필수값 : comment_id, user_id\n" +
+                    "- 기본 Flow : 코멘트가 삭제되면, 하위 답글과 코멘트 좋아요 도 함께 삭제")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "정상적으로 삭제 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
-            @ApiResponse(responseCode = "404", description = "데이터가 없는 경우 HTTP 상태코드", content = @Content())
+            @ApiResponse(responseCode = "204", description = "정상적으로 삭제 되었을 경우 HTTP 상태코드"),
+            @ApiResponse(responseCode = "403", description = "코멘트를 수정할 수 없는 유저가 요청하는 경우의 에러코드"),
+            @ApiResponse(responseCode = "404", description = "파라미터 값을 잘못 요청하는 경우의 에러코드"),
+            @ApiResponse(responseCode = "40001", description = "코멘트가 존재하지 않는 경우 에러코드", content = @Content())
     })
     @UserAuthorize
     @DeleteMapping("-/movies/{movie_id}/comments/{comment_id}")
-    public ResponseEntity<HttpStatus> deleteComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
+    public ResponseEntity deleteComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
         Integer userId = Integer.parseInt(principal.getUsername());
 
-        int data = userReportService.deleteComment(commentId);
-        if (data > 0) { //정상 삭제
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        userReportService.deleteComment(userId, movieId, commentId);
+
+        return ResponseEntity.noContent().build();
     }
 
-
     /**
-     * 유저가 영화 1건에 남긴 코멘트 조회
+     * 유저의 영화별 코멘트 조회
      *
      */
-    @Operation(summary = "유저가 영화 1건에 남긴 코멘트 조회",
-            description = "사용자가 영화 한건에 대하여 남긴 코멘트 조회 기능<br>" +
-                    "- 코멘트가 있는경우 return : comment_id, content<br>"+
-                    "- 코멘트가 없는경우 return : http 상태코드 404")
+    @Operation(summary = "유저의 영화별 코멘트 조회")
     @UserAuthorize
-    @GetMapping("movies/{movie_id}/comment")
-    public ResponseEntity<ResultResponse<MovieCommentResponse>> getMovieComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId) {
+    @GetMapping("-/movies/{movie_id}/comment")
+    public ResponseEntity<DataResponse<MovieCommentResponse>> getMovieComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId) {
         Integer userId = Integer.parseInt(principal.getUsername());
 
-        MovieCommentResponse data = userReportService.getMovieComment(userId, movieId);
-        ResultResponse<MovieCommentResponse> response = new ResultResponse<>();
+        MovieCommentResponse response = userReportService.getMovieComment(userId, movieId);
 
-        if (data.getCommentId() == null) {
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        if (response.getCommentId() == null) {
+            return ResponseEntity.noContent().build();
         }
-        response.setResult(data);
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(new DataResponse(response));
     }
 
     /**
@@ -446,22 +436,13 @@ public class UserReportController {
             description = "user_id, movie_id 기준으로 comment_id 목록 조회<br>" +
                     "return 값 : comment_id 리스트, 해당 목록을 가지고 코멘트 목록에서 좋아요 했는지 비교해서 판단해야됨!!")
     @UserAuthorize
-    @GetMapping("movies/{movie_id}/like-comments")
-    public ResponseEntity<PageResponse<List<MovieLikeCommentResponse>>> getUserLikeCommentList(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId,
-                                       @RequestParam(required = false, defaultValue = "1", value = "page") int page, @RequestParam(required = false, defaultValue = "10", value = "size") int size) {
+    @GetMapping("-/movies/{movie_id}/like-comments")
+    public ResponseEntity<ListResponse<LikedMovieCommentResponse>> getUserLikeCommentList(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId) {
         Integer userId = Integer.parseInt(principal.getUsername());
 
-        // 페이지 셋팅 (Pageable은 0부터 시작해서 인입값 -1로 셋팅 필요)
-        Pageable pageable = PageRequest.of(page-1, size);
-        // PageResponse 생성(초기화)
-        PageResponse<List<MovieLikeCommentResponse>> response = new PageResponse<>(page, size);
+        LikedMovieCommentResponse[] response = userReportService.getUserMovieLikeCommentList(userId, movieId);
 
-        Page<UserLikeComment> pagedData = userReportService.getUserMovieLikeCommentList(userId, movieId, pageable);
-        response.setList(pagedData.getContent().stream().map(MovieLikeCommentResponse::new).collect(Collectors.toList())); // data
-        response.setLastPage(pagedData.getTotalPages() == 0 ? 1: pagedData.getTotalPages()); // 마지막 페이지
-        response.setTotalCount(pagedData.getTotalElements()); // 총 건수
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(new ListResponse(response));
     }
 
     /**

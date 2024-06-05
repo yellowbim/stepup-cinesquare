@@ -1,12 +1,12 @@
 package org.stepup.cinesquareapis.report.repository;
 
 import jakarta.transaction.Transactional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.stepup.cinesquareapis.report.entity.UserLikeComment;
 import org.stepup.cinesquareapis.report.entity.UserLikeCommentKey;
+
+import java.util.List;
 
 @Repository
 @Transactional
@@ -20,8 +20,8 @@ public interface UserLikeCommentRepository extends JpaRepository<UserLikeComment
     // commentId 기준으로 코멘트 좋아요 삭제
     int deleteByCommentId(Integer commentId);
 
-    //영화별 유저가 좋아요한 코멘트 목록 조회
-    Page<UserLikeComment> findAllByUserIdAndMovieId(Integer userId, Integer movieId, Pageable pageable);
+    // 유저의 영화별 좋아요한 코멘트 목록 조회
+    List<UserLikeComment> findAllByUserIdAndMovieId(Integer userId, Integer movieId);
 
     // 좋아요한 코멘트 개수 조회
     int countAllByUserId(Integer userId);

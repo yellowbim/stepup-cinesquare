@@ -8,4 +8,10 @@ import lombok.Setter;
 @Setter
 public class ListResponse<T> {
     private T list;
+
+    public ListResponse() {}
+
+    public ListResponse(T list) {
+        this.list = list;
+    }
 }

@@ -6,17 +6,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.stepup.cinesquareapis.common.exception.enums.CommonErrorCode;
 import org.stepup.cinesquareapis.common.exception.enums.CustomErrorCode;
 import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
 import org.stepup.cinesquareapis.report.dto.MovieCommentReplySaveRequest;
 import org.stepup.cinesquareapis.report.dto.MovieCommentReplyUpdateRequest;
 import org.stepup.cinesquareapis.report.dto.MovieCommentResponse;
-import org.stepup.cinesquareapis.report.entity.Comment;
 import org.stepup.cinesquareapis.report.entity.CommentReply;
 import org.stepup.cinesquareapis.report.entity.CommentSummary;
+import org.stepup.cinesquareapis.report.entity.MovieComment;
 import org.stepup.cinesquareapis.report.repository.MovieCommentReplyRepository;
 import org.stepup.cinesquareapis.report.repository.MovieCommentRepository;
 import org.stepup.cinesquareapis.report.repository.MovieCommentSummaryRepository;
+
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -32,24 +35,30 @@ public class MovieReportService {
      * 사용자 본인이 남긴 코멘트가 아닌 경우 상세 코멘트를 조회하는 API
      */
     public MovieCommentResponse getMovieComment(Integer movieId, Integer commentId) {
-//        Comment data = new Comment();
-        Comment comment = new Comment();
-        MovieCommentResponse data = new MovieCommentResponse(comment);
+        MovieComment movieComment = movieCommentRepository.findById(commentId)
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
 
-        if (movieCommentRepository.existsByCommentIdAndMovieId(commentId, movieId)) {
-            comment = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
-            data = new MovieCommentResponse(comment);
+        // 유효성 체크: 영화 확인
+        if (movieComment.getMovieId() != movieId) {
+            throw new RestApiException(CommonErrorCode.BAD_REQUEST);
         }
 
-        return data;
+        return new MovieCommentResponse(movieComment);
     }
 
     /**
      * 영화 코멘트 답글 작성
      */
+    @Transactional
     public CommentReply saveCommentReply(MovieCommentReplySaveRequest request, Integer commentId, Integer movieId, Integer userId) {
         // 실제 존재하는 코멘트인지 조회
-        movieCommentRepository.findById(commentId).orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
+        MovieComment movieComment = movieCommentRepository.findById(commentId)
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
+
+        // 유효성 체크: 영화 확인
+        if (movieComment.getMovieId() != movieId) {
+            throw new RestApiException(CommonErrorCode.BAD_REQUEST);
+        }
 
         // 이미 등록된 내용인지 조회
         int count = movieCommentReplyRepository.countByMovieIdAndUserIdAndCommentId(movieId, userId, commentId);
@@ -58,11 +67,12 @@ public class MovieReportService {
         }
 
         // 영화 답글 수 추가
-        // 해당 comment 에 좋아요 count 증가
-        Comment comment = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
-        comment.setReplyCount(comment.getReplyCount()+1);
-        movieCommentRepository.save(comment);
-        return movieCommentReplyRepository.save(request.toEntity(commentId, movieId, userId));
+        movieComment.setReplyCount(movieComment.getReplyCount() + 1);
+        movieCommentRepository.save(movieComment);
+
+        // 답글 저장
+        CommentReply commentReply = request.toEntity(commentId, movieId, userId);
+        return movieCommentReplyRepository.save(commentReply);
     }
 
     /**
@@ -93,15 +103,27 @@ public class MovieReportService {
             throw new RestApiException(CustomErrorCode.NOT_FOUND_USER); // 사용자 정보가 없으면 에러
         }
 
-        // 영화 답글 수 감소
-        // 해당 comment 에 좋아요 count 증가
-        Comment comment = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
-        comment.setReplyCount(comment.getReplyCount()-1);
-        movieCommentRepository.save(comment);
+        // 영화 댓글을 찾기
+        Optional<MovieComment> movieCommentOpt = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
+        if (!movieCommentOpt.isPresent()) {
+            throw new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT); // 댓글을 찾을 수 없으면 에러
+        }
+
+        MovieComment movieComment = movieCommentOpt.get();
+
+        // 댓글 답글 수 감소
+        movieComment.setReplyCount(movieComment.getReplyCount() - 1);
+        movieCommentRepository.save(movieComment);
 
         // reply id 기준으로 삭제
-        return movieCommentReplyRepository.deleteByReplyId(replyId);
+        int deletedCount = movieCommentReplyRepository.deleteByReplyId(replyId);
+        if (deletedCount == 0) {
+            throw new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT_REPLY); // 답글을 찾을 수 없으면 에러
+        }
+
+        return deletedCount;
     }
+
 
     /**
      * 영화 코멘트 + 점수 (api 호출용)
