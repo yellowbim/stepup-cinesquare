@@ -19,9 +19,8 @@ import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
 import org.stepup.cinesquareapis.common.dto.DataResponse;
 import org.stepup.cinesquareapis.common.dto.PageResponse;
 import org.stepup.cinesquareapis.common.dto.ResultResponse;
-import org.stepup.cinesquareapis.report.entity.MovieComment;
 import org.stepup.cinesquareapis.report.entity.CommentReply;
-import org.stepup.cinesquareapis.report.entity.CommentSummary;
+import org.stepup.cinesquareapis.report.entity.MovieCommentSummary;
 import org.stepup.cinesquareapis.report.dto.*;
 import org.stepup.cinesquareapis.report.service.MovieReportService;
 
@@ -157,7 +156,7 @@ public class MovieReportController {
         // PageResponse 생성(초기화)
         PageResponse<List<MovieCommentSummaryResponse>> response = new PageResponse<>(page, size);
 
-        Page<CommentSummary> pagedData = movieReportService.searchCommentSummary(movieId, pageable);
+        Page<MovieCommentSummary> pagedData = movieReportService.searchCommentSummary(movieId, pageable);
         response.setList(pagedData.getContent().stream().map(MovieCommentSummaryResponse::new).collect(Collectors.toList())); // data
         response.setLastPage(pagedData.getTotalPages() == 0 ? 1: pagedData.getTotalPages()); // 마지막 페이지
         response.setTotalCount(pagedData.getTotalElements()); // 총 건수

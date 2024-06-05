@@ -2,7 +2,7 @@ package org.stepup.cinesquareapis.report.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import org.stepup.cinesquareapis.report.entity.CommentSummary;
+import org.stepup.cinesquareapis.report.entity.MovieCommentSummary;
 
 @Data
 @Schema(description = "코멘트 목록 + 별점 응답 DTO")
@@ -24,15 +24,15 @@ public class MovieCommentSummaryResponse {
     @Schema(description = "코멘트 답글 수", example = "2")
     private int replyCount;
 
-    public MovieCommentSummaryResponse(CommentSummary commentSummary) {
-        commentId = commentSummary.getCommentId();
-        movieId = commentSummary.getMovieId();
-        userId = commentSummary.getUserId();
-        content = commentSummary.getContent();
-        score = commentSummary.getScore();
-        nickname = commentSummary.getNickname();
-        like = commentSummary.getLike();
-        replyCount = commentSummary.getReplyCount();
+    public MovieCommentSummaryResponse(MovieCommentSummary movieCommentSummary) {
+        commentId = movieCommentSummary.getCommentId();
+        movieId = movieCommentSummary.getMovieId();
+        userId = movieCommentSummary.getUserId();
+        content = movieCommentSummary.getContent();
+        score = movieCommentSummary.getScore();
+        nickname = movieCommentSummary.getNickname();
+        like = movieCommentSummary.getLike();
+        replyCount = movieCommentSummary.getReplyCount();
     }
 
 }
