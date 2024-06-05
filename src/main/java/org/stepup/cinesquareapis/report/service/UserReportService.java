@@ -365,7 +365,7 @@ public class UserReportService {
      * 좋아요 한 코맨트 개수 조회
      */
     @Transactional
-    public int getLikeCommentCounts(Integer userId) {
+    public int getLikeCommentCount(Integer userId) {
         return userLikeCommentRepository.countAllByUserId(userId);
     }
 

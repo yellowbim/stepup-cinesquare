@@ -490,10 +490,10 @@ public class UserReportController {
     @Operation(summary = "내가 좋아요 한 코멘트 개수 조회")
     @UserAuthorize
     @GetMapping("me/movies/-/like-comments/count")
-    public ResponseEntity<DataResponse<Integer>> getLikeCommentCounts(@AuthenticationPrincipal User principal) {
+    public ResponseEntity<DataResponse<Integer>> getLikeCommentCount(@AuthenticationPrincipal User principal) {
         Integer userId = Integer.parseInt(principal.getUsername());
 
-        int data = userReportService.getLikeCommentCounts(userId);
+        int data = userReportService.getLikeCommentCount(userId);
         DataResponse<Integer> response = new DataResponse<>();
         response.setData(data);
 
@@ -505,8 +505,8 @@ public class UserReportController {
      *
      */
     @Operation(summary = "[사용 불가] 유저별 좋아요 한 코멘트 개수 조회")
-    @GetMapping("{user_id}/movies/-/like-comments")
-    public ResponseEntity<DataResponse<Integer>> getLikeCommentCounts(@PathVariable("movie_id") int user_id) {
+    @GetMapping("{user_id}/movies/-/like-comments/count")
+    public ResponseEntity<DataResponse<Integer>> getLikeCommentCount(@PathVariable("movie_id") int user_id) {
         throw new UnsupportedOperationException("This method is not implemented yet.");
     }
 
