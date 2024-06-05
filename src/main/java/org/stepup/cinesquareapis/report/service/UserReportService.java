@@ -219,10 +219,9 @@ public class UserReportService {
      */
     @Transactional
     public Page<Integer> getMovieUserStatusList(Integer userId, Pageable pageable) {
-        // 기존 데이터 조회
-        Page<Integer> movieIds = userMovieStatusRepository.findAllMovieIdsByUserId(userId, pageable);
+        Page<Integer> pagedMovieIds = userMovieStatusRepository.findAllMovieIdsByUserId(userId, pageable);
 
-        return movieIds;
+        return pagedMovieIds;
     }
 
     /**
@@ -349,95 +348,17 @@ public class UserReportService {
     }
 
     /**
-     * 유저의 영화별 좋아요한 코멘트 목록 조회
+     * 유저의 영화별 좋아요한 코멘트 id 목록 조회
      */
-    public LikedMovieCommentResponse[] getUserMovieLikeCommentList(Integer userId, Integer movieId) {
-        // 주어진 userId와 movieId로 유저의 좋아요한 코멘트 목록 조회
-        List<UserLikeComment> userLikeComments = userLikeCommentRepository.findAllByUserIdAndMovieId(userId, movieId);
-
-        // 결과 배열 초기화
-        LikedMovieCommentResponse[] responses = new LikedMovieCommentResponse[userLikeComments.size()];
-
-        // List를 배열로 변환
-        for (int i = 0; i < userLikeComments.size(); i++) {
-            responses[i] = new LikedMovieCommentResponse(userLikeComments.get(i));
-        }
-
-        return responses;
+    public List<Integer> getUserLikedMovieCommentIdList(Integer userId, Integer movieId) {
+        return userLikeCommentRepository.findAllCommentIdsByUserIdAndMovieId(userId, movieId);
     }
 
     /**
-     * 좋아요한 코멘트 목록 (페이징)
-     *
+     * 유저별 좋아요한 코멘트 목록 조회 (전체 영화)
      */
-    public Page<CommentSummary> getUserLikeComments(Integer userId, Pageable pageable) {
-         return movieCommentSummaryRepository.findByLikeUserId(userId, pageable);
-    }
-
-    /**
-     * 유저별 코멘트 좋아요 등록
-     */
-    @Transactional
-    public Boolean saveLikeComment(Integer userId, Integer movieId, Integer commentId) {
-        // 실제 존재하는 코멘트인지 확인
-        Optional<MovieComment> commentOpt = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
-        if (!commentOpt.isPresent()) {
-            throw new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT);
-        }
-
-        // 기존에 좋아요를 누른 상태인지 확인
-        boolean userLikeCommentExists = userLikeCommentRepository.existsByUserIdAndMovieIdAndCommentId(userId, movieId, commentId);
-        if (userLikeCommentExists) {
-            throw new RestApiException(CustomErrorCode.ALERADY_REGISTED_USER_LIKE_COMMENTS);
-        }
-
-        // 새로운 좋아요 등록
-        UserLikeComment userLikeComment = new UserLikeComment();
-        userLikeComment.setUserId(userId);
-        userLikeComment.setMovieId(movieId);
-        userLikeComment.setCommentId(commentId);
-
-        UserLikeComment savedUserLikeComment = userLikeCommentRepository.save(userLikeComment);
-
-        // 해당 comment에 좋아요 count 증가
-        MovieComment movieComment = commentOpt.get();
-        movieComment.setLike(movieComment.getLike() + 1);
-        movieCommentRepository.save(movieComment);
-
-        return savedUserLikeComment.getUserId() != null;
-    }
-
-    /**
-     * 유저별 코멘트 좋아요 삭제
-     */
-    @Transactional
-    public Boolean deleteLikeComment(Integer userId, Integer movieId, Integer commentId) {
-        // 기존에 좋아요를 누른 상태인지 확인
-        boolean userLikeCommentExists = userLikeCommentRepository.existsByUserIdAndMovieIdAndCommentId(userId, movieId, commentId);
-        if (!userLikeCommentExists) {
-            return false;
-        }
-
-        // 좋아요 삭제
-        userLikeCommentRepository.deleteByUserIdAndMovieIdAndCommentId(userId, movieId, commentId);
-
-        // 해당 comment에 좋아요 count 감소
-        Optional<MovieComment> commentOpt = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId);
-        if (commentOpt.isPresent()) {
-            MovieComment movieComment = commentOpt.get();
-            movieComment.setLike(movieComment.getLike() - 1);
-            movieCommentRepository.save(movieComment);
-        }
-
-        return true;
-    }
-
-    /**
-     * 유저별 평가한(별점 부과) 영화 개수 조회
-     */
-    @Transactional
-    public int getScoredCount(int userId) {
-        return userScoreRepository.countByUserId(userId);
+    public Page<MovieCommentSummary> getUserLikedMovieCommentList(Integer userId, Pageable pageable) {
+        return movieCommentSummaryRepository.findByLikeUserId(userId, pageable);
     }
 
     /**
@@ -448,6 +369,69 @@ public class UserReportService {
         return userLikeCommentRepository.countAllByUserId(userId);
     }
 
+    /**
+     * 유저별 코멘트 좋아요 등록
+     */
+    @Transactional
+    public void saveLikeComment(Integer userId, Integer movieId, Integer commentId) {
+        // 유효성 체크1: 코멘트 존재 여부 확인
+        MovieComment movieComment = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId)
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
+
+        // 유효성 체크2: 기존에 좋아요를 누른 상태인지 확인
+        if (userLikeCommentRepository.existsByUserIdAndMovieIdAndCommentId(userId, movieId, commentId)) {
+            throw new RestApiException(CustomErrorCode.ALERADY_REGISTED_USER_LIKE_COMMENTS);
+        }
+
+        // 좋아요 등록
+        UserLikeComment userLikeComment = UserLikeComment.builder()
+                .userId(userId)
+                .movieId(movieId)
+                .commentId(commentId)
+                .build();
+        userLikeCommentRepository.save(userLikeComment);
+
+        // 해당 comment에 좋아요 count 반영
+        updateLikeCount(movieComment, 1);
+    }
+
+    /**
+     * 영화 코멘트 좋아요 삭제
+     */
+    @Transactional
+    public void deleteLikeComment(Integer userId, Integer movieId, Integer commentId) {
+        // 유효성 체크: 기존에 좋아요를 누른 상태인지 확인
+        if (!userLikeCommentRepository.existsByUserIdAndMovieIdAndCommentId(userId, movieId, commentId)) {
+            throw new RestApiException(CustomErrorCode.NOT_LIKED_COMMENT);
+        }
+
+        // 좋아요 삭제
+        userLikeCommentRepository.deleteByUserIdAndMovieIdAndCommentId(userId, movieId, commentId);
+
+        // 해당 comment의 좋아요 count 감소
+        MovieComment movieComment = movieCommentRepository.findById(commentId)
+                .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
+
+        // 해당 comment에 좋아요 count 반영
+        updateLikeCount(movieComment, -1);
+    }
+
+    /**
+     * 코멘트의 좋아요 수를 업데이트하는 메서드
+     */
+    private void updateLikeCount(MovieComment movieComment, int count) {
+        movieComment.setLike(movieComment.getLike() + count);
+        movieCommentRepository.save(movieComment);
+    }
+
+    /**
+     * 유저별 평가한(별점 부과) 영화 개수 조회
+     */
+    @Transactional
+    public int getScoredCount(int userId) {
+        return userScoreRepository.countByUserId(userId);
+    }
+    
     /**
      * 유저별 영화 별점 분포 조회 (mypage)
      */

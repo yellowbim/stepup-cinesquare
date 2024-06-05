@@ -2,7 +2,7 @@ package org.stepup.cinesquareapis.report.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import org.stepup.cinesquareapis.report.entity.CommentSummary;
+import org.stepup.cinesquareapis.report.entity.MovieCommentSummary;
 
 @Data
 @Schema(description = "사용자가 좋아요한 코멘트 목록 응담 DTO")
@@ -31,7 +31,7 @@ public class LikeCommentsResponse {
     @Schema(description = "코멘트 사용자가 남긴 별점", example = "4")
     private Float score;
 
-    public LikeCommentsResponse(CommentSummary comment) {
+    public LikeCommentsResponse(MovieCommentSummary comment) {
         userId = comment.getUserId();
         nickname = comment.getNickname();
         movieId = comment.getMovieId();

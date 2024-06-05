@@ -15,9 +15,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Immutable // 데이터베이스에서 만들었기 때문에 수정되지 않을 예정 (view)
-@IdClass(CommentSummaryKey.class)
+@IdClass(MovieCommentSummaryKey.class)
 @Table(name="v_movie_comment_summary")
-public class CommentSummary {
+public class MovieCommentSummary {
     @Id
     @Column(nullable = false)
     private Integer commentId;
@@ -30,14 +30,12 @@ public class CommentSummary {
     @Column(nullable = false)
     private Integer userId;
 
-    @Column(name = "content", length = 1000)
+    @Column(length = 1000)
     private String content;
 
     @ColumnDefault("0")
-    @Column(name = "score")
     private Float score;
 
-    @Column(name = "nickname")
     private String nickname;
 
     @ColumnDefault("0")
@@ -45,12 +43,10 @@ public class CommentSummary {
     private Integer like;
 
     @ColumnDefault("0")
-    @Column(name = "reply_count")
     private Integer replyCount;
 
     @CreationTimestamp
-    @Column(name = "created", updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
+    @Column(updatable = false)
     private LocalDateTime created;
 
 //    @UpdateTimestamp

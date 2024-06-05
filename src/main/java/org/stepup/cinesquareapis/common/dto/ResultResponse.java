@@ -8,4 +8,10 @@ import lombok.Setter;
 @Setter
 public class ResultResponse<T> {
     private T result;
+
+    public ResultResponse() {}
+
+    public ResultResponse(T result) {
+        this.result = result;
+    }
 }

@@ -13,7 +13,7 @@ import org.stepup.cinesquareapis.report.dto.MovieCommentReplySaveRequest;
 import org.stepup.cinesquareapis.report.dto.MovieCommentReplyUpdateRequest;
 import org.stepup.cinesquareapis.report.dto.MovieCommentResponse;
 import org.stepup.cinesquareapis.report.entity.CommentReply;
-import org.stepup.cinesquareapis.report.entity.CommentSummary;
+import org.stepup.cinesquareapis.report.entity.MovieCommentSummary;
 import org.stepup.cinesquareapis.report.entity.MovieComment;
 import org.stepup.cinesquareapis.report.repository.MovieCommentReplyRepository;
 import org.stepup.cinesquareapis.report.repository.MovieCommentRepository;
@@ -130,7 +130,7 @@ public class MovieReportService {
      *
      * table : tb_movie_comment_summary
      */
-    public Page<CommentSummary> searchCommentSummary(Integer movieId, Pageable pageable) {
+    public Page<MovieCommentSummary> searchCommentSummary(Integer movieId, Pageable pageable) {
         return movieCommentSummaryRepository.findAllByMovieIdOrderByLike(movieId, pageable);
     }
 

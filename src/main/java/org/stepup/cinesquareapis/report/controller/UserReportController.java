@@ -19,15 +19,14 @@ import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
 import org.stepup.cinesquareapis.common.dto.*;
 import org.stepup.cinesquareapis.report.dto.*;
-import org.stepup.cinesquareapis.report.entity.CommentSummary;
+import org.stepup.cinesquareapis.report.entity.MovieCommentSummary;
 import org.stepup.cinesquareapis.report.service.UserReportService;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "4 user-reports", description = "유저별 영화 리뷰 API (코멘트 API 검토중)")
+@Tag(name = "4 user-reports", description = "유저별 영화 리뷰 API (API 검토중)")
 @RequestMapping("api/user-reports")
 public class UserReportController {
 
@@ -248,7 +247,7 @@ public class UserReportController {
     }
 
     /**
-     * [사용 불가] 영화 상태(보고싶어요) 조회
+     * [사용 불가] 유저별 영화 상태(보고싶어요) 조회
      *
      */
     @Operation(summary = "[사용 불가] 유저별 영화 상태(보고싶어요) 조회",
@@ -281,6 +280,19 @@ public class UserReportController {
 
         return ResponseEntity.ok(response);
     }
+    
+    /**
+     * [사용 불가] 유저별 영화 상태(보고싶어요) 리스트 조회
+     *
+     * table: tb_user_movie_status
+     */
+    @Operation(summary = "[사용 불가] 유저별 영화 상태(보고싶어요) 리스트 조회")
+    @UserAuthorize
+    @GetMapping("{user_id}/movies/-/status")
+    public ResponseEntity<PageResponse2<Integer>> getStatusList(@PathVariable("movie_id") int user_id) {
+        throw new UnsupportedOperationException("This method is not implemented yet.");
+    }
+
 
     /**
      * 영화 상태(보고싶어요) 저장
@@ -391,10 +403,10 @@ public class UserReportController {
      * @return true, false
      */
     @Operation(summary = "영화 코멘트 삭제",
-            description = "- 요청 필수값 : comment_id, user_id\n" +
-                    "- 기본 Flow : 코멘트가 삭제되면, 하위 답글과 코멘트 좋아요 도 함께 삭제")
+            description = "- 요청 필수값: comment_id, user_id\n" +
+                    "- 기본 Flow: 코멘트가 삭제되면, '하위 답글'과 '코멘트 좋아요' 삭제")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "정상적으로 삭제 되었을 경우 HTTP 상태코드"),
+            @ApiResponse(responseCode = "204", description = "정상적으로 삭제 되었을 경우의 HTTP 상태코드"),
             @ApiResponse(responseCode = "403", description = "코멘트를 수정할 수 없는 유저가 요청하는 경우의 에러코드"),
             @ApiResponse(responseCode = "404", description = "파라미터 값을 잘못 요청하는 경우의 에러코드"),
             @ApiResponse(responseCode = "40001", description = "코멘트가 존재하지 않는 경우 에러코드", content = @Content())
@@ -429,98 +441,55 @@ public class UserReportController {
     }
 
     /**
-     * 영화별 유저가 좋아요한 코멘트 목록 조회
+     * 유저의 영화별 좋아요한 코멘트 id 목록 조회
      *
      */
-    @Operation(summary = "영화별 유저가 좋아요한 코멘트 목록 조회 (페이징)",
-            description = "user_id, movie_id 기준으로 comment_id 목록 조회<br>" +
-                    "return 값 : comment_id 리스트, 해당 목록을 가지고 코멘트 목록에서 좋아요 했는지 비교해서 판단해야됨!!")
+    @Operation(summary = "유저의 영화별 좋아요한 코멘트 id 목록 조회")
     @UserAuthorize
     @GetMapping("-/movies/{movie_id}/like-comments")
-    public ResponseEntity<ListResponse<LikedMovieCommentResponse>> getUserLikeCommentList(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId) {
+    public ResponseEntity<ListResponse<Integer>> getUserLikedMovieCommentIdList(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId) {
         Integer userId = Integer.parseInt(principal.getUsername());
 
-        LikedMovieCommentResponse[] response = userReportService.getUserMovieLikeCommentList(userId, movieId);
+        List<Integer> response = userReportService.getUserLikedMovieCommentIdList(userId, movieId);
 
         return ResponseEntity.ok(new ListResponse(response));
     }
 
     /**
-     * 좋아요한 코멘트 목록
+     * 내가 좋아요한 코멘트 목록 조회 (전체 영화)
      *
      */
-    @Operation(summary = "좋아요한 코멘트 목록 (페이징)")
+    @Operation(summary = "내가 좋아요한 코멘트 목록 조회 (전체 영화)")
     @UserAuthorize
-    @GetMapping("like-comments")
-    public ResponseEntity<PageResponse<List<LikeCommentsResponse>>> getLikeComments(@AuthenticationPrincipal User principal,
-                                                                 @RequestParam(required = false, defaultValue = "1", value = "page") int page, @RequestParam(required = false, defaultValue = "10", value = "size") int size) {
+    @GetMapping("me/movies/-/like-comments")
+    public ResponseEntity<PageResponse2<MovieCommentSummaryResponse>> getLikeComments(@AuthenticationPrincipal User principal
+            , @RequestParam(required = false, defaultValue = "1", value = "page") int page, @RequestParam(required = false, defaultValue = "10", value = "size") int size) {
         Integer userId = Integer.parseInt(principal.getUsername());
 
-        //페이지 셋팅
-        Pageable pageable = PageRequest.of(page-1, size);
+        // 페이지 셋팅
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<MovieCommentSummary> response = userReportService.getUserLikedMovieCommentList(userId, pageable);
 
-        Page<CommentSummary> pagedData = userReportService.getUserLikeComments(userId, pageable);
-        PageResponse<List<LikeCommentsResponse>> response = new PageResponse<>(page, size);
-        response.setList(pagedData.getContent().stream().map(LikeCommentsResponse::new).collect(Collectors.toList())); // data
-        response.setLastPage(pagedData.getTotalPages() == 0 ? 1: pagedData.getTotalPages()); // 마지막 페이지
-        response.setTotalCount(pagedData.getTotalElements()); // 총 건수
-
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(new PageResponse2(response, page, size));
     }
 
     /**
-     * 유저별 코멘트 좋아요 등록
-     */
-    @Operation(summary = "유저별 코멘트 좋아요 등록",
-            description = "코멘트 좋아요 등록 시 해당 user의 comment 테이블에 like count 증가<br>")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "정상적으로 저장 되었을 경우 HTTP 상태코드", content = @Content()),
-            @ApiResponse(responseCode = "500", description = "저장에 실패하였을 경우 HTTP 상태코드", content = @Content()),
-            @ApiResponse(responseCode = "40001", description = "코멘트가 존재하지 않는 경우 에러코드", content = @Content()),
-            @ApiResponse(responseCode = "40009", description = "이미 등록된 상태의 경우 에러코드 (삭제 API 요청)", content = @Content())
-    })
-    @UserAuthorize
-    @PostMapping("movies/{movie_id}/like-comments/{comment_id}")
-    public ResponseEntity<ResultResponse<Boolean>> saveLikeComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
-        Integer userId = Integer.parseInt(principal.getUsername());
-
-        Boolean data = userReportService.saveLikeComment(userId, movieId, commentId);
-        ResultResponse<Boolean> response = new ResultResponse<>();
-        response.setResult(data);
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    /**
-     * 유저별 코멘트 좋아요 삭제
-     */
-    @Operation(summary = "유저별 코멘트 좋아요 삭제",
-            description = "코멘트 좋아요 삭제 시 해당 user의 comment 테이블에 like count 감소")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "정상적으로 저장 되었을 경우 HTTP 상태코드", content = @Content()),
-            @ApiResponse(responseCode = "404", description = "데이터가 없는 경우 HTTP 상태코드", content = @Content())
-    })
-    @UserAuthorize
-    @DeleteMapping("movies/{movie_id}/like-comments/{comment_id}")
-    public ResponseEntity<ResultResponse<Boolean>> deleteLikeComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
-        Integer userId = Integer.parseInt(principal.getUsername());
-
-        Boolean data = userReportService.deleteLikeComment(userId, movieId, commentId);
-        ResultResponse<Boolean> response = new ResultResponse<>();
-        response.setResult(data);
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    /**
-     * 좋아요 한 코멘트 개수 조회
+     * [사용 불가] 유저별 좋아요한 코멘트 목록 조회 (전체 영화)
      *
      */
-    @Operation(summary = "좋아요 한 코멘트 개수 조회",
-            description = "마이피이지 하단")
+    @Operation(summary = "[사용 불가] 유저별 좋아요한 코멘트 목록 조회 (전체 영화)")
+    @GetMapping("{user_id}/movies/-/like-comments")
+    public ResponseEntity<PageResponse2<MovieCommentSummaryResponse>> getLikeComments(@PathVariable("movie_id") int user_id) {
+        throw new UnsupportedOperationException("This method is not implemented yet.");
+    }
+
+    /**
+     * 내가 좋아요 한 코멘트 개수 조회
+     *
+     */
+    @Operation(summary = "내가 좋아요 한 코멘트 개수 조회")
     @UserAuthorize
-    @GetMapping("like-comment-counts")
+    @GetMapping("me/movies/-/like-comments/count")
     public ResponseEntity<DataResponse<Integer>> getLikeCommentCounts(@AuthenticationPrincipal User principal) {
         Integer userId = Integer.parseInt(principal.getUsername());
 
@@ -529,5 +498,52 @@ public class UserReportController {
         response.setData(data);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * [사용 불가] 유저별 좋아요 한 코멘트 개수 조회
+     *
+     */
+    @Operation(summary = "[사용 불가] 유저별 좋아요 한 코멘트 개수 조회")
+    @GetMapping("{user_id}/movies/-/like-comments")
+    public ResponseEntity<DataResponse<Integer>> getLikeCommentCounts(@PathVariable("movie_id") int user_id) {
+        throw new UnsupportedOperationException("This method is not implemented yet.");
+    }
+
+    /**
+     * 영화 코멘트 좋아요 등록
+     */
+    @Operation(summary = "영화 코멘트 좋아요 등록")
+    @ApiResponses({
+            @ApiResponse(responseCode = "40001", description = "코멘트가 존재하지 않는 경우의 에러코드", content = @Content()),
+            @ApiResponse(responseCode = "40009", description = "이미 등록된 상태의 경우의 에러코드 (삭제 API 요청)", content = @Content())
+    })
+    @UserAuthorize
+    @PostMapping("-/movies/{movie_id}/comments/{comment_id}/like")
+    public ResponseEntity<ResultResponse<Boolean>> saveLikeComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        userReportService.saveLikeComment(userId, movieId, commentId);
+
+        return ResponseEntity.ok(new ResultResponse(true));
+    }
+
+    /**
+     * 영화 코멘트 좋아요 삭제
+     */
+    @Operation(summary = "유저별 코멘트 좋아요 삭제",
+            description = "- 코멘트 좋아요 삭제 시, comment like count 감소")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "정상적으로 삭제 되었을 경우의 HTTP 상태코드"),
+            @ApiResponse(responseCode = "40010", description = "좋아요 하지 않은 코멘트에 대해 요청한 경우의 오류코드", content = @Content()),
+    })
+    @UserAuthorize
+    @DeleteMapping("-/movies/{movie_id}/comments/{comment_id}/like")
+    public ResponseEntity<ResultResponse<Boolean>> deleteLikeComment(@AuthenticationPrincipal User principal, @PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        userReportService.deleteLikeComment(userId, movieId, commentId);
+
+        return ResponseEntity.noContent().build();
     }
 }

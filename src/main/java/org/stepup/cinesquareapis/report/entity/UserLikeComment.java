@@ -21,14 +21,13 @@ public class UserLikeComment {
     private Integer userId;
 
     @Id
-    @Column(name = "comment_id")
     private Integer commentId;
 
     @Id
-    @Column(name = "movie_id", nullable = false)
+    @Column(nullable = false)
     private Integer movieId;
 
     @CreationTimestamp
-    @Column(name = "created", updatable = false)
+    @Column( updatable = false)
     private LocalDateTime created;
 }

@@ -31,7 +31,8 @@ public enum CustomErrorCode implements ErrorCode {
     MOVIE_DB_UPDATE_FAILED(HttpStatus.NOT_FOUND,40007, null),
     ALERADY_REGISTED_USER_STATUS(HttpStatus.NOT_FOUND,40008, null),
     ALERADY_REGISTED_USER_LIKE_COMMENTS(HttpStatus.NOT_FOUND,40009, null),
-    NOT_FOUND_MOVIE_SUMMARY(HttpStatus.NOT_FOUND,40010, null),
+    NOT_LIKED_COMMENT(HttpStatus.NOT_FOUND,40010, "좋아요 하지 않은 코멘트 입니다"),
+    NOT_FOUND_MOVIE_SUMMARY(HttpStatus.NOT_FOUND,40011, null),
 
     // Social: 50000~,
     ;
