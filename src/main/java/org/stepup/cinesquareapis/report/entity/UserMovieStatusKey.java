@@ -5,15 +5,15 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class UserStatusKey implements Serializable {
+public class UserMovieStatusKey implements Serializable {
     private Integer userId;
     private Integer movieId;
 
-    public UserStatusKey() {
+    public UserMovieStatusKey() {
         // 기본 생성자
     }
 
-    public UserStatusKey(Integer userId, Integer movieId) {
+    public UserMovieStatusKey(Integer userId, Integer movieId) {
         this.userId = userId;
         this.movieId = movieId;
     }

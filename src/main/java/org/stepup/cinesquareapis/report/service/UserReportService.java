@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 import org.stepup.cinesquareapis.common.exception.enums.CustomErrorCode;
 import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
 import org.stepup.cinesquareapis.movie.repository.MovieSimpleRepository;
-import org.stepup.cinesquareapis.report.entity.*;
 import org.stepup.cinesquareapis.report.dto.*;
+import org.stepup.cinesquareapis.report.entity.*;
 import org.stepup.cinesquareapis.report.repository.*;
 
 import java.util.List;
@@ -25,7 +25,7 @@ public class UserReportService {
     private final MovieSummaryRepository movieSummaryRepository;
     private final UserScoreRepository userScoreRepository;
 
-    private final UserStatusRepository userStatusRepository;
+    private final UserMovieStatusRepository userMovieStatusRepository;
 
     private final MovieCommentRepository movieCommentRepository;
     private final MovieCommentSummaryRepository movieCommentSummaryRepository;
@@ -205,8 +205,20 @@ public class UserReportService {
     @Transactional
     public Boolean getMovieUserStatus(Integer userId, Integer movieId) {
         // 기존 데이터 조회
-        UserStatusKey userStatusKey = new UserStatusKey(userId, movieId);
-        return userStatusRepository.existsById(userStatusKey);
+        UserMovieStatusKey userMovieStatusKey = new UserMovieStatusKey(userId, movieId);
+
+        return userMovieStatusRepository.existsById(userMovieStatusKey);
+    }
+
+    /**
+     * 유저별 영화 상태(보고싶어요) 리스트 조회
+     */
+    @Transactional
+    public Page<Integer> getMovieUserStatusList(Integer userId, Pageable pageable) {
+        // 기존 데이터 조회
+        Page<Integer> movieIds = userMovieStatusRepository.findAllMovieIdsByUserId(userId, pageable);
+
+        return movieIds;
     }
 
     /**
@@ -215,20 +227,20 @@ public class UserReportService {
     @Transactional
     public boolean saveStatus(Integer userId, Integer movieId) {
         // 기존 데이터 조회
-        UserStatusKey userStatusKey = new UserStatusKey(userId, movieId);
+        UserMovieStatusKey userMovieStatusKey = new UserMovieStatusKey(userId, movieId);
 
         // 기존에 있는 상태인지 확인
-        Optional<UserStatus> checkUserStatus = userStatusRepository.findById(userStatusKey);
-        if (!checkUserStatus.isEmpty()) {
+        Optional<UserMovieStatus> checkUserMovieStatus = userMovieStatusRepository.findById(userMovieStatusKey);
+        if (!checkUserMovieStatus.isEmpty()) {
             throw new RestApiException(CustomErrorCode.ALERADY_REGISTED_USER_STATUS);
         }
 
-        UserStatus userStatus = new UserStatus();
-        userStatus.setUserId(userId);
-        userStatus.setMovieId(movieId);
+        UserMovieStatus userMovieStatus = new UserMovieStatus();
+        userMovieStatus.setUserId(userId);
+        userMovieStatus.setMovieId(movieId);
 
-        UserStatus userStatusResult = userStatusRepository.save(userStatus);
-        if (userStatusResult.getUserId() != null) {
+        UserMovieStatus userMovieStatusResult = userMovieStatusRepository.save(userMovieStatus);
+        if (userMovieStatusResult.getUserId() != null) {
             return true;
         }
         return false;
@@ -240,12 +252,12 @@ public class UserReportService {
     @Transactional
     public boolean deleteStatus(int userId, int movieId) {
         // 기존 데이터 조회
-        UserStatusKey userStatusKey = new UserStatusKey(userId, movieId);
-        Optional<UserStatus> checkUserStatusData = userStatusRepository.findById(userStatusKey);
+        UserMovieStatusKey userMovieStatusKey = new UserMovieStatusKey(userId, movieId);
+        Optional<UserMovieStatus> checkUserStatusData = userMovieStatusRepository.findById(userMovieStatusKey);
         if (checkUserStatusData.isEmpty()) {
             return false;
         } else {
-            userStatusRepository.deleteById(userStatusKey);
+            userMovieStatusRepository.deleteById(userMovieStatusKey);
             return true;
         }
     }
