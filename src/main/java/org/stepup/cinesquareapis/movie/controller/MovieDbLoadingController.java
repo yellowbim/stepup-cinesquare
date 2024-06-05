@@ -1,5 +1,6 @@
 package org.stepup.cinesquareapis.movie.controller;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,7 @@ public class MovieDbLoadingController {
      *
      * @return
      */
+    @Hidden
     @PostMapping("kofics")
     public void createKoficMovies(@RequestParam("current_page") int currentPage, @RequestParam("item_per_page") int itemPerPage
             , @RequestParam("start_production_year") int startProductionYear, @RequestParam("end_production_year") int endProductionYear
@@ -37,6 +39,7 @@ public class MovieDbLoadingController {
      *
      * @return
      */
+    @Hidden
     @PostMapping("kofic/{kofic_movie_code}")
     public void createKoficMovie(@PathVariable("kofic_movie_code") String koficMovieCode) {
         // 영화 기본 정보 저장
@@ -53,6 +56,7 @@ public class MovieDbLoadingController {
      *
      * @return
      */
+    @Hidden
     @PostMapping("cine/{movie_id}/thumbnail")
     public void updateMovieSubInfo(int movieId) {
         int[] arr = {movieId};
@@ -64,6 +68,7 @@ public class MovieDbLoadingController {
      *
      * @return
      */
+    @Hidden
     @PostMapping("cine/boxoffice")
     public void createBoxofficeManual(@RequestParam("monday_date") String mondaDayte) throws IOException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");

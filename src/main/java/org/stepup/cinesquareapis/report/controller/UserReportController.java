@@ -1,6 +1,7 @@
 package org.stepup.cinesquareapis.report.controller;
 
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,13 +17,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
-import org.stepup.cinesquareapis.common.model.DataResponse;
-import org.stepup.cinesquareapis.common.model.ListResponse;
-import org.stepup.cinesquareapis.common.model.PageResponse;
-import org.stepup.cinesquareapis.common.model.ResultResponse;
+import org.stepup.cinesquareapis.common.dto.DataResponse;
+import org.stepup.cinesquareapis.common.dto.ListResponse;
+import org.stepup.cinesquareapis.common.dto.PageResponse;
+import org.stepup.cinesquareapis.common.dto.ResultResponse;
 import org.stepup.cinesquareapis.report.entity.CommentSummary;
 import org.stepup.cinesquareapis.report.entity.UserLikeComment;
-import org.stepup.cinesquareapis.report.model.*;
+import org.stepup.cinesquareapis.report.dto.*;
 import org.stepup.cinesquareapis.report.service.UserReportService;
 
 import java.util.List;
@@ -61,6 +62,7 @@ public class UserReportController {
      *
      * table: tb_user_movie_score
      */
+    @Hidden
     @Operation(summary = "[사용 불가] 유저별 평가한 영화 별점 조회",
             description = "- 별점을 부과하지 않은 경우: null\n" +
                     "- 그 외: 0.5~5")

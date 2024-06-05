@@ -10,10 +10,10 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
-import org.stepup.cinesquareapis.common.model.DataResponse;
-import org.stepup.cinesquareapis.common.model.ResultResponse;
-import org.stepup.cinesquareapis.user.model.UpdateUserRequest;
-import org.stepup.cinesquareapis.user.model.UserResponse;
+import org.stepup.cinesquareapis.common.dto.DataResponse;
+import org.stepup.cinesquareapis.common.dto.ResultResponse;
+import org.stepup.cinesquareapis.user.dto.UpdateUserRequest;
+import org.stepup.cinesquareapis.user.dto.UserResponse;
 import org.stepup.cinesquareapis.user.service.UserService;
 
 @RequiredArgsConstructor

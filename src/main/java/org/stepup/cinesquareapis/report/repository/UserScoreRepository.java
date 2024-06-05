@@ -9,8 +9,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.stepup.cinesquareapis.report.entity.UserScore;
 import org.stepup.cinesquareapis.report.entity.UserScoreKey;
-import org.stepup.cinesquareapis.report.model.UserMovieRating;
-import org.stepup.cinesquareapis.report.model.UserScoredMovies;
+import org.stepup.cinesquareapis.report.dto.UserMovieRating;
+import org.stepup.cinesquareapis.report.dto.UserScoredMovies;
 
 import java.util.List;
 

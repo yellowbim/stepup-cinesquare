@@ -10,7 +10,7 @@ import org.stepup.cinesquareapis.common.exception.enums.CustomErrorCode;
 import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
 import org.stepup.cinesquareapis.movie.repository.MovieSimpleRepository;
 import org.stepup.cinesquareapis.report.entity.*;
-import org.stepup.cinesquareapis.report.model.*;
+import org.stepup.cinesquareapis.report.dto.*;
 import org.stepup.cinesquareapis.report.repository.*;
 
 import java.util.List;

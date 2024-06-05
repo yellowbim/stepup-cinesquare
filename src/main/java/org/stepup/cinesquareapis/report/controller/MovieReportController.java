@@ -16,13 +16,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
-import org.stepup.cinesquareapis.common.model.DataResponse;
-import org.stepup.cinesquareapis.common.model.PageResponse;
-import org.stepup.cinesquareapis.common.model.ResultResponse;
+import org.stepup.cinesquareapis.common.dto.DataResponse;
+import org.stepup.cinesquareapis.common.dto.PageResponse;
+import org.stepup.cinesquareapis.common.dto.ResultResponse;
 import org.stepup.cinesquareapis.report.entity.Comment;
 import org.stepup.cinesquareapis.report.entity.CommentReply;
 import org.stepup.cinesquareapis.report.entity.CommentSummary;
-import org.stepup.cinesquareapis.report.model.*;
+import org.stepup.cinesquareapis.report.dto.*;
 import org.stepup.cinesquareapis.report.service.MovieReportService;
 
 import java.util.List;

@@ -12,11 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
-import org.stepup.cinesquareapis.common.model.DataResponse;
-import org.stepup.cinesquareapis.common.model.ListResponse;
-import org.stepup.cinesquareapis.common.model.PageResponse;
+import org.stepup.cinesquareapis.common.dto.DataResponse;
+import org.stepup.cinesquareapis.common.dto.ListResponse;
+import org.stepup.cinesquareapis.common.dto.PageResponse;
 import org.stepup.cinesquareapis.movie.entity.Movie;
-import org.stepup.cinesquareapis.movie.model.*;
+import org.stepup.cinesquareapis.movie.dto.*;
 import org.stepup.cinesquareapis.movie.service.MovieService;
 
 import java.util.List;

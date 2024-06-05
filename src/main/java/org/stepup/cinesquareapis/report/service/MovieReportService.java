@@ -11,14 +11,11 @@ import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
 import org.stepup.cinesquareapis.report.entity.Comment;
 import org.stepup.cinesquareapis.report.entity.CommentReply;
 import org.stepup.cinesquareapis.report.entity.CommentSummary;
-import org.stepup.cinesquareapis.report.model.*;
+import org.stepup.cinesquareapis.report.dto.*;
 import org.stepup.cinesquareapis.report.repository.MovieCommentReplyRepository;
 import org.stepup.cinesquareapis.report.repository.MovieCommentRepository;
 import org.stepup.cinesquareapis.report.repository.MovieCommentSummaryRepository;
 import org.stepup.cinesquareapis.report.repository.UserLikeCommentRepository;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service

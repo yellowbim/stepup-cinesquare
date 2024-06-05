@@ -5,10 +5,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.stepup.cinesquareapis.auth.model.SignInRequest;
-import org.stepup.cinesquareapis.auth.model.SignInResponse;
-import org.stepup.cinesquareapis.auth.model.SignUpRequest;
-import org.stepup.cinesquareapis.auth.model.SignUpResponse;
+import org.stepup.cinesquareapis.auth.dto.SignInRequest;
+import org.stepup.cinesquareapis.auth.dto.SignInResponse;
+import org.stepup.cinesquareapis.auth.dto.SignUpRequest;
+import org.stepup.cinesquareapis.auth.dto.SignUpResponse;
 import org.stepup.cinesquareapis.auth.service.AuthService;
 
 @RequiredArgsConstructor
