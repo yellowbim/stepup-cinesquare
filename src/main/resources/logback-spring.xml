@@ -4,89 +4,95 @@
 <configuration scan="true" scanPeriod="10 seconds">
 
     <!-- 루트 로그 레벨 -->
-    <property name ="LOG_LEVEL" value = "DEBUG"/>
+    <property name="LOG_LEVEL" value="DEBUG"/>
 
     <!-- 로그 파일 경로 -->
-    <property name ="LOG_PATH" value = "logs"/>
+    <property name="LOG_PATH" value="logs"/>
 
     <!-- 로그 파일 명 -->
-    <property name ="LOG_FILE_NAME" value = "cinesquare-apis"/>
-    <property name ="ERR_LOG_FILE_NAME" value = "cinesquare-apis_error"/>
+    <property name="LOG_FILE_NAME" value="cinesquare-apis"/>
+    <property name="ERR_LOG_FILE_NAME" value="cinesquare-apis_error"/>
 
     <!-- 로그 파일 패턴 -->
-    <property name ="LOG_PATTERN" value = "%-5level %d{yyyy-MM-dd HH:mm:ss}[%thread] [%logger{0}:%line] - %msg%n"/>
+    <property name="LOG_PATTERN" value="%-5level %d{yyyy-MM-dd HH:mm:ss}[%thread] [%logger{0}:%line] - %msg%n"/>
 
     <!-- 콘솔 Appender 설정 -->
-    <appender name ="CONSOLE" class ="ch.qos.logback.core.ConsoleAppender">
-        <encoder class ="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
-    <!-- 파일 Appender 설정 -->
-    <appender name="FILE" class ="ch.qos.logback.core.rolling.RollingFileAppender">
-        <!-- 파일 경로 설정 -->
-        <file>${LOG_PATH}/${LOG_FILE_NAME}.log</file>
+    <!-- 파일 Appender 설정 (dev 프로파일에서만 활성화) -->
+    <springProfile name="dev">
+        <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <!-- 파일 경로 설정 -->
+            <file>${LOG_PATH}/${LOG_FILE_NAME}.log</file>
 
-        <!-- 로그 패턴 설정 -->
-        <encoder class = "ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>${LOG_PATTERN}</pattern>
-        </encoder>
+            <!-- 로그 패턴 설정 -->
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <pattern>${LOG_PATTERN}</pattern>
+            </encoder>
 
-        <!-- 롤링 정책 -->
-        <rollingPolicy class = "ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- gz, zip 등을 넣을 경우 자동 로그파일 압축 -->
-            <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/${LOG_FILE_NAME}_%i.log</fileNamePattern>
+            <!-- 롤링 정책 -->
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <!-- gz, zip 등을 넣을 경우 자동 로그파일 압축 -->
+                <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/${LOG_FILE_NAME}_%i.log</fileNamePattern>
 
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <!-- 파일당 최고 용량 -->
-                <maxFileSize>10MB</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <!-- 파일당 최고 용량 -->
+                    <maxFileSize>10MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
 
-            <!-- 로그파일 최대 보관주기 -->
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-    </appender>
+                <!-- 로그파일 최대 보관주기 -->
+                <maxHistory>30</maxHistory>
+            </rollingPolicy>
+        </appender>
 
-    <appender name = "ERROR" class ="ch.qos.logback.core.rolling.RollingFileAppender">
-        <filter class ="ch.qos.logback.classic.filter.LevelFilter">
-            <level>error</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter>
-        <file>${LOG_PATH}/${ERR_LOG_FILE_NAME}.log</file>
+        <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                <level>error</level>
+                <onMatch>ACCEPT</onMatch>
+                <onMismatch>DENY</onMismatch>
+            </filter>
+            <file>${LOG_PATH}/${ERR_LOG_FILE_NAME}.log</file>
 
-        <!-- 로그 패턴 설정 -->
-        <encoder class = "ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>${LOG_PATTERN}</pattern>
-        </encoder>
+            <!-- 로그 패턴 설정 -->
+            <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+                <pattern>${LOG_PATTERN}</pattern>
+            </encoder>
 
-        <!-- 롤링 정책 -->
-        <rollingPolicy class = "ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- gz, zip 등을 넣을 경우 자동 로그파일 압축 -->
-            <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/${ERR_LOG_FILE_NAME}_%i.log</fileNamePattern>
+            <!-- 롤링 정책 -->
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <!-- gz, zip 등을 넣을 경우 자동 로그파일 압축 -->
+                <fileNamePattern>${LOG_PATH}/%d{yyyy-MM-dd}/${ERR_LOG_FILE_NAME}_%i.log</fileNamePattern>
 
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <!-- 파일당 최고 용량 -->
-                <maxFileSize>10MB</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
+                <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                    <!-- 파일당 최고 용량 -->
+                    <maxFileSize>10MB</maxFileSize>
+                </timeBasedFileNamingAndTriggeringPolicy>
 
-            <!-- 로그파일 최대 보관주기 -->
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
-    </appender>
+                <!-- 로그파일 최대 보관주기 -->
+                <maxHistory>30</maxHistory>
+            </rollingPolicy>
+        </appender>
+    </springProfile>
 
     <!-- 라이브러리 로깅 -->
-    <root level = "INFO">
+    <root level="INFO">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
-        <appender-ref ref="ERROR"/>
+        <springProfile name="dev">
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR"/>
+        </springProfile>
     </root>
 
     <!-- p6spy 로깅 설정 -->
     <logger name="com.p6spy.engine.spy.P6SpyDriver" level="DEBUG" additivity="false">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
+        <springProfile name="dev">
+            <appender-ref ref="FILE"/>
+        </springProfile>
     </logger>
 
 </configuration>
