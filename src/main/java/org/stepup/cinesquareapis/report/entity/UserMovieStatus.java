@@ -2,9 +2,7 @@ package org.stepup.cinesquareapis.report.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -12,11 +10,11 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
-@IdClass(UserStatusKey.class)
+@IdClass(UserMovieStatusKey.class)
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name="tb_user_movie_status")
-public class UserStatus {
+public class UserMovieStatus {
     @Id
     @Column(nullable = false)
     private Integer userId;
@@ -29,5 +27,4 @@ public class UserStatus {
     @Column(name = "created", updatable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime created;
-
 }

@@ -17,13 +17,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
-import org.stepup.cinesquareapis.common.dto.DataResponse;
-import org.stepup.cinesquareapis.common.dto.ListResponse;
-import org.stepup.cinesquareapis.common.dto.PageResponse;
-import org.stepup.cinesquareapis.common.dto.ResultResponse;
+import org.stepup.cinesquareapis.common.dto.*;
+import org.stepup.cinesquareapis.report.dto.*;
 import org.stepup.cinesquareapis.report.entity.CommentSummary;
 import org.stepup.cinesquareapis.report.entity.UserLikeComment;
-import org.stepup.cinesquareapis.report.dto.*;
 import org.stepup.cinesquareapis.report.service.UserReportService;
 
 import java.util.List;
@@ -252,7 +249,7 @@ public class UserReportController {
     }
 
     /**
-     * [사용 불가]  영화 상태(보고싶어요) 조회
+     * [사용 불가] 영화 상태(보고싶어요) 조회
      *
      */
     @Operation(summary = "[사용 불가] 유저별 영화 상태(보고싶어요) 조회",
@@ -265,12 +262,34 @@ public class UserReportController {
     }
 
     /**
+     * 내 영화 상태(보고싶어요) 리스트 조회
+     *
+     * table: tb_user_movie_status
+     */
+    @Operation(summary = "영화 상태(보고싶어요) 리스트 조회")
+    @UserAuthorize
+    @GetMapping("me/movies/-/status")
+    public ResponseEntity<PageResponse2<Integer>> getStatusList(@AuthenticationPrincipal User principal
+            , @RequestParam(required = false, defaultValue = "1", value = "page") int page, @RequestParam(required = false, defaultValue = "10", value = "size") int size) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        // 페이지 셋팅
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<Integer> pagedData = userReportService.getMovieUserStatusList(userId, pageable);
+
+        // PageResponse 객체 생성
+        PageResponse2<Integer> response = new PageResponse2(pagedData, page, size);
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * 영화 상태(보고싶어요) 저장
      *
      * table: tb_user_movie_status
      */
     @Operation(summary = "영화 상태(보고싶어요) 저장",
-            description = "- 요청 필수값 : user_id, movie_id\n" +
+            description = "- 요청 필수값 : movie_id\n" +
                     "- 기본 Flow : 해당 테이블에 데이터가 있으면 '보고싶어요' 상태\n" +
                     "- 존재하지 않으면 아무 상태도 아님")
     @ApiResponses({
@@ -297,7 +316,7 @@ public class UserReportController {
      * table: tb_user_movie_status
      */
     @Operation(summary = "영화 상태(보고싶어요) 삭제",
-            description = "- 요청 필수값 : user_id, movie_id\n" +
+            description = "- 요청 필수값 : movie_id\n" +
                     "- 기본 Flow : 해당 테이블에 데이터가 있으면 '보고싶어요' 상태\n"+
                     "- 존재하지 않으면 아무 상태도 아님")
     @ApiResponses({
