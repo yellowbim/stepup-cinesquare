@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.stepup.cinesquareapis.common.annotation.UserAuthorize;
 import org.stepup.cinesquareapis.common.dto.DataResponse;
-import org.stepup.cinesquareapis.common.dto.ResultResponse;
 import org.stepup.cinesquareapis.user.dto.UpdateUserRequest;
 import org.stepup.cinesquareapis.user.dto.UserResponse;
 import org.stepup.cinesquareapis.user.service.UserService;
@@ -23,24 +22,6 @@ import org.stepup.cinesquareapis.user.service.UserService;
 public class UserController {
 
     private final UserService userService;
-
-    /**
-     * 계정 존재 여부 확인
-     *
-     * @return ResponseEntity.ok(response)
-     */
-    @Operation(
-        summary = "계정 중복 체크",
-        description = "존재하는 계정이면 true, 존재하지 않는 계정이면 false 반환"
-    )
-    @GetMapping("check-account/{account}")
-    public ResponseEntity<ResultResponse<Boolean>> checkAccount(@PathVariable("account") String account) {
-        boolean result = userService.checkAccount(account);
-        ResultResponse<Boolean> response = new ResultResponse<>();
-        response.setResult(result);
-
-        return ResponseEntity.ok(response);
-    }
 
     /**
      * 내 정보 조회

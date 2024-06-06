@@ -27,7 +27,6 @@ public class TokenProvider {
     private final String accessTokenExpirationTime;
     private final String refreshTokenExpirationTime;
     private final String issuer;
-    //    private final long reissueLimit;
 
     private final UserRefreshTokenRepository userRefreshTokenRepository;
 
@@ -43,7 +42,6 @@ public class TokenProvider {
         this.refreshTokenExpirationTime = refreshTokenExpirationTime;
         this.issuer = issuer;
         this.userRefreshTokenRepository = userRefreshTokenRepository;
-//        reissueLimit = refreshExpirationHours / expirationHours;	// 재발급 한도
     }
 
     // access token 생성
@@ -85,11 +83,9 @@ public class TokenProvider {
 
         Integer userId = Integer.parseInt(decodeJwtPayloadSubject(oldAccessToken).split(":")[0]);
 
-        userRefreshTokenRepository.findByUserIdAndReissueCountLessThan(userId, 10)
+        userRefreshTokenRepository.findByUserId(userId)
                 .ifPresentOrElse(
-//                        UserRefreshToken::increaseReissueCount,
                         userRefreshToken -> {
-                            userRefreshToken.increaseReissueCount();
                             userRefreshTokenRepository.save(userRefreshToken);
                         },
                         () -> { throw new ExpiredJwtException(null, null, "Refresh token expired."); }
@@ -104,7 +100,7 @@ public class TokenProvider {
 
         Integer userId = Integer.parseInt(decodeJwtPayloadSubject(oldAccessToken).split(":")[0]);
 
-        userRefreshTokenRepository.findByUserIdAndReissueCountLessThan(userId, 10)
+        userRefreshTokenRepository.findByUserId(userId)
                 .filter(userRefreshToken -> userRefreshToken.validateRefreshToken(refreshToken))
                 .orElseThrow(() -> new ExpiredJwtException(null, null, "Refresh token expired."));
     }

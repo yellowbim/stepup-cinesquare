@@ -24,9 +24,6 @@ public class UserRefreshToken {
 
     private String refreshToken;
 
-    // 재발급 횟수를 제한할 것이기 때문에 리프레시 토큰마다 재발급 횟수를 저장할 프로퍼티도 추가
-    private int reissueCount = 0;
-
     public UserRefreshToken(User user, String refreshToken) {
         this.user = user;
         this.refreshToken = refreshToken;
@@ -38,9 +35,5 @@ public class UserRefreshToken {
 
     public boolean validateRefreshToken(String refreshToken) {
         return this.refreshToken.equals(refreshToken);
-    }
-
-    public void increaseReissueCount() {
-        reissueCount++;
     }
 }

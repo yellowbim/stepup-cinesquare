@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.stepup.cinesquareapis.user.enums.RoleType;
 
 public record SignInResponse(
-        @Schema(description = "회원 이름", example = "콜라곰")
+        @Schema(description = "회원 이름", example = "조수민")
         String name,
 
         @Schema(description = "회원 유형", example = "USER")

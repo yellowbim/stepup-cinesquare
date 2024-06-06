@@ -37,18 +37,6 @@ public class UserService {
     }
 
     /**
-     * account 존재 여부 확인
-     *
-     * @param account
-     * @return result
-     */
-    public boolean checkAccount(String account) {
-        Boolean result = userRepository.existsByAccount(account);
-
-        return result;
-    }
-
-    /**
      *  User 조회
      *
      * @param userId
