@@ -39,7 +39,7 @@ public class MovieReportService {
                 .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
 
         // 유효성 체크: 영화 확인
-        if (movieComment.getMovieId() != movieId) {
+        if (!movieComment.getMovieId().equals(movieId)) {
             throw new RestApiException(CommonErrorCode.BAD_REQUEST);
         }
 

@@ -36,18 +36,16 @@ public class MovieReportController {
     private final MovieReportService movieReportService;
 
     /**
-     * 유저가 영화 1건에 남긴 코멘트 조회
+     * 코멘트 조회
      *
      */
-    @Operation(summary = "사용자 본인이 남긴 코멘트가 아닌 경우 상세 코멘트를 조회하는 API ")
+    @Operation(summary = "코멘트 조회")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "정상적으로 저장 되었을 경우 HTTP 상태코드", useReturnTypeSchema = true),
             @ApiResponse(responseCode = "404", description = "조회된 코멘트가 없는경우", content = @Content()),
             @ApiResponse(responseCode = "500", description = "조회에 실패하는경우 HTTP 상태코드", content = @Content())
     })
     @GetMapping("{movie_id}/comments/{comment_id}")
     public ResponseEntity<ResultResponse<MovieCommentResponse>> getMovieComment(@PathVariable("movie_id") Integer movieId, @PathVariable("comment_id") Integer commentId) {
-
         MovieCommentResponse data = movieReportService.getMovieComment(movieId, commentId);
         ResultResponse<MovieCommentResponse> response = new ResultResponse<>();
 
@@ -60,8 +58,8 @@ public class MovieReportController {
     }
 
     /**
-     * 영화 코멘트 답글 작성
-     * <p>
+     * 영화 코멘트 답글 등록
+     *
      * table : tb_movie_comment_reply
      *
      * @return CommentReply
@@ -87,7 +85,7 @@ public class MovieReportController {
 
     /**
      * 영화 코멘트 답글 수정
-     * <p>
+     *
      * table : tb_movie_comment_reply
      *
      * - reply_id가 이상한 값으로 들어오는 경우, 자동으로 생성을 하게됨 => false
@@ -113,7 +111,7 @@ public class MovieReportController {
 
     /**
      * 영화 코멘트 답글 삭제
-     * <p>
+     *
      * table : tb_movie_comment_reply
      *
      * - reply_id가 이상한 값으로 들어오는 경우, 자동으로 생성을 하게됨 => false
