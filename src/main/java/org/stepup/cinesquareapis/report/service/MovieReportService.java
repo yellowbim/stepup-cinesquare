@@ -51,16 +51,16 @@ public class MovieReportService {
      */
     @Transactional
     public CommentReply saveCommentReply(MovieCommentReplySaveRequest request, Integer commentId, Integer movieId, Integer userId) {
-        // 실제 존재하는 코멘트인지 조회
+        // 유효성 체크1: 존재하는 코멘트인지 확인
         MovieComment movieComment = movieCommentRepository.findById(commentId)
                 .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
 
-        // 유효성 체크: 영화 확인
-        if (movieComment.getMovieId() != movieId) {
+        // 유효성 체크2: 영화 확인
+        if (!movieComment.getMovieId().equals(movieId)) {
             throw new RestApiException(CommonErrorCode.BAD_REQUEST);
         }
 
-        // 이미 등록된 내용인지 조회
+        // 유효성 체크3: 답글을 이미 등록했는지 확인
         int count = movieCommentReplyRepository.countByMovieIdAndUserIdAndCommentId(movieId, userId, commentId);
         if (count > 0) {
             throw new RestApiException(CustomErrorCode.ALREADY_REGISTED_COMMENT_REPLY);
