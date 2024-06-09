@@ -5,8 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.stepup.cinesquareapis.auth.dto.SignUpRequest;
 import org.stepup.cinesquareapis.user.enums.RoleType;
 
 import java.time.LocalDateTime;
@@ -52,25 +50,15 @@ public class User {
     @LastModifiedDate
     private LocalDateTime updated;
 
-    public static User from(SignUpRequest request) {
-        return User.builder()
-                .account(request.account())
-                .password(request.password())
-                .name(request.name())
-                .nickname(request.nickname())
-                .type(RoleType.USER)
-                .build();
-    }
-
-    public static User from(SignUpRequest request, PasswordEncoder encoder) {
-        return User.builder()
-                .account(request.account())
-                .password(encoder.encode(request.password())) // 비밀번호 암호화
-                .name(request.name())
-                .nickname(request.nickname())
-                .type(RoleType.USER)
-                .created(LocalDateTime.now())
-                .updated(LocalDateTime.now())
-                .build();
-    }
+//    public static User build(SignUpRequest request, PasswordEncoder encoder) {
+//        return User.builder()
+//                .account(request.account())
+//                .password(encoder.encode(request.password())) // 비밀번호 암호화
+//                .name(request.name())
+//                .nickname(request.nickname())
+//                .type(RoleType.USER)
+//                .created(LocalDateTime.now())
+//                .updated(LocalDateTime.now())
+//                .build();
+//    }
 }
