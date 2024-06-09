@@ -16,8 +16,11 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.stepup.cinesquareapis.auth.entity.UserRefreshToken;
+import org.stepup.cinesquareapis.auth.repository.UserRefreshTokenRepository;
 import org.stepup.cinesquareapis.common.exception.enums.CustomErrorCode;
 import org.stepup.cinesquareapis.common.exception.exception.RestApiException;
+import org.stepup.cinesquareapis.user.repository.UserRepository;
 import org.stepup.cinesquareapis.util.CookieUtil;
 
 import java.io.IOException;
@@ -34,6 +37,8 @@ import java.util.Optional;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final TokenProvider tokenProvider;
+    private final UserRepository userRepository;
+    private final UserRefreshTokenRepository userRefreshTokenRepository;
 
     // 인증 정보를 설정
     @Override
@@ -135,33 +140,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String newAccessToken = tokenProvider.recreateAccessToken(oldAccessToken);
             User user = getUserFromAccessToken(newAccessToken);
             authenticateUser(request, newAccessToken, user);
-
             response.setHeader("New-Access-Token", newAccessToken);
 
             // 새로운 Refresh Token 발급 및 쿠키 설정
             String newRefreshToken = tokenProvider.createRefreshToken();
-            CookieUtil.addCookie(response, "Refresh-Token", newRefreshToken, 7 * 24 * 60 * 60); // 쿠키의 유효기간을 7일로 설정
+            CookieUtil.addCookie(response, "Refresh-Token", newRefreshToken, 7 * 24 * 60 * 60);
+
+            // 새로운 Refresh Token을 DB에 저장
+            Integer userId = Integer.parseInt(user.getUsername());
+            org.stepup.cinesquareapis.user.entity.User cineUser = userRepository.findById(userId)
+                    .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_USER));
+
+            UserRefreshToken newUserRefreshToken = new UserRefreshToken(cineUser, newRefreshToken, 7 * 24 * 60 * 60);
+            userRefreshTokenRepository.save(newUserRefreshToken);
         } catch (RestApiException ex) {
             request.setAttribute("exception", ex);
             response.sendError(ex.getErrorCode().getHttpStatus().value(), ex.getErrorCode().getMessage());
         } catch (Exception ex) {
             request.setAttribute("exception", ex);
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token has expired and reissue failed");
-        }
-    }
-
-    public String reissueAccessToken(String refreshToken, HttpServletRequest request) throws Exception {
-        try {
-            String oldAccessToken = extractAccessToken(request);
-            tokenProvider.validateRefreshToken(refreshToken, oldAccessToken);
-
-            String newAccessToken = tokenProvider.recreateAccessToken(oldAccessToken);
-            User user = getUserFromAccessToken(newAccessToken);
-            authenticateUser(request, newAccessToken, user);
-
-            return newAccessToken;
-        } catch (Exception e) {
-            throw new Exception("Failed to reissue access token", e);
         }
     }
 }
