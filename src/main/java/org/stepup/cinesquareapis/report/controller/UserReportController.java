@@ -34,7 +34,7 @@ public class UserReportController {
 
     /**
      * 내가 평가한 영화 별점 조회
-     *
+     * 
      * table: tb_user_movie_score
      */
     @Operation(summary = "내가 평가한 영화 별점 조회",
@@ -54,7 +54,7 @@ public class UserReportController {
 
     /**
      * [사용 불가] 유저별 평가한 영화 별점 조회
-     *
+     * 
      * table: tb_user_movie_score
      */
     @Hidden
@@ -68,7 +68,7 @@ public class UserReportController {
 
     /**
      * 영화 별점 부과
-     *
+     * 
      * table: tb_user_movie_score, tb_movie_summary, tb_movie_simple
      */
     @Operation(summary = "영화 별점 부과",
@@ -77,9 +77,9 @@ public class UserReportController {
                     "- 이미 값이 있는 경우: 수정 API 요청\n" +
                     "- 부과한 별점을 취소하는 경우: 삭제 API 요청")
     @ApiResponses({
-        @ApiResponse(responseCode = "40004", description = "이미 존재하는 경우 에러코드 (수정 API로 요청)", content = @Content()),
-        @ApiResponse(responseCode = "40006", description = "score 범위가 허용하지 않는 값인 경우", content = @Content()),
-        @ApiResponse(responseCode = "40007", description = "영화 테이블 score 업데이트 실패 (기존 데이터가 없는 경우)", content = @Content())
+            @ApiResponse(responseCode = "40004", description = "이미 존재하는 경우 에러코드 (수정 API로 요청)", content = @Content()),
+            @ApiResponse(responseCode = "40006", description = "score 범위가 허용하지 않는 값인 경우", content = @Content()),
+            @ApiResponse(responseCode = "40007", description = "영화 테이블 score 업데이트 실패 (기존 데이터가 없는 경우)", content = @Content())
     })
     @UserAuthorize
     @PostMapping("-/movies/{movie_id}/score")
@@ -96,7 +96,7 @@ public class UserReportController {
 
     /**
      * 영화 별점 수정
-     *
+     * 
      * table: tb_user_movie_score, tb_movie_summary, tb_movie_simple
      */
     @Operation(summary = "영화 별점 수정",
@@ -119,7 +119,7 @@ public class UserReportController {
 
     /**
      * 영화 별점 삭제
-     *
+     * 
      * table: tb_user_movie_score, tb_movie_summary, tb_movie_simple
      */
     @Operation(summary = "영화 별점 삭제")
@@ -134,7 +134,7 @@ public class UserReportController {
 
     /**
      * 내가 평가한 영화 개수 조회
-     *
+     * 
      * table(view): tv_user_movie_score
      */
     @Operation(summary = "내가 평가한 영화 개수 조회",
@@ -153,7 +153,7 @@ public class UserReportController {
 
     /**
      * [사용 불가] 유저별 평가한 영화 개수 조회
-     *
+     * 
      * table(view): tv_user_movie_score
      */
     @Operation(summary = "[사용 불가] 유저별 평가한 영화 개수 조회",
@@ -165,23 +165,23 @@ public class UserReportController {
 
     /**
      * 내가 평가한 영화 목록 조회
-     *
+     * 
      * table(view): tv_user_movie_score
      */
     @Operation(summary = "내가 평가한 영화 목록 조회 (페이징)")
     @UserAuthorize
     @GetMapping("me/movies/scored")
-    public ResponseEntity<PageResponse<List<UserScoredMovies>>> getScoredMovies(@AuthenticationPrincipal User principal,
-                                                                                @RequestParam(required = false, defaultValue = "1", value = "page") int page, @RequestParam(required = false, defaultValue = "10", value = "size") int size) {
+    public ResponseEntity<PageResponse<List<UserScoredMovies>>> getScoredMovies(@AuthenticationPrincipal User principal
+            , @RequestParam(required = false, defaultValue = "1", value = "page") int page, @RequestParam(required = false, defaultValue = "10", value = "size") int size) {
         int userId = Integer.parseInt(principal.getUsername());
 
         //페이지 셋팅
-        Pageable pageable = PageRequest.of(page-1, size);
+        Pageable pageable = PageRequest.of(page - 1, size);
 
         Page<UserScoredMovies> pagedData = userReportService.getScoredMovies(userId, pageable);
         PageResponse<List<UserScoredMovies>> response = new PageResponse<>(page, size);
         response.setList(pagedData.getContent()); // data
-        response.setLastPage(pagedData.getTotalPages() == 0 ? 1: pagedData.getTotalPages()); // 마지막 페이지
+        response.setLastPage(pagedData.getTotalPages() == 0 ? 1 : pagedData.getTotalPages()); // 마지막 페이지
         response.setTotalCount(pagedData.getTotalElements()); // 총 건수
 
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -189,7 +189,7 @@ public class UserReportController {
 
     /**
      * [사용 불가] 유저별 평가한 영화 목록 조회
-     *
+     * 
      * table(view): tv_user_movie_score
      */
     @Operation(summary = "[사용 불가] 유저별 평가한 영화 목록 조회 (페이징)")
@@ -200,7 +200,6 @@ public class UserReportController {
 
     /**
      * 내가 평가한 영화 별점 분포 조회
-     *
      */
     @Operation(summary = "내가 평가한 영화 별점 분포 조회",
             description = "- 마이페이지\n" +
@@ -219,7 +218,6 @@ public class UserReportController {
 
     /**
      * [사용 불가] 유저별 평가한 영화 별점 분포 조회
-     *
      */
     @Operation(summary = "[사용 불가] 유저별 평가한 영화 별점 분포 조회")
     @GetMapping("{user_id}/movies/scored-distribution")
@@ -229,7 +227,6 @@ public class UserReportController {
 
     /**
      * 내 영화 상태(보고싶어요) 조회
-     *
      */
     @Operation(summary = "내 영화 상태(보고싶어요) 조회",
             description = "- 상태가 변경되어있는 경우(보고싶어요 상태) return : true\n" +
@@ -248,7 +245,6 @@ public class UserReportController {
 
     /**
      * [사용 불가] 유저별 영화 상태(보고싶어요) 조회
-     *
      */
     @Operation(summary = "[사용 불가] 유저별 영화 상태(보고싶어요) 조회",
             description = "- 상태가 변경되어있는 경우(보고싶어요 상태) return : true\n" +
@@ -261,7 +257,7 @@ public class UserReportController {
 
     /**
      * 내 영화 상태(보고싶어요) 리스트 조회
-     *
+     * 
      * table: tb_user_movie_status
      */
     @Operation(summary = "영화 상태(보고싶어요) 리스트 조회")
@@ -280,10 +276,10 @@ public class UserReportController {
 
         return ResponseEntity.ok(response);
     }
-    
+
     /**
      * [사용 불가] 유저별 영화 상태(보고싶어요) 리스트 조회
-     *
+     * 
      * table: tb_user_movie_status
      */
     @Operation(summary = "[사용 불가] 유저별 영화 상태(보고싶어요) 리스트 조회")
@@ -296,7 +292,7 @@ public class UserReportController {
 
     /**
      * 영화 상태(보고싶어요) 저장
-     *
+     * 
      * table: tb_user_movie_status
      */
     @Operation(summary = "영화 상태(보고싶어요) 저장",
@@ -324,12 +320,12 @@ public class UserReportController {
 
     /**
      * 영화 상태(보고싶어요) 삭제
-     *
+     * 
      * table: tb_user_movie_status
      */
     @Operation(summary = "영화 상태(보고싶어요) 삭제",
             description = "- 요청 필수값 : movie_id\n" +
-                    "- 기본 Flow : 해당 테이블에 데이터가 있으면 '보고싶어요' 상태\n"+
+                    "- 기본 Flow : 해당 테이블에 데이터가 있으면 '보고싶어요' 상태\n" +
                     "- 존재하지 않으면 아무 상태도 아님")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "정상적으로 저장 되었을 경우 HTTP 상태코드", content = @Content()),
@@ -349,10 +345,43 @@ public class UserReportController {
     }
 
 
+    /**
+     * 내가 남긴 영화 코멘트 목록 조회 (페이징)
+     * 
+     * table : tb_movie_comment
+     *
+     * @return Comment
+     */
+    @Operation(summary = "내가 남긴 영화 코멘트 목록 조회 (페이징)")
+    @UserAuthorize
+    @PostMapping("me/movies/-/comments")
+    public ResponseEntity<PageResponse2<MovieCommentResponse>> getCommentList(@AuthenticationPrincipal User principal
+            , @RequestParam(required = false, defaultValue = "1", value = "page") int page, @RequestParam(required = false, defaultValue = "10", value = "size") int size) {
+        Integer userId = Integer.parseInt(principal.getUsername());
+
+        // 페이징 셋팅
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<MovieCommentResponse> response = userReportService.getCommentList(userId, pageable);
+
+        return ResponseEntity.ok(new PageResponse2(response, page, size));
+    }
+
+    /**
+     * [사용 불가] 유저별 영화 코멘트 목록 조회
+     * 
+     * table : tb_movie_comment
+     *
+     * @return Comment
+     */
+    @Operation(summary = "[사용 불가] 유저별 영화 코멘트 목록 조회")
+    @PostMapping("{user_id}/movies/-/comments")
+    public ResponseEntity<DataResponse<MovieCommentResponse>> getCommentList(@PathVariable("user_id") Integer userId) {
+        throw new UnsupportedOperationException("This method is not implemented yet.");
+    }
 
     /**
      * 영화 코멘트 저장
-     *
+     * 
      * table : tb_movie_comment
      *
      * @return Comment
@@ -370,10 +399,10 @@ public class UserReportController {
 
         return ResponseEntity.ok(new DataResponse(response));
     }
-    
+
     /**
      * 영화 코멘트 수정
-     *
+     * 
      * table : tb_movie_comment
      *
      * @return true, false
@@ -397,7 +426,7 @@ public class UserReportController {
 
     /**
      * 영화 코멘트 삭제
-     *
+     * 
      * table : tb_movie_comment
      *
      * @return true, false
@@ -423,7 +452,6 @@ public class UserReportController {
 
     /**
      * 유저의 영화별 코멘트 조회
-     *
      */
     @Operation(summary = "유저의 영화별 코멘트 조회")
     @UserAuthorize
@@ -442,7 +470,6 @@ public class UserReportController {
 
     /**
      * 유저의 영화별 좋아요한 코멘트 id 목록 조회
-     *
      */
     @Operation(summary = "유저의 영화별 좋아요한 코멘트 id 목록 조회")
     @UserAuthorize
@@ -457,7 +484,6 @@ public class UserReportController {
 
     /**
      * 내가 좋아요한 코멘트 목록 조회 (전체 영화)
-     *
      */
     @Operation(summary = "내가 좋아요한 코멘트 목록 조회 (전체 영화)")
     @UserAuthorize
@@ -475,7 +501,6 @@ public class UserReportController {
 
     /**
      * [사용 불가] 유저별 좋아요한 코멘트 목록 조회 (전체 영화)
-     *
      */
     @Operation(summary = "[사용 불가] 유저별 좋아요한 코멘트 목록 조회 (전체 영화)")
     @GetMapping("{user_id}/movies/-/like-comments")
@@ -485,7 +510,6 @@ public class UserReportController {
 
     /**
      * 내가 좋아요 한 코멘트 개수 조회
-     *
      */
     @Operation(summary = "내가 좋아요 한 코멘트 개수 조회")
     @UserAuthorize
@@ -502,7 +526,6 @@ public class UserReportController {
 
     /**
      * [사용 불가] 유저별 좋아요 한 코멘트 개수 조회
-     *
      */
     @Operation(summary = "[사용 불가] 유저별 좋아요 한 코멘트 개수 조회")
     @GetMapping("{user_id}/movies/-/like-comments/count")

@@ -267,12 +267,21 @@ public class UserReportService {
     }
 
 
+    /*
+     * 영화 코멘트 목록 조회 (페이징)
+     */
+    public Page<MovieCommentResponse> getCommentList(Integer userId, Pageable pageable) {
+        Page<MovieComment> pagedMovieComments = movieCommentRepository.findAllByUserId(userId, pageable);
+
+        return pagedMovieComments.map(MovieCommentResponse::new);
+    }
+
     /**
      * 영화 코멘트 작성
      */
     public MovieCommentResponse saveComment(MovieCommentSaveRequest request, Integer movieId, Integer userId) {
         // 유효성 체크: 값 존재 여부 판단
-        boolean result = movieCommentRepository.existsByMovieIdAndUserId(movieId, userId);
+        boolean result = movieCommentRepository.existsByUserIdAndMovieId(userId, movieId);
         if (result) {
             throw new RestApiException(CustomErrorCode.ALREADY_REGISTED_COMMENT);
         }
