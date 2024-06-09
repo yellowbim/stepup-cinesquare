@@ -267,7 +267,6 @@ public class UserReportService {
     }
 
 
-
     /**
      * 영화 코멘트 작성
      */
@@ -294,10 +293,10 @@ public class UserReportService {
                 .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
 
         // 유효성 체크: 코멘트 작성자, 영화 확인
-        if (movieComment.getUserId() != userId) {
+        if (movieComment.getUserId().equals(userId)) {
             throw new RestApiException(CommonErrorCode.UNAUTHORIZED_ACTION);
         }
-        if (movieComment.getMovieId() != movieId) {
+        if (movieComment.getMovieId().equals(movieId)) {
             throw new RestApiException(CommonErrorCode.BAD_REQUEST);
         }
 
@@ -334,7 +333,6 @@ public class UserReportService {
 
     /**
      * 유저의 영화별 코멘트 조회
-     *
      */
     public MovieCommentResponse getMovieComment(Integer userId, Integer movieId) {
         MovieCommentResponse response = new MovieCommentResponse();
@@ -431,7 +429,7 @@ public class UserReportService {
     public int getScoredCount(int userId) {
         return userScoreRepository.countByUserId(userId);
     }
-    
+
     /**
      * 유저별 영화 별점 분포 조회 (mypage)
      */
