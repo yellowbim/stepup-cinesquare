@@ -271,7 +271,7 @@ public class UserReportService {
      * 영화 코멘트 작성
      */
     public MovieCommentResponse saveComment(MovieCommentSaveRequest request, Integer movieId, Integer userId) {
-        // 값 존재 여부 판단
+        // 유효성 체크: 값 존재 여부 판단
         boolean result = movieCommentRepository.existsByMovieIdAndUserId(movieId, userId);
         if (result) {
             throw new RestApiException(CustomErrorCode.ALREADY_REGISTED_COMMENT);
@@ -292,10 +292,11 @@ public class UserReportService {
         MovieComment movieComment = movieCommentRepository.findByCommentIdAndMovieId(commentId, movieId)
                 .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
 
-        // 유효성 체크: 코멘트 작성자, 영화 확인
+        // 유효성 체크1: 코멘트 작성자 확인
         if (!movieComment.getUserId().equals(userId)) {
             throw new RestApiException(CommonErrorCode.UNAUTHORIZED_ACTION);
         }
+        // 유효성 체크2: 영화 확인
         if (!movieComment.getMovieId().equals(movieId)) {
             throw new RestApiException(CommonErrorCode.BAD_REQUEST);
         }
@@ -314,13 +315,15 @@ public class UserReportService {
         MovieComment movieComment = movieCommentRepository.findById(commentId)
                 .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
 
-        // 유효성 체크: 코멘트 작성자, 영화 확인
-        if (movieComment.getUserId() != userId) {
+        // 유효성 체크1: 코멘트 작성자 확인
+        if (!movieComment.getUserId().equals(userId)) {
             throw new RestApiException(CommonErrorCode.UNAUTHORIZED_ACTION);
         }
-        if (movieComment.getMovieId() != movieId) {
+        // 유효성 체크2: 영화 확인
+        if (!movieComment.getMovieId().equals(movieId)) {
             throw new RestApiException(CommonErrorCode.BAD_REQUEST);
         }
+
         // 코멘트 답변 삭제
         movieCommentReplyRepository.deleteByCommentId(commentId);
 
