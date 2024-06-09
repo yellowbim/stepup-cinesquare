@@ -12,8 +12,9 @@ public enum CustomErrorCode implements ErrorCode {
     NOT_FOUND_IMAGE(HttpStatus.NOT_FOUND,10100, null),
 
     // User: 20000~
-    NOT_FOUND_USER(HttpStatus.NOT_FOUND,20100, null),
-    INVALID_PASSWORD(HttpStatus.NOT_FOUND,20101, null),
+    NOT_FOUND_USER(HttpStatus.NOT_FOUND, 20100, null),
+    INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, 20101, null),
+    ALREADY_REGISTED_ACCOUNT(HttpStatus.CONFLICT, 20102, null),
 
     // Movie: 30000~,
     NOT_FOUND_MOVIE(HttpStatus.NOT_FOUND,30100, null),

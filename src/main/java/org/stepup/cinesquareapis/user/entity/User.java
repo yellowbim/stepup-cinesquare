@@ -6,9 +6,8 @@ import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.stepup.cinesquareapis.user.enums.RoleType;
 import org.stepup.cinesquareapis.auth.dto.SignUpRequest;
-import org.stepup.cinesquareapis.user.dto.UserUpdateRequest;
+import org.stepup.cinesquareapis.user.enums.RoleType;
 
 import java.time.LocalDateTime;
 
@@ -73,13 +72,5 @@ public class User {
                 .created(LocalDateTime.now())
                 .updated(LocalDateTime.now())
                 .build();
-    }
-
-
-    public void update(UserUpdateRequest newUser, PasswordEncoder encoder) {
-        this.password = newUser.newPassword() == null || newUser.newPassword().isBlank()
-                ? this.password : encoder.encode(newUser.newPassword());
-        this.name = newUser.name();
-        this.nickname = newUser.nickname();
     }
 }
