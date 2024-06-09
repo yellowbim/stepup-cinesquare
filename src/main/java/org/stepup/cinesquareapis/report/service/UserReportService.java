@@ -293,10 +293,10 @@ public class UserReportService {
                 .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
 
         // 유효성 체크: 코멘트 작성자, 영화 확인
-        if (movieComment.getUserId().equals(userId)) {
+        if (!movieComment.getUserId().equals(userId)) {
             throw new RestApiException(CommonErrorCode.UNAUTHORIZED_ACTION);
         }
-        if (movieComment.getMovieId().equals(movieId)) {
+        if (!movieComment.getMovieId().equals(movieId)) {
             throw new RestApiException(CommonErrorCode.BAD_REQUEST);
         }
 
