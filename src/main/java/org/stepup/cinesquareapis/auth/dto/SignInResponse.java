@@ -1,17 +1,28 @@
 package org.stepup.cinesquareapis.auth.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
+import lombok.Setter;
+import org.stepup.cinesquareapis.user.entity.User;
 import org.stepup.cinesquareapis.user.enums.RoleType;
 
-public record SignInResponse(
-        @Schema(description = "회원 이름", example = "조수민")
-        String name,
+@Getter
+@Setter
+public class SignInResponse {
+    @Schema(description = "회원 고유 키", example = "1")
+    private Integer userId;
 
-        @Schema(description = "회원 유형", example = "USER")
-        RoleType type,
+    @Schema(description = "회원 유형", example = "USER")
+    private RoleType type;
 
-        String accessToken,
+    private String accessToken;
 
-        String refreshToken
-) {
+    private String refreshToken;
+
+    public SignInResponse(User user, String accessToken, String refreshToken) {
+        this.userId = user.getUserId();
+        this.type = user.getType();
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
+    }
 }

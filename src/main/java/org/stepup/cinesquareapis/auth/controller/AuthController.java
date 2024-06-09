@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -59,26 +58,13 @@ public class AuthController {
     @Operation(summary = "로그인 Access Token, Refresh Token 생성")
     @ApiResponses({
             @ApiResponse(responseCode = "200", useReturnTypeSchema = true),
-            @ApiResponse(responseCode = "20101", description = "account로 조회한 user가 존재하지 않는 경우의 에러코드", content = @Content()),
-            @ApiResponse(responseCode = "20103", description = "잘못된 비밀번호로 요청하는 경우의 에러코드", content = @Content())
+            @ApiResponse(responseCode = "20100", description = "account로 조회한 user가 존재하지 않는 경우의 에러코드", content = @Content()),
+            @ApiResponse(responseCode = "20101", description = "잘못된 비밀번호로 요청하는 경우의 에러코드", content = @Content())
     })
     @PostMapping("sign-in")
     public ResponseEntity<DataResponse<SignInResponse>> signIn(@RequestBody SignInRequest request) {
         SignInResponse response = authService.signIn(request);
 
         return ResponseEntity.ok(new DataResponse(response));
-    }
-
-    /**
-     * Access Token 재발급
-     */
-    @PostMapping("/reissue-access-token")
-    @Operation(summary = "Access Token 재발급")
-    public String reissueAccessToken(@RequestHeader("Refresh-Token") String refreshToken, HttpServletRequest request) throws Exception {
-        // authService를 통해 tokenProvider에 접근하여 access token 재발급
-        String newAccessToken = authService.reissueAccessToken(refreshToken, request);
-
-        // 재발급된 access token 반환
-        return newAccessToken;
     }
 }

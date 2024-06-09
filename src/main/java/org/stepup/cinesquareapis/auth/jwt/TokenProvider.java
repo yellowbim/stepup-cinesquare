@@ -19,9 +19,8 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
 
-// JWT 생성 및 복호화
 @PropertySource("classpath:jwt.yml")
-@Service
+@Service // JWT 생성 및 복호화
 public class TokenProvider {
     private final String secretKey;
     private final String accessTokenExpirationTime;
@@ -42,6 +41,11 @@ public class TokenProvider {
         this.refreshTokenExpirationTime = refreshTokenExpirationTime;
         this.issuer = issuer;
         this.userRefreshTokenRepository = userRefreshTokenRepository;
+    }
+
+    // refresh token 만료 기간 조회
+    public int getRefreshTokenExpirationTime() {
+        return Integer.parseInt(accessTokenExpirationTime);
     }
 
     // access token 생성
@@ -83,7 +87,7 @@ public class TokenProvider {
 
         Integer userId = Integer.parseInt(decodeJwtPayloadSubject(oldAccessToken).split(":")[0]);
 
-        userRefreshTokenRepository.findByUserId(userId)
+        userRefreshTokenRepository.findById(userId)
                 .ifPresentOrElse(
                         userRefreshToken -> {
                             userRefreshTokenRepository.save(userRefreshToken);
@@ -100,7 +104,7 @@ public class TokenProvider {
 
         Integer userId = Integer.parseInt(decodeJwtPayloadSubject(oldAccessToken).split(":")[0]);
 
-        userRefreshTokenRepository.findByUserId(userId)
+        userRefreshTokenRepository.findById(userId)
                 .filter(userRefreshToken -> userRefreshToken.validateRefreshToken(refreshToken))
                 .orElseThrow(() -> new ExpiredJwtException(null, null, "Refresh token expired."));
     }
