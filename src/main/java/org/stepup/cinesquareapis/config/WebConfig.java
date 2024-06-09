@@ -25,4 +25,14 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PATCH", "PUT", "DELETE")
                 .maxAge(3000);
     }
+
+    // springboot는 기본적으로 url에 - 를 이용할 수 없지만, 가능하게 함.
+//    @Bean
+//    public RequestMappingHandlerMapping requestMappingHandlerMapping() {
+//        RequestMappingHandlerMapping mapping = new RequestMappingHandlerMapping();
+//        mapping.setUseTrailingSlashMatch(false);
+//        mapping.setUseSuffixPatternMatch(false);
+//        mapping.setUseRegisteredSuffixPatternMatch(false);
+//        return mapping;
+//    }
 }

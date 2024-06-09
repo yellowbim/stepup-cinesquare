@@ -422,7 +422,7 @@ public class UserReportService {
         MovieComment movieComment = movieCommentRepository.findById(commentId)
                 .orElseThrow(() -> new RestApiException(CustomErrorCode.NOT_FOUND_COMMENT));
 
-        // 해당 comment에 좋아요 count 반영
+        // 해당 코멘트에 좋아요 count 반영 (db save)
         updateLikeCount(movieComment, -1);
     }
 
