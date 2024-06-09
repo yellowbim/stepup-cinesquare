@@ -16,7 +16,7 @@ Project Managing | https://petalite-bearberry-a1a.notion.site/CINESQUARE-25b196f
 
 이정준: Back-end, Server, DevOps, DB
 
-조수민: Back-end, DB, Server, PM
+조수민: Back-end, DB, Server, PM, Refactoring
 
 
 ## Back-end & Server Skill
@@ -28,19 +28,18 @@ Project Managing | https://petalite-bearberry-a1a.notion.site/CINESQUARE-25b196f
 - Spring Batch & Quartz
 - Jenkins CI/CD + AWS EC2 배포
 - AWS S3
-- Swagger-ui 2.0
-- Crawling (data loading)
+- Swagger-ui 2.0 (swaggerdoc)
+- Crawling (영화 데이터 적재)
 
 ## Front-end & Design Skill
 - Github | https://github.com/jihyeon-Do/cine-square-renewal.git
 - Figma | https://www.figma.com/file/fqlQhqfwxWKB9q0bQUiQci/cine-square
 - React
 - Typescript
-- scss
+- SCSS
 
 
 ## Later
 - Redis
-- Elastic Search
 - Cloud Front
 - Redux
