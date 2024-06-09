@@ -1,11 +1,10 @@
 package org.stepup.cinesquareapis.report.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 
@@ -15,35 +14,30 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="tb_movie_comment_reply")
+@Table(name="tb_comment_reply")
 public class CommentReply {
     @Id
-    @Column(nullable = false, name = "reply_id")
+    @Column(nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer replyId;
 
-    @Column(name = "comment_id")
+    @Column(nullable = false)
     private Integer commentId;
 
-    @Column(name = "user_id")
+    @Column(nullable = false)
     private Integer userId;
 
-    @Column(name = "content", length = 1000)
+    @NotBlank()
+    @Column(length = 1000, nullable = false)
     private String content;
 
     @Column(name = "like")
     private int like;
 
-    @Column(name = "movie_id", nullable = false)
-    private Integer movieId;
-
     @CreationTimestamp
-    @Column(name = "created", updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
+    @Column(updatable = false)
     private LocalDateTime created;
 
     @UpdateTimestamp
-    @Column(name = "updated")
-    @Temporal(TemporalType.TIMESTAMP)
     private LocalDateTime updated;
 }
