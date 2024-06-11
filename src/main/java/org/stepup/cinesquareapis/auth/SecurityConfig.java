@@ -1,24 +1,5 @@
 package org.stepup.cinesquareapis.auth;
 
-//public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//    http
-////            .cors(cors -> corsConfigurationSource())
-//            .csrf(csrf -> csrf.disable())
-////            .exceptionHandling(req -> req.authenticationEntryPoint(jwtAuthEntryPoint))
-//            .authorizeHttpRequests(authorizeRequests ->
-//                    authorizeRequests
-//                            .requestMatchers(HttpMethod.POST, "/api/v1/user/login").permitAll()
-//                            .requestMatchers("/v3/**", "/swagger-ui/**").permitAll()
-//                            .requestMatchers(CorsUtils::isPreFlightRequest)
-//                            .permitAll()
-//                            .anyRequest()
-//                            .authenticated()
-//            )
-////            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-//
-//    return http.build();
-//}
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -29,6 +10,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.stepup.cinesquareapis.auth.jwt.JwtAuthenticationFilter;
 
 // 스프링 시큐리티 기본 설정
@@ -39,23 +22,38 @@ public class SecurityConfig {
 
     // 공개 API 경로
     private final String[] allowedUrls = {"/", "/swagger-ui/**", "/v3/**"};
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http.csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 추가
             .authorizeHttpRequests(auth -> auth
                     .requestMatchers(allowedUrls).permitAll()
                     .anyRequest().authenticated()
             )
             .sessionManagement(sessionManagement ->
-                    sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션을 사용하지 않으므로 STATELESS 설정
+                    sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .addFilterBefore(jwtAuthenticationFilter, BasicAuthenticationFilter.class);
         return http.build();
     }
 
-    // 스프링 시큐리티를 통해 암호화를 진행하려면
-    // 스프링 시큐리티 설정에서 PasswordEncoder를 구현한 클래스를 빈으로 추가해야 함
-    // BCryptPasswordEncoder: 스프링 시큐리티에서 기본으로 제공하는 암호화 모듈
+    @Bean
+    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowCredentials(true);
+        configuration.addAllowedOrigin("http://localhost:3000");
+        configuration.addAllowedOrigin("http://cinesquare-s3.s3-website.ap-northeast-2.amazonaws.com");
+        configuration.addAllowedOrigin("http://cine-square.s3-website.ap-northeast-2.amazonaws.com");
+        configuration.addAllowedOrigin("https://cinesquares3.s3.ap-northeast-2.amazonaws.com");
+        configuration.addAllowedHeader("*");
+        configuration.addAllowedMethod("*");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
