@@ -31,7 +31,7 @@ public class SwaggerConfig {
                                 .in("cookie")
                                 .schema(new StringSchema())
                                 .name("Refresh-Token")
-                                .description("Refresh Token used for refreshing the Access Token")))
+                                .description("액세스 토큰 재발급을 위해 리프레시 토큰 사용")))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .info(apiInfo());
     }
@@ -55,7 +55,7 @@ public class SwaggerConfig {
                     .in("cookie")
                     .schema(new StringSchema().name("Refresh-Token"))
                     .name("Refresh-Token")
-                    .description("액세스 토큰 (Header > Cookie > Refresh-Token 으로 요청할 수 있음"));
+                    .description("리프레시 토큰 (Header > Cookie > Refresh-Token 으로 요청할 수 있음"));
             return operation;
         };
     }
