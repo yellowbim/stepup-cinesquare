@@ -55,8 +55,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             authenticated.setDetails(new WebAuthenticationDetails(request));
 
             SecurityContextHolder.getContext().setAuthentication(authenticated);
-        }
-        catch (ExpiredJwtException e) {
+        } catch (ExpiredJwtException e) {
             // 4. Jwt 토큰이 만료됨, Refresh Token이 유효하다면 Access Token 재생성
             try {
                 String refreshToken = extractRefreshToken(request);

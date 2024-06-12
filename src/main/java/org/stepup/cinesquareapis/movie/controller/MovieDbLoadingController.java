@@ -68,7 +68,7 @@ public class MovieDbLoadingController {
      *
      * @return
      */
-    @Hidden
+//    @Hidden
     @PostMapping("cine/boxoffice")
     public void createBoxofficeManual(@RequestParam("monday_date") String mondaDayte) throws IOException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
