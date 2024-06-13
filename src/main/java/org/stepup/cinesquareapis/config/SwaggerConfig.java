@@ -25,9 +25,9 @@ public class SwaggerConfig {
                         .addSecuritySchemes(SECURITY_SCHEME_NAME, new SecurityScheme()
                                 .name(SECURITY_SCHEME_NAME)
                                 .type(SecurityScheme.Type.HTTP)
-                                .scheme("bearer")
+                                .scheme("Bearer")
                                 .bearerFormat("JWT"))
-                        .addParameters("refreshToken", new Parameter()
+                        .addParameters("Refresh-Token", new Parameter()
                                 .in("cookie")
                                 .schema(new StringSchema())
                                 .name("Refresh-Token")
@@ -55,7 +55,7 @@ public class SwaggerConfig {
                     .in("cookie")
                     .schema(new StringSchema().name("Refresh-Token"))
                     .name("Refresh-Token")
-                    .description("리프레시 토큰 (Header > Cookie > Refresh-Token 으로 요청할 수 있음"));
+                    .description("리프레시 토큰 (Header > Cookies > Refresh-Token 으로 요청할 수 있음"));
             return operation;
         };
     }

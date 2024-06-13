@@ -23,16 +23,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins("http://localhost:3000", "http://cinesquare-s3.s3-website.ap-northeast-2.amazonaws.com", "http://cine-square.s3-website.ap-northeast-2.amazonaws.com", "https://cinesquares3.s3.ap-northeast-2.amazonaws.com")
                 .allowedMethods("GET", "POST", "PATCH", "PUT", "DELETE")
+                .allowedHeaders("*")
+                .allowCredentials(true)
                 .maxAge(3000);
     }
-
-    // springboot는 기본적으로 url에 - 를 이용할 수 없지만, 가능하게 함.
-//    @Bean
-//    public RequestMappingHandlerMapping requestMappingHandlerMapping() {
-//        RequestMappingHandlerMapping mapping = new RequestMappingHandlerMapping();
-//        mapping.setUseTrailingSlashMatch(false);
-//        mapping.setUseSuffixPatternMatch(false);
-//        mapping.setUseRegisteredSuffixPatternMatch(false);
-//        return mapping;
-//    }
 }
