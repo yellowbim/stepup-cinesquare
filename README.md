@@ -11,13 +11,6 @@ Project Managing | https://petalite-bearberry-a1a.notion.site/CINESQUARE-25b196f
 
 ---
 
-## Team
-도지현: Front-end, Publishing, UI/UX, Design
-
-이정준: Back-end, Server, DevOps, DB
-
-조수민: Back-end, DB, Server, PM, Refactoring
-
 
 ## Back-end & Server Skill
 - Java 17 & SpringBoot 3.2
